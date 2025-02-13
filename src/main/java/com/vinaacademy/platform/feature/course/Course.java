@@ -1,5 +1,9 @@
 package com.vinaacademy.platform.feature.course;
 
+import com.vinaacademy.platform.feature.section.Section;
+
+import java.util.List;
+
 import com.vinaacademy.platform.feature.category.Category;
 import com.vinaacademy.platform.feature.common.entity.BaseEntity;
 import com.vinaacademy.platform.feature.course.enums.CourseLevel;
@@ -70,4 +74,7 @@ public class Course extends BaseEntity {
 
     @Column(name = "total_lesson")
     private long totalLesson = 0;
+
+    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL)
+    private List<Section> sections;
 }
