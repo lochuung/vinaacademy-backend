@@ -30,9 +30,8 @@ import lombok.Setter;
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @Entity
-@Table(name = "users", indexes = {
-        @Index(name = "idx_slug", columnList = "slug")
-})
+@Table(name = "users")
+
 public class User extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
