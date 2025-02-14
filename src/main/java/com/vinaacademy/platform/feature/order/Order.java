@@ -7,6 +7,7 @@ import java.util.UUID;
 import com.vinaacademy.platform.feature.coupon.Coupon;
 import com.vinaacademy.platform.feature.order.enums.OrderStatus;
 import com.vinaacademy.platform.feature.order_item.OrderItem;
+import com.vinaacademy.platform.feature.payment.Payment;
 import com.vinaacademy.platform.feature.user.User;
 
 import jakarta.persistence.CascadeType;
@@ -59,12 +60,10 @@ public class Order {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    // // Mối quan hệ OneToOne với Payment (Thanh toán)
-    // @OneToOne(cascade = CascadeType.ALL)
-    // @JoinColumn(name = "payment_id", referencedColumnName = "id")
-    // private Payment payment;
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "payment_id", referencedColumnName = "id")
+    private Payment payment;
 
-    // Mối quan hệ OneToMany với OrderItem (Danh sách sản phẩm trong đơn)
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> orderItems;
 }
