@@ -1,13 +1,20 @@
 package com.vinaacademy.platform.feature.course;
 
 import com.vinaacademy.platform.feature.section.Section;
+import com.vinaacademy.platform.feature.user.User;
 
 import java.util.List;
+import java.util.Set;
 
+import com.vinaacademy.platform.feature.cart_item.CartItem;
 import com.vinaacademy.platform.feature.category.Category;
 import com.vinaacademy.platform.feature.common.entity.BaseEntity;
 import com.vinaacademy.platform.feature.course.enums.CourseLevel;
 import com.vinaacademy.platform.feature.course.enums.CourseStatus;
+import com.vinaacademy.platform.feature.course_instructor.CourseInstructor;
+import com.vinaacademy.platform.feature.course_review.CourseReview;
+import com.vinaacademy.platform.feature.enrollment.Enrollment;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -77,4 +84,16 @@ public class Course extends BaseEntity {
 
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL)
     private List<Section> sections;
+
+    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL)
+    private List<Enrollment> enrollments;
+
+    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CourseInstructor> instructors;
+
+    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL)
+    private List<CartItem> cartItem;
+
+    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CourseReview> courseReviews;
 }

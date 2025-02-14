@@ -41,17 +41,17 @@ public class Log extends BaseEntity {
     @Column(name = "action")
     private String action;
 
-    @Column(name = "oldData", columnDefinition = "TEXT")
+    @Column(name = "old_data", columnDefinition = "TEXT")
     @Convert(converter = JsonConverter.class)
     private String oldData;
 
-    @Column(name = "newData", columnDefinition = "TEXT")
+    @Column(name = "new_data", columnDefinition = "TEXT")
     @Convert(converter = JsonConverter.class)
     private String newData;
 
-    @Column(name = "ipAddress")
+    @Column(name = "ip_address")
     private String ipAddress;
 
-    @Column(name = "userAgent")
+    @Column(name = "user_agent")
     private String userAgent;
 }
