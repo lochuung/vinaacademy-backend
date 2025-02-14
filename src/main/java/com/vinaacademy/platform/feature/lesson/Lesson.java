@@ -1,9 +1,13 @@
 package com.vinaacademy.platform.feature.lesson;
 
+import java.util.List;
+
 import com.vinaacademy.platform.feature.common.entity.BaseEntity;
 import com.vinaacademy.platform.feature.lesson.enums.LessonType;
 import com.vinaacademy.platform.feature.section.Section;
+import com.vinaacademy.platform.feature.user_progress.UserProgress;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorColumn;
 import jakarta.persistence.DiscriminatorType;
@@ -14,6 +18,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Inheritance;
@@ -44,4 +49,8 @@ public abstract class Lesson extends BaseEntity {
 
     @Column(name = "orderIndex")
     protected int orderIndex;
+
+    @OneToMany(mappedBy = "lesson", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<UserProgress> progressList;
+
 }
