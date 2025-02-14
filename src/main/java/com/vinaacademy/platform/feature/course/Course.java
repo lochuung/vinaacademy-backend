@@ -14,6 +14,7 @@ import com.vinaacademy.platform.feature.course.enums.CourseStatus;
 import com.vinaacademy.platform.feature.course_instructor.CourseInstructor;
 import com.vinaacademy.platform.feature.course_review.CourseReview;
 import com.vinaacademy.platform.feature.enrollment.Enrollment;
+import com.vinaacademy.platform.feature.order_item.OrderItem;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -96,4 +97,7 @@ public class Course extends BaseEntity {
 
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CourseReview> courseReviews;
+
+    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL)
+    private List<OrderItem> orderItems;
 }
