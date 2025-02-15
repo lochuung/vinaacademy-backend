@@ -15,7 +15,9 @@ import java.util.UUID;
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @Entity
-@Table(name = "categories")
+@Table(name = "categories", indexes = {
+        @Index(name = "idx_slug", columnList = "slug")
+})
 public class Category extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -23,6 +25,9 @@ public class Category extends BaseEntity {
 
     @Column(name = "name")
     private String name;
+
+    @Column(name = "slug", unique = true)
+    private String slug;
 
     @ManyToOne
     @JoinColumn(name = "parent_id")
