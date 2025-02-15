@@ -5,6 +5,7 @@ import com.vinaacademy.platform.feature.enrollment.enums.ProgressStatus;
 import com.vinaacademy.platform.feature.user.User;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
@@ -32,7 +33,8 @@ public class Enrollment {
     @JoinColumn(name = "course_id", nullable = false)
     private Course course;
 
-    @Column(name = "progress_percentage", columnDefinition = "DOUBLE DEFAULT 0")
+    @Column(name = "progress_percentage")
+    @ColumnDefault("0.0")
     private Double progressPercentage = 0.0;
 
     @Enumerated(EnumType.STRING)
