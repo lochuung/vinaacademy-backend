@@ -1,18 +1,17 @@
 package com.vinaacademy.platform.feature.order_payment.entity;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.UUID;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.vinaacademy.platform.feature.common.constant.DatabaseConstants;
 import com.vinaacademy.platform.feature.common.entity.BaseEntity;
+import com.vinaacademy.platform.feature.order_payment.enums.PaymentStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
-import com.vinaacademy.platform.feature.order_payment.enums.PaymentStatus;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Data
 @Getter
