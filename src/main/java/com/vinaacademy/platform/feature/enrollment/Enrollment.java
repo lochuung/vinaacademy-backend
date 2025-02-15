@@ -2,7 +2,7 @@ package com.vinaacademy.platform.feature.enrollment;
 
 import java.time.LocalDateTime;
 
-import com.vinaacademy.platform.feature.course.Course;
+import com.vinaacademy.platform.feature.course.entity.Course;
 import com.vinaacademy.platform.feature.enrollment.enums.ProgressStatus;
 import com.vinaacademy.platform.feature.user.User;
 
@@ -15,19 +15,20 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 
 @Data
-@Entity
+@Getter
+@Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Entity
 @Table(name = "enrollments", uniqueConstraints = {
-        @UniqueConstraint(columnNames = { "user_id", "course_id" })
+        @UniqueConstraint(columnNames = {"user_id", "course_id"})
 })
 public class Enrollment {
     @Id
@@ -50,13 +51,9 @@ public class Enrollment {
     private ProgressStatus status = ProgressStatus.IN_PROGRESS;
 
     @Column(name = "start_at", nullable = false)
+    @CreationTimestamp
     private LocalDateTime startAt;
 
     @Column(name = "complete_at")
     private LocalDateTime completeAt;
-
-    @PrePersist
-    public void prePersist() {
-        this.startAt = LocalDateTime.now();
-    }
 }
