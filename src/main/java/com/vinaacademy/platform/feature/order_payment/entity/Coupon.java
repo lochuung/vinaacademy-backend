@@ -1,29 +1,21 @@
 package com.vinaacademy.platform.feature.order_payment.entity;
 
+import com.vinaacademy.platform.feature.cart.entity.Cart;
+import com.vinaacademy.platform.feature.common.entity.BaseEntity;
+import com.vinaacademy.platform.feature.order_payment.enums.DiscountType;
+import jakarta.persistence.*;
+import lombok.*;
+import lombok.experimental.SuperBuilder;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-import com.vinaacademy.platform.feature.cart.entity.Cart;
-import com.vinaacademy.platform.feature.common.entity.BaseEntity;
-import com.vinaacademy.platform.feature.order_payment.enums.DiscountType;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
-import lombok.*;
-
 @Data
 @Getter
 @Setter
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)

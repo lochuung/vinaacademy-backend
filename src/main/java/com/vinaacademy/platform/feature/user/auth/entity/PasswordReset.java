@@ -1,12 +1,11 @@
 package com.vinaacademy.platform.feature.user.auth.entity;
 
-import java.time.LocalDateTime;
-
 import com.vinaacademy.platform.feature.common.entity.BaseEntity;
 import com.vinaacademy.platform.feature.user.User;
-
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.time.LocalDateTime;
 
 @Data
 @Getter

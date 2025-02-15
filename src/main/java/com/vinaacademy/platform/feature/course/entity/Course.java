@@ -1,22 +1,20 @@
 package com.vinaacademy.platform.feature.course.entity;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.vinaacademy.platform.feature.cart.entity.CartItem;
 import com.vinaacademy.platform.feature.category.Category;
 import com.vinaacademy.platform.feature.common.entity.BaseEntity;
 import com.vinaacademy.platform.feature.course.enums.CourseLevel;
 import com.vinaacademy.platform.feature.course.enums.CourseStatus;
-import com.vinaacademy.platform.feature.instructor.CourseInstructor;
-import com.vinaacademy.platform.feature.review.CourseReview;
 import com.vinaacademy.platform.feature.enrollment.Enrollment;
+import com.vinaacademy.platform.feature.instructor.CourseInstructor;
 import com.vinaacademy.platform.feature.order_payment.entity.OrderItem;
-
+import com.vinaacademy.platform.feature.review.CourseReview;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Data
