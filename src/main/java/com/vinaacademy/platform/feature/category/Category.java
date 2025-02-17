@@ -17,20 +17,20 @@ import java.util.UUID;
 @Entity
 @Table(name = "categories")
 public class Category extends BaseEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+        @Id
+        @GeneratedValue(strategy = GenerationType.UUID)
+        private UUID id;
 
-    @Column(name = "name")
-    private String name;
+        @Column(name = "name")
+        private String name;
 
-    @Column(name = "slug", unique = true)
-    private String slug;
+        @Column(name = "slug", unique = true)
+        private String slug;
 
-    @ManyToOne
-    @JoinColumn(name = "parent_id")
-    private Category parent;
+        @ManyToOne
+        @JoinColumn(name = "parent_id")
+        private Category parent;
 
-    @OneToMany(mappedBy = "parent")
-    private List<Category> children;
+        @OneToMany(mappedBy = "parent")
+        private List<Category> children;
 }
