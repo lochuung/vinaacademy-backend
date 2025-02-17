@@ -26,7 +26,7 @@ import java.util.UUID;
 @EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "courses", indexes = {
-        @Index(name = "idx_slug", columnList = "slug")
+        @Index(name = "inx_course_slug", columnList = "slug")
 })
 public class Course extends BaseEntity {
     @Id

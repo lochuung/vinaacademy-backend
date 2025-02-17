@@ -6,6 +6,8 @@ import com.vinaacademy.platform.feature.user.User;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Data
@@ -37,4 +39,7 @@ public class Discussion extends BaseEntity {
     @ManyToOne
     @JoinColumn(name = "parent_comment_id")
     private Discussion parentComment;
+
+    @OneToMany(mappedBy = "parentComment")
+    private List<Discussion> replies;
 }

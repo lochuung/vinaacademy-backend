@@ -15,9 +15,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @Entity
-@Table(name = "categories", indexes = {
-        @Index(name = "idx_slug", columnList = "slug")
-})
+@Table(name = "categories")
 public class Category extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
