@@ -1,6 +1,7 @@
 package com.vinaacademy.platform.configuration.auth;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.vinaacademy.platform.feature.common.response.ApiResponse;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -15,10 +16,14 @@ import java.io.IOException;
 public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint {
     @Autowired
     private ObjectMapper objectMapper;
-    
+
     @Override
-    public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) 
+    public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException)
             throws IOException, ServletException {
-        response.sendError(HttpServletResponse.SC_UNAUTHORIZED, authException.getMessage());
+        response.setContentType("application/json");
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response
+                .getWriter()
+                .write(objectMapper.writeValueAsString(ApiResponse.error("Unauthorized")));
     }
 }

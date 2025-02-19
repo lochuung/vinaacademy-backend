@@ -15,7 +15,7 @@ public class AuditingConfig {
     @Bean
     public AuditorAware<String> auditorProvider() {
         return () -> {
-            String username = null;
+            String username;
             Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
             if (principal instanceof UserDetails) {
                 username = ((UserDetails) principal).getUsername();
