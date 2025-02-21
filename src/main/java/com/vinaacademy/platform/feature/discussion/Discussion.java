@@ -2,12 +2,11 @@ package com.vinaacademy.platform.feature.discussion;
 
 import com.vinaacademy.platform.feature.common.entity.BaseEntity;
 import com.vinaacademy.platform.feature.course.entity.Lesson;
-import com.vinaacademy.platform.feature.user.User;
+import com.vinaacademy.platform.feature.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
 @Data

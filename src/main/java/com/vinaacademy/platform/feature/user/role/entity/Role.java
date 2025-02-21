@@ -1,7 +1,7 @@
 package com.vinaacademy.platform.feature.user.role.entity;
 
 import com.vinaacademy.platform.feature.common.entity.BaseEntity;
-import com.vinaacademy.platform.feature.user.User;
+import com.vinaacademy.platform.feature.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -26,10 +26,13 @@ public class Role extends BaseEntity {
     @Column(name = "name")
     private String name;
 
+    @Column(name = "code", unique = true, nullable = false)
+    private String code;
+
     @ManyToMany
     @JoinTable(name = "role_permission", joinColumns = @JoinColumn(name = "role_id"), inverseJoinColumns = @JoinColumn(name = "permission_id"))
     private Set<Permission> permissions = new HashSet<>();
 
-    @ManyToMany(mappedBy = "roles")
-    private Set<User> users;
+    @OneToMany(mappedBy = "role")
+    private Set<User> users = new HashSet<>();
 }

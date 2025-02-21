@@ -1,4 +1,4 @@
-package com.vinaacademy.platform.feature.user;
+package com.vinaacademy.platform.feature.user.entity;
 
 import com.vinaacademy.platform.feature.cart.entity.Cart;
 import com.vinaacademy.platform.feature.common.entity.BaseEntity;
@@ -10,8 +10,10 @@ import com.vinaacademy.platform.feature.video.entity.UserProgress;
 import com.vinaacademy.platform.feature.video.entity.VideoNote;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -31,10 +33,10 @@ public class User extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(name = "email", unique = true)
+    @Column(name = "email", nullable = false, unique = true)
     private String email;
 
-    @Column(name = "username", unique = true)
+    @Column(name = "username", nullable = false, unique = true)
     private String username;
 
     @Column(name = "password")
@@ -58,15 +60,21 @@ public class User extends BaseEntity {
     @Column(name = "birthday")
     private LocalDate birthday;
 
-    @ManyToMany
-    @JoinTable(name = "user_role", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
-    private Set<Role> roles;
+    @ManyToOne
+    @JoinColumn(name = "role_id")
+    private Role role;
 
     @Column(name = "is_active")
     private boolean isActive;
 
     @Column(name = "is_Using_2FA")
     private boolean isUsing2FA = false;
+
+    @Column(name = "failed_attempts")
+    @ColumnDefault("0")
+    private int failedAttempts;
+    @Column(name = "lock_time")
+    private LocalDateTime lockTime;
 
 //    @OneToMany(mappedBy = "user")
 //    private List<Log> logs;

@@ -1,4 +1,4 @@
-package com.vinaacademy.platform.configuration;
+package com.vinaacademy.platform.configuration.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

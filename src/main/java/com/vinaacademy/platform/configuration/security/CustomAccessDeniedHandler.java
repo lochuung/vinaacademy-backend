@@ -1,4 +1,4 @@
-package com.vinaacademy.platform.configuration.auth;
+package com.vinaacademy.platform.configuration.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vinaacademy.platform.feature.common.response.ApiResponse;
