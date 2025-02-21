@@ -1,14 +1,7 @@
-package com.vinaacademy.platform.configuration;
+package com.vinaacademy.platform.configuration.security;
 
-import com.nimbusds.jose.jwk.JWKSet;
-import com.nimbusds.jose.jwk.RSAKey;
-import com.nimbusds.jose.jwk.source.JWKSource;
-import com.nimbusds.jose.proc.SecurityContext;
-import com.vinaacademy.platform.configuration.auth.CustomAccessDeniedHandler;
-import com.vinaacademy.platform.configuration.auth.CustomAuthenticationEntryPoint;
-import com.vinaacademy.platform.feature.common.constant.AuthConstants;
+import com.vinaacademy.platform.feature.user.constant.AuthConstants;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -23,24 +16,42 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.JwtEncoder;
-import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
-import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.web.DefaultSecurityFilterChain;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.NoSuchAlgorithmException;
-import java.security.interfaces.RSAPublicKey;
-import java.util.UUID;
-
+/**
+ * Configures application security with multiple filter chains for different API endpoints.
+ *
+ * <p>This class defines several SecurityFilterChain beans:
+ * <ul>
+ *   <li><b>adminSecurity</b>: Secures admin APIs (e.g., endpoints starting with "/api/v1/admin/**") and allows only users with the ADMIN role.</li>
+ *   <li><b>publicSecurity</b>: Secures authentication and public APIs (e.g., endpoints like "/api/v1/auth/**", "/api/v1/public/**", and API docs endpoints)
+ *       by permitting all requests without authentication.</li>
+ *   <li><b>userSecurity</b>: Secures user APIs (e.g., endpoints starting with "/api/v1/**") by requiring authentication.</li>
+ *   <li><b>defaultSecurity</b>: Applies a catch-all policy to deny access to any request not matched by the other chains.</li>
+ * </ul>
+ *
+ * <p>The common security configuration, applied to all filter chains via the {@code commonSecurityConfig()} method,
+ * includes the following settings:
+ * <ul>
+ *   <li>Stateless session management (i.e., sessions are not maintained on the server).</li>
+ *   <li>Disabling of CSRF protection and HTTP Basic authentication, appropriate for token-based stateless APIs.</li>
+ *   <li>Enabling JWT authentication using OAuth2 resource server capabilities.</li>
+ *   <li>Configuring CORS settings using a provided {@code UrlBasedCorsConfigurationSource}.</li>
+ *   <li>Custom exception handling with designated {@code CustomAccessDeniedHandler} and {@code CustomAuthenticationEntryPoint}
+ *       to handle access violations and authentication errors.</li>
+ * </ul>
+ *
+ * <p>Additionally, the class exposes helper beans including:
+ * <ul>
+ *   <li>A {@code PasswordEncoder} bean based on BCrypt for secure password hashing.</li>
+ *   <li>An {@code AuthenticationManager} bean to support authentication operations.</li>
+ * </ul>
+ */
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity(prePostEnabled = true)
+@EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
