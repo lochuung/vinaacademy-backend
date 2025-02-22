@@ -22,8 +22,6 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Data
-@Setter
-@Getter
 @SuperBuilder
 @NoArgsConstructor
 @MappedSuperclass

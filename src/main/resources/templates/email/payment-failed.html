@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{email/layout :: layout(~{::content})}">
+<th:block th:fragment="content">
+    <h2 style="color: #2c3e50; margin-bottom: 20px;">Thanh toán không thành công</h2>
+    
+    <div style="text-align: center; margin: 20px 0;">
+        <span style="color: #e74c3c; font-size: 40px;">✗</span>
+    </div>
+    
+    <p style="margin-bottom: 15px;">Xin chào <span th:text="${userName}">bạn</span>,</p>
+    
+    <p style="margin-bottom: 15px;">
+        Rất tiếc, giao dịch của bạn không thành công. Vui lòng kiểm tra lại thông tin thanh toán và thử lại.
+    </p>
+    
+    <div style="background-color: #f8f9fa; padding: 20px; border-radius: 5px; margin: 20px 0;">
+        <h3 style="color: #2c3e50; margin-bottom: 10px;">Chi tiết giao dịch:</h3>
+        <p>Mã đơn hàng: <strong th:text="${orderId}">ORDER123</strong></p>
+        <p>Lỗi: <strong th:text="${errorMessage}">Thông tin thẻ không hợp lệ</strong></p>
+        <p>Thời gian: <strong th:text="${orderTime}">01/01/2024 15:30</strong></p>
+    </div>
+
+    <div style="text-align: center;">
+        <a th:href="${retryUrl}" class="button">
+            Thử lại
+        </a>
+    </div>
+    
+    <p style="margin-top: 20px;">
+        Nếu bạn cần hỗ trợ, vui lòng liên hệ với chúng tôi qua email support@vinaacademy.edu.vn
+    </p>
+</th:block>
+</html>

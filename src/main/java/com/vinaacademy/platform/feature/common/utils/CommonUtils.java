@@ -11,6 +11,7 @@ import java.math.RoundingMode;
 import java.text.Normalizer;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.UUID;
 import java.util.regex.Pattern;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;

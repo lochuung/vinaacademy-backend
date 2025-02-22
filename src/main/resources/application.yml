@@ -1,6 +1,8 @@
 spring:
   application:
     name: VinaAcademy
+  profiles:
+    active: mail
   datasource:
     url: jdbc:postgresql://localhost:5432/vinaacademy
     username: postgres
@@ -40,6 +42,9 @@ logging:
           nodeValue: TRACE
         SQL: DEBUG
     root: INFO
+    com:
+      vinaacademy:
+        platform: TRACE
 
 application:
   jwt:
@@ -47,6 +52,10 @@ application:
       expiration: 86400
     refreshToken:
       expiration: 2592000
+  url:
+    frontend: http://localhost:3000
+  hmac:
+    secret: super-secret-key-for-hmac
 
 springdoc:
   swagger-ui:

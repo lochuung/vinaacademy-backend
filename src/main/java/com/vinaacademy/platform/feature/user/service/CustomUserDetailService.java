@@ -12,6 +12,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -26,25 +27,27 @@ public class CustomUserDetailService implements UserDetailsService {
     private static final long LOCK_TIME_DURATION = 15; // 15 minutes
 
     @Override
+    @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userRepository.findByEmail(username).orElseThrow(() -> BadRequestException.message("User is invalid."));
-        if (!user.isActive() && isLockTimeExpired(user)) {
+        User user = userRepository.findByEmailWithRoles(username).orElseThrow(() -> BadRequestException.message("User is invalid."));
+        if (!user.isEnabled() && isLockTimeExpired(user)) {
             unlockAccount(user);
         }
 
-        String[] roles = Optional.of(user.getRole()).map(v -> new String[]{v.getName()}).orElse(new String[]{});
+        String[] roles = user.getRoles().stream().map(Role::getCode).toArray(String[]::new);
+
         return org.springframework.security.core.userdetails.User.builder()
                 .username(user.getEmail())
                 .password(user.getPassword())
-                .disabled(false)
+                .disabled(!user.isEnabled())
                 .accountExpired(false)
                 .credentialsExpired(false)
-                .accountLocked(!user.isActive()).roles(roles)
-                .authorities(getAuthorities(user.getRole())).build();
+                .accountLocked(user.isLocked()).roles(roles)
+                .authorities(getAuthorities(user.getRoles())).build();
     }
 
     public void increaseFailedAttempts(String username) {
-        User user = userRepository.findByEmail(username).orElse(null);
+        User user = userRepository.findByEmailWithRoles(username).orElse(null);
         if (user == null) {
             return;
         }
@@ -59,7 +62,7 @@ public class CustomUserDetailService implements UserDetailsService {
     }
 
     public void resetFailedAttempts(String username) {
-        User user = userRepository.findByEmail(username).orElse(null);
+        User user = userRepository.findByEmailWithRoles(username).orElse(null);
         if (user == null) {
             return;
         }
@@ -68,7 +71,7 @@ public class CustomUserDetailService implements UserDetailsService {
     }
 
     private void lockAccount(User user) {
-        user.setActive(false);
+        user.setEnabled(false);
         user.setLockTime(LocalDateTime.now().plusMinutes(LOCK_TIME_DURATION));
         userRepository.save(user);
     }
@@ -79,14 +82,14 @@ public class CustomUserDetailService implements UserDetailsService {
     }
 
     private void unlockAccount(User user) {
-        user.setActive(true);
+        user.setEnabled(true);
         user.setFailedAttempts(0);
         user.setLockTime(null);
         userRepository.save(user);
     }
 
 
-    private Collection<? extends GrantedAuthority> getAuthorities(final Role roles) {
+    private Collection<? extends GrantedAuthority> getAuthorities(final Set<Role> roles) {
 //        return roles.stream().map(s -> new GrantedAuthority() {
 //            @Override
 //            public String getAuthority() {
@@ -96,10 +99,13 @@ public class CustomUserDetailService implements UserDetailsService {
         return getGrantedAuthorities(getPermissions(roles));
     }
 
-    private Set<String> getPermissions(final Role role) {
+    private Set<String> getPermissions(final Set<Role> role) {
         final Set<String> permissions = new HashSet<>();
-        permissions.add("ROLE_" + role.getName());
-        final List<Permission> collection = new ArrayList<>(role.getPermissions());
+        final List<Permission> collection = new ArrayList<>();
+        for (final Role item : role) {
+            permissions.add("ROLE_" + item.getName());
+            collection.addAll(item.getPermissions());
+        }
         for (final Permission item : collection) {
             permissions.add(item.getName());
         }
@@ -113,6 +119,5 @@ public class CustomUserDetailService implements UserDetailsService {
 //            authorities.add(new SimpleGrantedAuthority(privilege));
 //        }
 //        return authorities;
-
     }
 }

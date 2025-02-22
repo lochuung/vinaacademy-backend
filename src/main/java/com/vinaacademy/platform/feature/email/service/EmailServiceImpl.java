@@ -3,21 +3,30 @@ package com.vinaacademy.platform.feature.email.service;
 import com.vinaacademy.platform.exception.BadRequestException;
 import com.vinaacademy.platform.feature.email.EmailAccountUsageRepository;
 import com.vinaacademy.platform.feature.email.config.MailProperties;
+import com.vinaacademy.platform.feature.email.config.UrlBuilder;
 import com.vinaacademy.platform.feature.email.dto.EmailMessage;
 import com.vinaacademy.platform.feature.email.entity.EmailAccountUsage;
+import com.vinaacademy.platform.feature.email.enums.UrlPath;
+import com.vinaacademy.platform.feature.email.enums.EmailTemplate;
 import com.vinaacademy.platform.feature.email.mq.redis.EmailProducer;
+import com.vinaacademy.platform.feature.user.entity.User;
 import jakarta.mail.internet.MimeMessage;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.MailMessage;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
-import org.springframework.mail.javamail.MimeMailMessage;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
+import org.thymeleaf.templatemode.TemplateMode;
+import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
 
+import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -29,22 +38,27 @@ import java.util.Random;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 @Service
 @Log4j2
+@RequiredArgsConstructor
 public class EmailServiceImpl implements EmailService {
 
     public static final String GMAIL_PROVIDER = "gmail";
-    @Autowired
-    private MailProperties mailProperties;
+    private final MailProperties mailProperties;
 
-    @Autowired
-    private EmailAccountUsageRepository emailAccountUsageRepository;
+    private final EmailAccountUsageRepository emailAccountUsageRepository;
 
     @Autowired(required = false)
     private EmailProducer emailProducer;
 
     @Value("${spring.data.redis.enabled:false}")
     private boolean redisEnabled;
+
+    private final UrlBuilder urlBuilder;
+
+    private final TemplateEngine templateEngine;
 
     @Override
     public void sendEmail(String toEmail, String subject, String body, boolean enableHtml) {
@@ -87,8 +101,101 @@ public class EmailServiceImpl implements EmailService {
         emailProducer.enqueueEmail(emailMessage);
     }
 
-    private static MimeMessage getMimeMessage(String toEmail, String subject, String body, String sender,
-                                              boolean enableHtml, JavaMailSenderImpl mailSender) {
+    @Override
+    public void sendVerificationEmail(String email, String token) {
+        String subject = "Xác thực tài khoản";
+        String url = urlBuilder.buildActionUrl(UrlPath.VERIFY_ACCOUNT, token);
+
+        Context context = new Context(LocaleContextHolder.getLocale());
+        context.setVariable("verificationUrl", url);
+
+        String body = parseTemplateToXhtml(context, EmailTemplate.VERIFY_ACCOUNT.getTemplateName());
+        sendEmail(email, subject, body, true);
+    }
+
+    private String parseTemplateToXhtml(Context context, String templateName) {
+        ClassLoaderTemplateResolver templateResolver = new ClassLoaderTemplateResolver();
+        templateResolver.setPrefix("templates/");
+        templateResolver.setSuffix(".html");
+        templateResolver.setTemplateMode(TemplateMode.HTML);
+        templateResolver.setCharacterEncoding(UTF_8.name());
+
+        TemplateEngine templateEngine = new TemplateEngine();
+        templateEngine.setTemplateResolver(templateResolver);
+
+        context.setVariable("frontEndUrl", urlBuilder.getFrontendUrl());
+        return templateEngine.process(templateName, context);
+    }
+
+    @Override
+    public void sendPasswordResetEmail(User user, String token) {
+        String subject = "Đặt lại mật khẩu";
+        String url = urlBuilder.buildActionUrl(UrlPath.RESET_PASSWORD, token);
+
+        Context context = new Context(LocaleContextHolder.getLocale());
+        context.setVariable("resetUrl", url);
+
+        String body = parseTemplateToXhtml(context, EmailTemplate.RESET_PASSWORD.getTemplateName());
+        sendEmail(user.getEmail(), subject, body, true);
+    }
+
+    @Override
+    public void sendWelcomeEmail(User user) {
+        String subject = "Chào mừng đến với VinaAcademy";
+        String exploreUrl = urlBuilder.getFrontendUrl() + UrlPath.EXPLORE.getPath();
+
+        Context context = new Context(LocaleContextHolder.getLocale());
+        context.setVariable("userName", user.getFullName());
+        context.setVariable("exploreUrl", exploreUrl);
+
+        String body = parseTemplateToXhtml(context, EmailTemplate.WELCOME.getTemplateName());
+        sendEmail(user.getEmail(), subject, body, true);
+    }
+
+    @Override
+    public void sendNotificationEmail(User user, String title, String message, String actionUrl, String actionText) {
+        Context context = new Context(LocaleContextHolder.getLocale());
+        context.setVariable("userName", user.getFullName());
+        context.setVariable("title", title);
+        context.setVariable("message", message);
+        context.setVariable("actionUrl", actionUrl);
+        context.setVariable("actionText", actionText);
+
+        String body = parseTemplateToXhtml(context, EmailTemplate.NOTIFICATION.getTemplateName());
+        sendEmail(user.getEmail(), title, body, true);
+    }
+
+    @Override
+    public void sendPaymentSuccessEmail(User user, String orderId, String amount, String orderTime, String courseUrl) {
+        String subject = "Thanh toán thành công";
+
+        Context context = new Context(LocaleContextHolder.getLocale());
+        context.setVariable("userName", user.getFullName());
+        context.setVariable("orderId", orderId);
+        context.setVariable("amount", amount);
+        context.setVariable("orderTime", orderTime);
+        context.setVariable("courseUrl", courseUrl);
+
+        String body = parseTemplateToXhtml(context, EmailTemplate.PAYMENT_SUCCESS.getTemplateName());
+        sendEmail(user.getEmail(), subject, body, true);
+    }
+
+    @Override
+    public void sendPaymentFailedEmail(User user, String orderId, String errorMessage, String orderTime, String retryUrl) {
+        String subject = "Thanh toán không thành công";
+
+        Context context = new Context(LocaleContextHolder.getLocale());
+        context.setVariable("userName", user.getFullName());
+        context.setVariable("orderId", orderId);
+        context.setVariable("errorMessage", errorMessage);
+        context.setVariable("orderTime", orderTime);
+        context.setVariable("retryUrl", retryUrl);
+
+        String body = parseTemplateToXhtml(context, EmailTemplate.PAYMENT_FAILED.getTemplateName());
+        sendEmail(user.getEmail(), subject, body, true);
+    }
+
+    private static MimeMessage getMimeMessage(String toEmail, String subject, String body, String sender, boolean enableHtml, JavaMailSenderImpl mailSender) {
         MimeMessage message = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, "utf-8");
         try {
