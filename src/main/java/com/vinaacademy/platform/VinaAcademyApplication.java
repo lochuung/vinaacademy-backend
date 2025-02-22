@@ -1,5 +1,6 @@
 package com.vinaacademy.platform;
 
+import com.vinaacademy.platform.feature.common.constant.AppConstants;
 import com.vinaacademy.platform.feature.user.service.UserService;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -12,7 +13,7 @@ import java.util.TimeZone;
 public class VinaAcademyApplication {
 
     public static void main(String[] args) {
-        TimeZone.setDefault(TimeZone.getTimeZone("GMT+07:00"));
+        TimeZone.setDefault(TimeZone.getTimeZone(AppConstants.TIME_ZONE));
         SpringApplication.run(VinaAcademyApplication.class, args);
     }
 

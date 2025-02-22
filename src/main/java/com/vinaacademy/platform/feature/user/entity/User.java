@@ -1,5 +1,6 @@
 package com.vinaacademy.platform.feature.user.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.vinaacademy.platform.feature.cart.entity.Cart;
 import com.vinaacademy.platform.feature.common.entity.BaseEntity;
 import com.vinaacademy.platform.feature.enrollment.Enrollment;
@@ -11,13 +12,11 @@ import com.vinaacademy.platform.feature.video.entity.VideoNote;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.Fetch;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 @Data
 @Getter
@@ -27,7 +26,10 @@ import java.util.UUID;
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @Entity
-@Table(name = "users")
+@Table(name = "users", uniqueConstraints = {
+        @UniqueConstraint(columnNames = "email"),
+        @UniqueConstraint(columnNames = "username")
+})
 public class User extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -39,6 +41,7 @@ public class User extends BaseEntity {
     @Column(name = "username", nullable = false, unique = true)
     private String username;
 
+    @JsonIgnore
     @Column(name = "password")
     private String password;
 
@@ -60,12 +63,18 @@ public class User extends BaseEntity {
     @Column(name = "birthday")
     private LocalDate birthday;
 
-    @ManyToOne
-    @JoinColumn(name = "role_id")
-    private Role role;
+    @ManyToMany
+    @JoinTable(
+            name = "user_roles",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id")
+    )
+    @Fetch(value = org.hibernate.annotations.FetchMode.SUBSELECT)
+    @org.hibernate.annotations.BatchSize(size = 10)
+    private Set<Role> roles;
 
-    @Column(name = "is_active")
-    private boolean isActive;
+    @Column(name = "is_enabled")
+    private boolean enabled;
 
     @Column(name = "is_Using_2FA")
     private boolean isUsing2FA = false;
@@ -73,6 +82,9 @@ public class User extends BaseEntity {
     @Column(name = "failed_attempts")
     @ColumnDefault("0")
     private int failedAttempts;
+
+    @Column(name = "is_locked")
+    private boolean isLocked = false;
     @Column(name = "lock_time")
     private LocalDateTime lockTime;
 
