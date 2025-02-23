@@ -2,7 +2,7 @@ package com.vinaacademy.platform.feature.enrollment;
 
 import com.vinaacademy.platform.feature.course.entity.Course;
 import com.vinaacademy.platform.feature.enrollment.enums.ProgressStatus;
-import com.vinaacademy.platform.feature.user.User;
+import com.vinaacademy.platform.feature.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;

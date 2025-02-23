@@ -30,11 +30,11 @@ public class Log extends BaseEntity {
 
     @Column(name = "old_data", columnDefinition = DatabaseConstants.JSON_TYPE)
     @JdbcTypeCode(SqlTypes.JSON)
-    private JsonNode oldData;
+    private String oldData;
 
     @Column(name = "new_data", columnDefinition = DatabaseConstants.JSON_TYPE)
     @JdbcTypeCode(SqlTypes.JSON)
-    private JsonNode newData;
+    private String newData;
 
     @Column(name = "ip_address")
     private String ipAddress;

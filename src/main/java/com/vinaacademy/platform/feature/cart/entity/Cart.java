@@ -1,7 +1,7 @@
 package com.vinaacademy.platform.feature.cart.entity;
 
 import com.vinaacademy.platform.feature.order_payment.entity.Coupon;
-import com.vinaacademy.platform.feature.user.User;
+import com.vinaacademy.platform.feature.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 

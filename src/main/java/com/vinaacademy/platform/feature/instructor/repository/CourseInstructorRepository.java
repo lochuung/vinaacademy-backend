@@ -6,7 +6,7 @@
 
 // import com.vinaacademy.platform.feature.course.entity.Course;
 // import com.vinaacademy.platform.feature.course_instructor.CourseInstructor;
-// import com.vinaacademy.platform.feature.user.User;
+// import com.vinaacademy.platform.feature.user.entity.User;
 
 // @Repository
 // public class CourseInstructorRepository extends

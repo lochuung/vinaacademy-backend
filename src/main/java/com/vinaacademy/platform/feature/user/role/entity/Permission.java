@@ -21,8 +21,11 @@ public class Permission extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "name")
+    @Column(name = "name", nullable = false, unique = true)
     private String name;
+
+    @Column(name = "code", unique = true, nullable = false)
+    private String code;
 
     @ManyToMany(mappedBy = "permissions")
     private Set<Role> roles;
