@@ -32,6 +32,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -74,6 +75,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
         user.setEnabled(false);
         user.setRoles(Set.of(roleRepository.findByCode(AuthConstants.STUDENT_ROLE)));
+//        user.setRoles(List.of(roleRepository.findByCode(AuthConstants.STUDENT_ROLE)));
         user = userRepository.save(user);
 
         String token = RandomUtils.generateUUID();
@@ -148,6 +150,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
      * @throws BadRequestException if the user or verification token is not found.
      */
     @Override
+    @Transactional
     public void resendNewVerificationEmail(String email) {
         User user = userRepository.findByEmailWithRoles(email)
                 .orElseThrow(() -> BadRequestException.message("Không tìm thấy người dùng: " + email));
@@ -238,8 +241,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
      * @throws BadRequestException if the user is not found.
      */
     @Override
+    @Transactional
     public void forgotPassword(String email) {
-        User user = userRepository.findByEmailWithRoles(email)
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> BadRequestException.message("Không tìm thấy người dùng: " + email));
 
         String token = RandomUtils.generateUUID();

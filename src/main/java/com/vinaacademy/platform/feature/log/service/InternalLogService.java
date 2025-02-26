@@ -28,17 +28,14 @@ class InternalLogService {
         String userAgent = httpServletRequest.getHeader("User-Agent");
 
         try {
-            LogDto logDto = LogDto.builder()
+            Log log = Log.builder()
                     .name(name)
-                    .event(event)
-                    .username(username)
-                    .description(description)
+                    .action(event)
                     .oldData(JsonUtils.object2Json(objectMapper, oldData))
                     .newData(JsonUtils.object2Json(objectMapper, newData))
                     .ipAddress(ipAddress)
                     .userAgent(userAgent)
                     .build();
-            Log log = LogMapper.INSTANCE.toEntity(logDto);
             logRepository.save(log);
         } catch (Exception e) {
             log.error("Error when add log {}", e.getMessage());

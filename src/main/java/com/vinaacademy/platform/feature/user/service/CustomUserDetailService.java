@@ -43,9 +43,11 @@ public class CustomUserDetailService implements UserDetailsService {
                 .accountExpired(false)
                 .credentialsExpired(false)
                 .accountLocked(user.isLocked()).roles(roles)
-                .authorities(getAuthorities(user.getRoles())).build();
+                .authorities(getAuthorities(user.getRoles()))
+                .build();
     }
 
+    @Transactional
     public void increaseFailedAttempts(String username) {
         User user = userRepository.findByEmailWithRoles(username).orElse(null);
         if (user == null) {
@@ -61,6 +63,7 @@ public class CustomUserDetailService implements UserDetailsService {
         }
     }
 
+    @Transactional
     public void resetFailedAttempts(String username) {
         User user = userRepository.findByEmailWithRoles(username).orElse(null);
         if (user == null) {
