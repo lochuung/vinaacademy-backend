@@ -39,7 +39,7 @@ public class UserServiceImpl implements UserService {
                 .password("admin")
                 .email("locn562836@gmail.com")
                 .enabled(true)
-                .roles(Set.of(roleRepository.findByCode(AuthConstants.ADMIN_ROLE)))
+//                .roles(Set.of(roleRepository.findByCode(AuthConstants.ADMIN_ROLE)))
                 .build();
         admin.setPassword(passwordEncoder.encode(admin.getPassword()));
 
@@ -48,7 +48,7 @@ public class UserServiceImpl implements UserService {
                 .password("staff")
                 .email("huuloc2155@gmail.com")
                 .enabled(true)
-                .roles(Set.of(roleRepository.findByCode(AuthConstants.STAFF_ROLE)))
+//                .roles(Set.of(roleRepository.findByCode(AuthConstants.STAFF_ROLE)))
                 .build();
         staff.setPassword(passwordEncoder.encode(staff.getPassword()));
 
@@ -57,7 +57,7 @@ public class UserServiceImpl implements UserService {
                 .password("instructor")
                 .email("linhpht263@outlook.com.vn")
                 .enabled(true)
-                .roles(Set.of(roleRepository.findByCode(AuthConstants.INSTRUCTOR_ROLE)))
+//                .roles(Set.of(roleRepository.findByCode(AuthConstants.INSTRUCTOR_ROLE)))
                 .build();
         instructor.setPassword(passwordEncoder.encode(instructor.getPassword()));
 
@@ -66,7 +66,7 @@ public class UserServiceImpl implements UserService {
                 .password("student")
                 .email("trihung987@gmail.com")
                 .enabled(true)
-                .roles(Set.of(roleRepository.findByCode(AuthConstants.STUDENT_ROLE)))
+//                .roles(Set.of(roleRepository.findByCode(AuthConstants.STUDENT_ROLE)))
                 .build();
         student.setPassword(passwordEncoder.encode(student.getPassword()));
 

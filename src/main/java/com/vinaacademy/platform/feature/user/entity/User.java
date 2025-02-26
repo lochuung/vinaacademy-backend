@@ -13,6 +13,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.BatchSize;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -24,7 +25,6 @@ import java.util.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "users", uniqueConstraints = {
         @UniqueConstraint(columnNames = "email"),
@@ -63,14 +63,13 @@ public class User extends BaseEntity {
     @Column(name = "birthday")
     private LocalDate birthday;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "user_roles",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
-    @Fetch(value = org.hibernate.annotations.FetchMode.SUBSELECT)
-    @org.hibernate.annotations.BatchSize(size = 10)
+    @BatchSize(size = 10)
     private Set<Role> roles;
 
     @Column(name = "is_enabled")
@@ -94,7 +93,8 @@ public class User extends BaseEntity {
 //    @OneToMany(mappedBy = "user")
 //    private List<PasswordReset> passwordResets;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @BatchSize(size = 20)
     private List<VideoNote> videoNotes = new ArrayList<>();
 
     public void addVideoNote(VideoNote videoNote) {
@@ -107,7 +107,8 @@ public class User extends BaseEntity {
         videoNote.setUser(null);
     }
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @BatchSize(size = 20)
     private List<Enrollment> enrollments = new ArrayList<>();
 
     public void addEnrollment(Enrollment enrollment) {
@@ -115,7 +116,8 @@ public class User extends BaseEntity {
         enrollment.setUser(this);
     }
 
-    @OneToMany(mappedBy = "instructor", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "instructor", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @BatchSize(size = 20)
     private List<CourseInstructor> coursesTaught = new ArrayList<>();
 
     public void addCourseTaught(CourseInstructor courseInstructor) {
@@ -131,7 +133,8 @@ public class User extends BaseEntity {
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Cart cart;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @BatchSize(size = 20)
     private List<CourseReview> courseReviews = new ArrayList<>();
 
     public void addCourseReview(CourseReview courseReview) {
@@ -144,7 +147,8 @@ public class User extends BaseEntity {
         courseReview.setUser(null);
     }
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @BatchSize(size = 20)
     private List<UserProgress> progressList;
 
 }

@@ -3,6 +3,7 @@ package com.vinaacademy.platform.feature.user.auth.service;
 import com.vinaacademy.platform.feature.common.constant.AppConstants;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
@@ -67,6 +68,9 @@ public class JwtService {
                 .subject(userDetails.getUsername())
                 .issuedAt(Instant.now())
                 .expiresAt(Instant.now().plusSeconds(expiredTime))
+                .claim("scope", userDetails.getAuthorities().stream()
+                        .map(GrantedAuthority::getAuthority)
+                        .toArray(String[]::new))
                 .build();
     }
 }

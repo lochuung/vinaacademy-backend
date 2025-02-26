@@ -6,13 +6,13 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "roles")
 public class Role extends BaseEntity {
@@ -33,4 +33,19 @@ public class Role extends BaseEntity {
 
     @ManyToMany(mappedBy = "roles")
     private Set<User> users = new HashSet<>();
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Role)) return false;
+        Role role = (Role) o;
+        // So sánh dựa trên ID hoặc một thuộc tính duy nhất
+        return Objects.equals(id, role.id);
+    }
+
+    @Override
+    public int hashCode() {
+        // Nên dựa vào ID
+        return (id == null) ? 0 : id.hashCode();
+    }
 }
