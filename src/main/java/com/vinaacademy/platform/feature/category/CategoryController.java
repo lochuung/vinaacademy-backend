@@ -7,6 +7,7 @@ import com.vinaacademy.platform.feature.common.response.ApiResponse;
 import com.vinaacademy.platform.feature.user.auth.annotation.HasAnyRole;
 import com.vinaacademy.platform.feature.user.constant.AuthConstants;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,13 +32,13 @@ public class CategoryController {
 
     @HasAnyRole({AuthConstants.ADMIN_ROLE})
     @PostMapping
-    public ApiResponse<CategoryDto> createCategory(@RequestBody CategoryRequest request) {
+    public ApiResponse<CategoryDto> createCategory(@RequestBody @Valid CategoryRequest request) {
         return ApiResponse.success(categoryService.createCategory(request));
     }
 
     @HasAnyRole({AuthConstants.ADMIN_ROLE})
     @PutMapping("/{slug}")
-    public ApiResponse<CategoryDto> updateCategory(@PathVariable String slug, @RequestBody CategoryRequest request) {
+    public ApiResponse<CategoryDto> updateCategory(@PathVariable String slug, @RequestBody @Valid CategoryRequest request) {
         return ApiResponse.success(categoryService.updateCategory(slug, request));
     }
 

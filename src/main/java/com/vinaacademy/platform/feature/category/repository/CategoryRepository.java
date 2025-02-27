@@ -17,4 +17,8 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
     @EntityGraph(attributePaths = {"children"})
     @Query("SELECT c FROM Category c WHERE c.parent IS NULL")
     List<Category> findAllRootCategoriesWithChildren();
+
+    boolean existsByParent(Category category);
+
+    boolean existsByCourses(Category category);
 }

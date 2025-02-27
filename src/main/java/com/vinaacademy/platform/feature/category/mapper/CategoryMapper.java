@@ -13,7 +13,7 @@ public interface CategoryMapper {
     CategoryMapper INSTANCE = Mappers.getMapper(CategoryMapper.class);
 
     @Mapping(target = "id", expression = "java(category.getId())")
-    @Mapping(target = "parentId", expression = "java(category.getParent() != null ? category.getParent().getId() : null)")
+    @Mapping(target = "parentSlug", expression = "java(category.getParent() != null ? category.getParent().getSlug() : null)")
     @Mapping(target = "children", ignore = true)
     CategoryDto toDto(Category category);
 
