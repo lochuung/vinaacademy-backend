@@ -13,15 +13,16 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 @Entity
 @Table(name = "categories", indexes = {
         @Index(name = "idx_category_slug", columnList = "slug")
 })
 public class Category extends BaseEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
+    private Long id;
 
     @Column(name = "name")
     private String name;
@@ -31,6 +32,7 @@ public class Category extends BaseEntity {
 
     @ManyToOne
     @JoinColumn(name = "parent_id")
+    @ToString.Exclude
     private Category parent;
 
     @OneToMany(mappedBy = "parent")
