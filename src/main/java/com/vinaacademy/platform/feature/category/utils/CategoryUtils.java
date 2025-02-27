@@ -24,4 +24,16 @@ public class CategoryUtils {
 
         return categoryDto;
     }
+
+    public static boolean isParent(Category parent, Category child) {
+        if (child.getParent() == null) {
+            return false;
+        }
+
+        if (child.getParent().getId().equals(parent.getId())) {
+            return true;
+        }
+
+        return isParent(parent, child.getParent());
+    }
 }

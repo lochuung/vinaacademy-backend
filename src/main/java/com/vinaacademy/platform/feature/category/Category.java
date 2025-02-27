@@ -1,6 +1,7 @@
 package com.vinaacademy.platform.feature.category;
 
 import com.vinaacademy.platform.feature.common.entity.BaseEntity;
+import com.vinaacademy.platform.feature.course.entity.Course;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -37,4 +38,7 @@ public class Category extends BaseEntity {
 
     @OneToMany(mappedBy = "parent")
     private List<Category> children;
+
+    @OneToMany(mappedBy = "category")
+    private List<Course> courses;
 }

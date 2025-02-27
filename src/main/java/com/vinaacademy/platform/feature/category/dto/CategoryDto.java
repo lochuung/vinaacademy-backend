@@ -15,7 +15,7 @@ public class CategoryDto extends BaseDto {
     private Long id;
     private String name;
     private String slug;
-    private Long parentId;
+    private String parentSlug;
 
     List<CategoryDto> children;
 }
