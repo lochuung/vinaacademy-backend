@@ -1,5 +1,6 @@
 package com.vinaacademy.platform;
 
+import com.vinaacademy.platform.feature.TestingDataService;
 import com.vinaacademy.platform.feature.common.constant.AppConstants;
 import com.vinaacademy.platform.feature.user.service.UserService;
 import org.springframework.boot.CommandLineRunner;
@@ -18,10 +19,11 @@ public class VinaAcademyApplication {
     }
 
     @Bean
-    public CommandLineRunner createTestingData(UserService userService) {
+    public CommandLineRunner createTestingData(TestingDataService testingDataService) {
         return args -> {
             // Create testing data here
-            userService.createTestingData();
+            testingDataService.createTestingAuthData();
+            testingDataService.createTestingCategoryData();
         };
     }
 
