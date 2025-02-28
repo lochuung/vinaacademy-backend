@@ -16,6 +16,8 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.DefaultSecurityFilterChain;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -51,7 +53,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
  */
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity
+@EnableMethodSecurity(jsr250Enabled = true)
 @RequiredArgsConstructor
 public class SecurityConfig {
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
@@ -74,19 +76,19 @@ public class SecurityConfig {
     }
 
     // Authentication & Public API Security
-    @Bean
-    @Order(2)
-    public SecurityFilterChain publicSecurity(HttpSecurity http) throws Exception {
-        http
-                .securityMatcher("/api/v1/auth/**", "/api/v1/public/**",
-                        "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html") // Apply to Public APIs
-                .authorizeHttpRequests(auth -> auth
-                        .anyRequest().permitAll() // No authentication required
-                )
-                .apply(commonSecurityConfig());
-
-        return http.build();
-    }
+//    @Bean
+//    @Order(2)
+//    public SecurityFilterChain publicSecurity(HttpSecurity http) throws Exception {
+//        http
+//                .securityMatcher("/api/v1/auth/**", "/api/v1/public/**",
+//                        "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html") // Apply to Public APIs
+//                .authorizeHttpRequests(auth -> auth
+//                        .anyRequest().permitAll() // No authentication required
+//                )
+//                .apply(commonSecurityConfig());
+//
+//        return http.build();
+//    }
 
     // User API Security
     @Bean
@@ -95,7 +97,7 @@ public class SecurityConfig {
         http
                 .securityMatcher("/api/v1/**")
                 .authorizeHttpRequests(auth -> auth
-                        .anyRequest().authenticated() // Require authentication
+                        .anyRequest().permitAll() // Require authentication
                 )
                 .apply(commonSecurityConfig());
 
@@ -122,7 +124,9 @@ public class SecurityConfig {
                         .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Stateless
                         .csrf(AbstractHttpConfigurer::disable) // Disable CSRF for APIs
                         .httpBasic(AbstractHttpConfigurer::disable) // Disable Basic Auth
-                        .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults())) // Enable JWT authentication
+                        .oauth2ResourceServer(oauth2 ->
+                                oauth2.jwt(jwt ->
+                                        jwt.jwtAuthenticationConverter(jwtAuthenticationConverter()))) // Enable JWT authentication
                         .cors(cors -> cors.configurationSource(corsConfigurationSource))
                         .exceptionHandling(exceptionHandling -> exceptionHandling
                                 .accessDeniedHandler(customAccessDeniedHandler) // Custom Access Denied Handler
@@ -135,6 +139,17 @@ public class SecurityConfig {
                 // No additional configurations required
             }
         };
+    }
+
+    @Bean
+    public JwtAuthenticationConverter jwtAuthenticationConverter() {
+        JwtGrantedAuthoritiesConverter grantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
+        grantedAuthoritiesConverter.setAuthoritiesClaimName("scope");
+
+        JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
+        jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(grantedAuthoritiesConverter);
+
+        return jwtAuthenticationConverter;
     }
 
     @Bean

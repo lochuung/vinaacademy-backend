@@ -10,6 +10,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Set;
+
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
@@ -36,8 +38,8 @@ public class UserServiceImpl implements UserService {
                 .username("admin")
                 .password("admin")
                 .email("locn562836@gmail.com")
-                .isActive(true)
-                .role(roleRepository.findByCode(AuthConstants.ADMIN_ROLE))
+                .enabled(true)
+                .roles(Set.of(roleRepository.findByCode(AuthConstants.ADMIN_ROLE)))
                 .build();
         admin.setPassword(passwordEncoder.encode(admin.getPassword()));
 
@@ -45,8 +47,8 @@ public class UserServiceImpl implements UserService {
                 .username("staff")
                 .password("staff")
                 .email("huuloc2155@gmail.com")
-                .isActive(true)
-                .role(roleRepository.findByCode(AuthConstants.STAFF_ROLE))
+                .enabled(true)
+                .roles(Set.of(roleRepository.findByCode(AuthConstants.STAFF_ROLE)))
                 .build();
         staff.setPassword(passwordEncoder.encode(staff.getPassword()));
 
@@ -54,8 +56,8 @@ public class UserServiceImpl implements UserService {
                 .username("instructor")
                 .password("instructor")
                 .email("linhpht263@outlook.com.vn")
-                .isActive(true)
-                .role(roleRepository.findByCode(AuthConstants.INSTRUCTOR_ROLE))
+                .enabled(true)
+                .roles(Set.of(roleRepository.findByCode(AuthConstants.INSTRUCTOR_ROLE)))
                 .build();
         instructor.setPassword(passwordEncoder.encode(instructor.getPassword()));
 
@@ -63,8 +65,8 @@ public class UserServiceImpl implements UserService {
                 .username("student")
                 .password("student")
                 .email("trihung987@gmail.com")
-                .isActive(true)
-                .role(roleRepository.findByCode(AuthConstants.STUDENT_ROLE))
+                .enabled(true)
+                .roles(Set.of(roleRepository.findByCode(AuthConstants.STUDENT_ROLE)))
                 .build();
         student.setPassword(passwordEncoder.encode(student.getPassword()));
 

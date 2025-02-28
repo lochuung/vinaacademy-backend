@@ -1,6 +1,7 @@
 package com.vinaacademy.platform.feature.user.auth.entity;
 
 import com.vinaacademy.platform.feature.common.entity.BaseEntity;
+import com.vinaacademy.platform.feature.user.auth.enums.ActionTokenType;
 import com.vinaacademy.platform.feature.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -15,20 +16,22 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @Entity
-@Table(name = "password_reset", indexes = {
+@Table(name = "action_tokens", indexes = {
         @Index(name = "idx_password_reset_token", columnList = "token")
-}, uniqueConstraints = {
-        @UniqueConstraint(name = "uk_password_reset_token", columnNames = {"token", "user_id"}),
 })
-public class PasswordReset extends BaseEntity {
+public class ActionToken extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "token")
+    @Column(name = "token", unique = true)
     private String token;
 
-    @Column(name = "expiredAt")
+    @Column(name = "type")
+    @Enumerated(EnumType.STRING)
+    private ActionTokenType type;
+
+    @Column(name = "expired_at")
     private LocalDateTime expiredAt;
 
     @ManyToOne

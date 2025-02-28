@@ -25,7 +25,7 @@ public class RefreshToken extends BaseEntity {
     private Long id;
     @Column(name = "username", nullable = false)
     private String username;
-    @Column(name = "token", nullable = false, unique = true)
+    @Column(name = "token", nullable = false, unique = true, length = 1000)
     private String token;
 
     @JsonSerialize(using = LocalDateTimeSerializer.class)

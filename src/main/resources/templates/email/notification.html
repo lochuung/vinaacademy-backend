@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{email/layout :: layout(~{::content})}">
+<th:block th:fragment="content">
+    <div style="text-align: center; margin-bottom: 20px;">
+        <img src="https://i.ibb.co/xXnvqfJ/notification.png" alt="Thông báo" style="max-width: 100px; width: 100%;">
+    </div>
+
+    <h2 style="color: #2c3e50; margin-bottom: 20px;" th:text="${title}">Thông báo</h2>
+    
+    <p style="margin-bottom: 15px;">Xin chào <span th:text="${userName}">bạn</span>,</p>
+    
+    <div style="background-color: #f8f9fa; padding: 20px; border-radius: 5px; margin: 20px 0;">
+        <p style="margin-bottom: 15px;" th:text="${message}">Nội dung thông báo</p>
+    </div>
+
+    <div style="text-align: center;" th:if="${actionUrl != null}">
+        <a th:href="${actionUrl}" class="button" th:text="${actionText}">
+            Xem chi tiết
+        </a>
+    </div>
+</th:block>
+</html>

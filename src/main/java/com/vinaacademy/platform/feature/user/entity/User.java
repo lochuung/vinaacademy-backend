@@ -1,5 +1,6 @@
 package com.vinaacademy.platform.feature.user.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.vinaacademy.platform.feature.cart.entity.Cart;
 import com.vinaacademy.platform.feature.common.entity.BaseEntity;
 import com.vinaacademy.platform.feature.enrollment.Enrollment;
@@ -11,13 +12,12 @@ import com.vinaacademy.platform.feature.video.entity.VideoNote;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.BatchSize;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 @Data
 @Getter
@@ -25,9 +25,11 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(callSuper = true)
 @Entity
-@Table(name = "users")
+@Table(name = "users", uniqueConstraints = {
+        @UniqueConstraint(columnNames = "email"),
+        @UniqueConstraint(columnNames = "username")
+})
 public class User extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -39,6 +41,7 @@ public class User extends BaseEntity {
     @Column(name = "username", nullable = false, unique = true)
     private String username;
 
+    @JsonIgnore
     @Column(name = "password")
     private String password;
 
@@ -60,12 +63,17 @@ public class User extends BaseEntity {
     @Column(name = "birthday")
     private LocalDate birthday;
 
-    @ManyToOne
-    @JoinColumn(name = "role_id")
-    private Role role;
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "user_roles",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id")
+    )
+    @BatchSize(size = 10)
+    private Set<Role> roles;
 
-    @Column(name = "is_active")
-    private boolean isActive;
+    @Column(name = "is_enabled")
+    private boolean enabled;
 
     @Column(name = "is_Using_2FA")
     private boolean isUsing2FA = false;
@@ -73,6 +81,9 @@ public class User extends BaseEntity {
     @Column(name = "failed_attempts")
     @ColumnDefault("0")
     private int failedAttempts;
+
+    @Column(name = "is_locked")
+    private boolean isLocked = false;
     @Column(name = "lock_time")
     private LocalDateTime lockTime;
 
@@ -82,7 +93,8 @@ public class User extends BaseEntity {
 //    @OneToMany(mappedBy = "user")
 //    private List<PasswordReset> passwordResets;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @BatchSize(size = 20)
     private List<VideoNote> videoNotes = new ArrayList<>();
 
     public void addVideoNote(VideoNote videoNote) {
@@ -95,7 +107,8 @@ public class User extends BaseEntity {
         videoNote.setUser(null);
     }
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @BatchSize(size = 20)
     private List<Enrollment> enrollments = new ArrayList<>();
 
     public void addEnrollment(Enrollment enrollment) {
@@ -103,7 +116,8 @@ public class User extends BaseEntity {
         enrollment.setUser(this);
     }
 
-    @OneToMany(mappedBy = "instructor", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "instructor", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @BatchSize(size = 20)
     private List<CourseInstructor> coursesTaught = new ArrayList<>();
 
     public void addCourseTaught(CourseInstructor courseInstructor) {
@@ -119,7 +133,8 @@ public class User extends BaseEntity {
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Cart cart;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @BatchSize(size = 20)
     private List<CourseReview> courseReviews = new ArrayList<>();
 
     public void addCourseReview(CourseReview courseReview) {
@@ -132,7 +147,8 @@ public class User extends BaseEntity {
         courseReview.setUser(null);
     }
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @BatchSize(size = 20)
     private List<UserProgress> progressList;
 
 }

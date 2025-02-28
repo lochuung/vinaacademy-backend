@@ -21,4 +21,6 @@ public class LogDto extends BaseDto {
     private String username;
     private String oldData;
     private String newData;
+    private String ipAddress;
+    private String userAgent;
 }

@@ -1,7 +1,9 @@
 package com.vinaacademy.platform.feature.user.auth.service;
 
+import com.vinaacademy.platform.feature.common.constant.AppConstants;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
@@ -10,6 +12,8 @@ import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Map;
 
 @Service
@@ -30,6 +34,10 @@ public class JwtService {
     public String generateRefreshToken(UserDetails userDetails) {
         return jwtEncoder.encode(JwtEncoderParameters.from(createClaims(userDetails, refreshTokenExpirationTime)))
                 .getTokenValue();
+    }
+
+    public LocalDateTime getExpirationTime(String token) {
+        return LocalDateTime.ofInstant((Instant) extractClaims(token).get("exp"), ZoneId.of(AppConstants.TIME_ZONE));
     }
 
     public boolean isValidToken(String token, UserDetails userDetails) {
@@ -60,6 +68,9 @@ public class JwtService {
                 .subject(userDetails.getUsername())
                 .issuedAt(Instant.now())
                 .expiresAt(Instant.now().plusSeconds(expiredTime))
+                .claim("scope", userDetails.getAuthorities().stream()
+                        .map(GrantedAuthority::getAuthority)
+                        .toArray(String[]::new))
                 .build();
     }
 }

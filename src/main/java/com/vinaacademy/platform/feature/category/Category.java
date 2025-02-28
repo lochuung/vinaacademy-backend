@@ -1,6 +1,7 @@
 package com.vinaacademy.platform.feature.category;
 
 import com.vinaacademy.platform.feature.common.entity.BaseEntity;
+import com.vinaacademy.platform.feature.course.entity.Course;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -13,24 +14,31 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 @Entity
-@Table(name = "categories")
+@Table(name = "categories", indexes = {
+        @Index(name = "idx_category_slug", columnList = "slug")
+})
 public class Category extends BaseEntity {
-        @Id
-        @GeneratedValue(strategy = GenerationType.UUID)
-        private UUID id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
+    private Long id;
 
-        @Column(name = "name")
-        private String name;
+    @Column(name = "name")
+    private String name;
 
-        @Column(name = "slug", unique = true)
-        private String slug;
+    @Column(name = "slug", unique = true)
+    private String slug;
 
-        @ManyToOne
-        @JoinColumn(name = "parent_id")
-        private Category parent;
+    @ManyToOne
+    @JoinColumn(name = "parent_id")
+    @ToString.Exclude
+    private Category parent;
 
-        @OneToMany(mappedBy = "parent")
-        private List<Category> children;
+    @OneToMany(mappedBy = "parent")
+    private List<Category> children;
+
+    @OneToMany(mappedBy = "category")
+    private List<Course> courses;
 }

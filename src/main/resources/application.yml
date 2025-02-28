@@ -1,36 +1,66 @@
 spring:
   application:
     name: VinaAcademy
+  profiles:
+    active: mail
   datasource:
-    url: jdbc:postgresql://localhost:5432/vinaacademy
-    username: postgres
-    password: postgres
     driver-class-name: org.postgresql.Driver
+    password: postgres
+    username: postgres
+    url: jdbc:postgresql://localhost:5432/vinaacademy
+    hikari:
+      auto-commit: true
+      minimum-idle: 5
+      maximum-pool-size: 20
   data:
     redis:
+      enabled: true
       host: localhost
       port: 6379
-      enabled: true
   jpa:
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
-    generate-ddl: true
-    show-sql: false
-    hibernate:
-      ddl-auto: update
     properties:
       hibernate:
-        format_sql: true
+        default_batch_fetch_size: 20
+        generate_statistics: true
         jdbc:
+          batch_size: 20
           lob:
             non_contextual_creation: true
+        format_sql: true
+        order_updates: true
+        use_sql_comments: true
+        order_inserts: true
+        show_sql: true
+    generate-ddl: true
+    hibernate:
+      ddl-auto: update
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: 'false'
   servlet:
     multipart:
+      maxRequestSize: 20MB
       enabled: true
       maxFileSize: 10MB
-      maxRequestSize: 20MB
-
+springdoc:
+  swagger-ui:
+    path: /
+    operations-sorter: method
+application:
+  jwt:
+    refreshToken:
+      expiration: 2592000
+    accessToken:
+      expiration: 86400
+  hmac:
+    secret: super-secret-key-for-hmac
+  url:
+    frontend: http://localhost:3000
 logging:
   level:
+    root: INFO
+    com:
+      vinaacademy:
+        platform: TRACE
     org:
       hibernate:
         type:
@@ -39,16 +69,3 @@ logging:
               BasicBinder: TRACE
           nodeValue: TRACE
         SQL: DEBUG
-    root: INFO
-
-application:
-  jwt:
-    accessToken:
-      expiration: 86400
-    refreshToken:
-      expiration: 2592000
-
-springdoc:
-  swagger-ui:
-    operations-sorter: method
-    path: /
