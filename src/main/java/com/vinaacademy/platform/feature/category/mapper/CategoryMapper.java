@@ -10,7 +10,6 @@ import java.util.List;
 
 @Mapper(componentModel = "spring")
 public interface CategoryMapper {
-    CategoryMapper INSTANCE = Mappers.getMapper(CategoryMapper.class);
 
     @Mapping(target = "id", expression = "java(category.getId())")
     @Mapping(target = "parentSlug", expression = "java(category.getParent() != null ? category.getParent().getSlug() : null)")
