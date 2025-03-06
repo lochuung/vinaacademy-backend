@@ -76,19 +76,19 @@ public class SecurityConfig {
     }
 
     // Authentication & Public API Security
-//    @Bean
-//    @Order(2)
-//    public SecurityFilterChain publicSecurity(HttpSecurity http) throws Exception {
-//        http
-//                .securityMatcher("/api/v1/auth/**", "/api/v1/public/**",
-//                        "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html") // Apply to Public APIs
-//                .authorizeHttpRequests(auth -> auth
-//                        .anyRequest().permitAll() // No authentication required
-//                )
-//                .apply(commonSecurityConfig());
-//
-//        return http.build();
-//    }
+    @Bean
+    @Order(2)
+    public SecurityFilterChain publicSecurity(HttpSecurity http) throws Exception {
+        http
+                .securityMatcher("/api/v1/auth/**", "/api/v1/public/**",
+                        "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html") // Apply to Public APIs
+                .authorizeHttpRequests(auth -> auth
+                        .anyRequest().permitAll() // No authentication required
+                )
+                .apply(commonSecurityConfig());
+
+        return http.build();
+    }
 
     // User API Security
     @Bean
