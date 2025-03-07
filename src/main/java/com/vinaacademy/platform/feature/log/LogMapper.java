@@ -11,4 +11,4 @@ public interface LogMapper {
     Log toEntity(LogDto logDto);
 
     LogDto toDto(Log log);
-}
+}	

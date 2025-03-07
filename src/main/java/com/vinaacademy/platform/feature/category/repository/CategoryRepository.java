@@ -11,7 +11,7 @@ import java.util.Optional;
 public interface CategoryRepository extends JpaRepository<Category, Long> {
     @EntityGraph(attributePaths = {"children"})
     Optional<Category> findBySlug(String slug);
-
+        
     boolean existsBySlug(String slug);
 
     @EntityGraph(attributePaths = {"children"})

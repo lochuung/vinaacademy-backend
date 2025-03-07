@@ -1,0 +1,25 @@
+package com.vinaacademy.platform.feature.course.mapper;
+
+
+import com.vinaacademy.platform.feature.course.dto.CourseDto;
+import com.vinaacademy.platform.feature.course.entity.Course;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.factory.Mappers;
+
+@Mapper(componentModel = "spring")
+public interface CourseMapper {
+    CourseMapper INSTANCE = Mappers.getMapper(CourseMapper.class);
+
+    @Mapping(source = "category.name", target = "categoryName")
+    CourseDto toDTO(Course course);
+
+    @Mapping(target = "category", ignore = true)
+    @Mapping(target = "cartItems", ignore = true)
+    @Mapping(target = "orderItems", ignore = true)
+    @Mapping(target = "courseReviews", ignore = true)
+    @Mapping(target = "enrollments", ignore = true)
+    @Mapping(target = "instructors", ignore = true)
+    @Mapping(target = "sections", ignore = true)
+    Course toEntity(CourseDto courseDto);
+}
