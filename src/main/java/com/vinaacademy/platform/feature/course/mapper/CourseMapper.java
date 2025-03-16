@@ -2,6 +2,7 @@ package com.vinaacademy.platform.feature.course.mapper;
 
 
 import com.vinaacademy.platform.feature.course.dto.CourseDto;
+import com.vinaacademy.platform.feature.course.dto.CourseRequest;
 import com.vinaacademy.platform.feature.course.entity.Course;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -21,5 +22,6 @@ public interface CourseMapper {
     @Mapping(target = "enrollments", ignore = true)
     @Mapping(target = "instructors", ignore = true)
     @Mapping(target = "sections", ignore = true)
-    Course toEntity(CourseDto courseDto);
+    @Mapping(target = "id", ignore = true)
+    Course toEntity(CourseRequest courseDto);
 }
