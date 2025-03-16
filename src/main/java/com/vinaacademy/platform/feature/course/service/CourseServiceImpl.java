@@ -54,9 +54,17 @@ public class CourseServiceImpl implements CourseService {
 		}
 		Category category = categoryRepository.findById(request.getCategoryId())
 				.orElseThrow(() -> BadRequestException.message("Không tìm thấy danh mục"));
-		Course course = Course.builder().name(request.getName()).category(category)
-				.description(request.getDescription()).image(request.getImage()).language(request.getLanguage())
-				.level(request.getLevel()).price(request.getPrice()).rating(0).slug(slug).status(CourseStatus.PENDING)
+		Course course = Course.builder()
+				.name(request.getName())
+				.category(category)
+				.description(request.getDescription())
+				.image(request.getImage())
+				.language(request.getLanguage())
+				.level(request.getLevel())
+				.price(request.getPrice())
+				.rating(0)
+				.slug(slug)
+				.status(CourseStatus.PENDING)
 				.build();
 
 		courseRepository.save(course);

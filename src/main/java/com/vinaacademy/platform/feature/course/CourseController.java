@@ -57,9 +57,9 @@ public class CourseController {
         return ApiResponse.success(coursePage.toList());
     }
 
-    @HasAnyRole({AuthConstants.ADMIN_ROLE})
-    @DeleteMapping("/{id}")
-    public ApiResponse<CourseDto> deleteCourse(@PathVariable String slug) {
+    @HasAnyRole({AuthConstants.ADMIN_ROLE, AuthConstants.INSTRUCTOR_ROLE})
+    @DeleteMapping("/crud/{slug}")
+    public ApiResponse<Void> deleteCourse(@PathVariable String slug) {
         // Only ADMIN can delete courses
         log.debug("Course deleted");
         courseService.deleteCourse(slug);
@@ -67,7 +67,7 @@ public class CourseController {
     }
 
     @HasAnyRole({AuthConstants.INSTRUCTOR_ROLE})
-    @PutMapping("/{id}")
+    @PutMapping("/crud/{slug}")
     public ApiResponse<CourseDto> updateCourse(@PathVariable String slug, @RequestBody @Valid CourseRequest request) {
         // Only INSTRUCTOR can update their courses
         log.debug("Course updated");
