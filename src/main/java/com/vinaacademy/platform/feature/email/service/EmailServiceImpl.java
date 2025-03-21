@@ -19,6 +19,7 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.thymeleaf.TemplateEngine;
@@ -60,6 +61,7 @@ public class EmailServiceImpl implements EmailService {
 
     private final TemplateEngine templateEngine;
 
+    @Async("emailTaskExecutor")
     @Override
     public void sendEmail(String toEmail, String subject, String body, boolean enableHtml) {
         if (redisEnabled) {

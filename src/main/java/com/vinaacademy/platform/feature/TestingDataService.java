@@ -2,16 +2,28 @@ package com.vinaacademy.platform.feature;
 
 import com.vinaacademy.platform.feature.category.Category;
 import com.vinaacademy.platform.feature.category.repository.CategoryRepository;
+import com.vinaacademy.platform.feature.course.entity.Course;
+import com.vinaacademy.platform.feature.section.entity.Section;
+import com.vinaacademy.platform.feature.course.enums.CourseLevel;
+import com.vinaacademy.platform.feature.course.enums.CourseStatus;
+import com.vinaacademy.platform.feature.course.repository.CourseRepository;
+import com.vinaacademy.platform.feature.section.repository.SectionRepository;
+import com.vinaacademy.platform.feature.instructor.CourseInstructor;
+import com.vinaacademy.platform.feature.instructor.repository.CourseInstructorRepository;
+import com.vinaacademy.platform.feature.lesson.dto.LessonRequest;
+import com.vinaacademy.platform.feature.lesson.service.LessonService;
 import com.vinaacademy.platform.feature.user.UserRepository;
 import com.vinaacademy.platform.feature.user.constant.AuthConstants;
 import com.vinaacademy.platform.feature.user.entity.User;
 import com.vinaacademy.platform.feature.user.role.entity.Role;
 import com.vinaacademy.platform.feature.user.role.repository.RoleRepository;
+import com.vinaacademy.platform.feature.course.enums.LessonType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.Set;
 
 @Service
@@ -20,6 +32,10 @@ public class TestingDataService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final CategoryRepository categoryRepository;
+    private final CourseRepository courseRepository;
+    private final SectionRepository sectionRepository;
+    private final CourseInstructorRepository courseInstructorRepository;
+    private final LessonService lessonService;
 
     private final PasswordEncoder passwordEncoder;
 
@@ -166,5 +182,246 @@ public class TestingDataService {
 
     }
 
+    @Transactional
+    public void createTestingCourseData() {
+        if (courseRepository.count() > 0) {
+            return;
+        }
 
+        // Get instructor user
+        User instructor = userRepository.findByUsername("instructor")
+                .orElseThrow(() -> new RuntimeException("Instructor user not found"));
+        
+        // Get categories
+        Category javaCategory = categoryRepository.findBySlug("java")
+                .orElseThrow(() -> new RuntimeException("Java category not found"));
+        
+        Category pythonCategory = categoryRepository.findBySlug("python")
+                .orElseThrow(() -> new RuntimeException("Python category not found"));
+        
+        Category springBootCategory = categoryRepository.findBySlug("spring-boot")
+                .orElseThrow(() -> new RuntimeException("Spring Boot category not found"));
+        
+        // Create Java course
+        Course javaCourse = Course.builder()
+                .name("Java Programming Fundamentals")
+                .description("Learn the basics of Java programming language")
+                .slug("java-programming-fundamentals")
+                .price(new BigDecimal("299000"))
+                .level(CourseLevel.BEGINNER)
+                .status(CourseStatus.PUBLISHED)
+                .language("Tiếng Việt")
+                .category(javaCategory)
+                .build();
+        
+        courseRepository.save(javaCourse);
+        
+        // Assign instructor to course
+        CourseInstructor courseInstructor = CourseInstructor.builder()
+                .instructor(instructor)
+                .course(javaCourse)
+                .isOwner(true)
+                .build();
+        
+        courseInstructorRepository.save(courseInstructor);
+        
+        // Create sections for Java course
+        Section section1 = Section.createSection(
+                null, 
+                javaCourse,
+                "Introduction to Java",
+                0,
+                null
+        );
+        
+        Section section2 = Section.createSection(
+                null, 
+                javaCourse,
+                "Java Basics",
+                1,
+                null
+        );
+        
+        // Add a section for video content
+        Section section3 = Section.createSection(
+                null,
+                javaCourse,
+                "Java Videos",
+                2,
+                null
+        );
+        
+        sectionRepository.save(section1);
+        sectionRepository.save(section2);
+        sectionRepository.save(section3);
+        
+        // Create lessons for Section 1
+        LessonRequest lesson1 = LessonRequest.builder()
+                .title("What is Java?")
+                .type(LessonType.READING)
+                .content("<p>Java is a high-level, class-based, object-oriented programming language...</p>")
+                .sectionId(section1.getId())
+                .free(true)
+                .orderIndex(0)
+                .build();
+        
+        LessonRequest lesson2 = LessonRequest.builder()
+                .title("Setting up Java Development Environment")
+                .type(LessonType.READING)
+                .content("<p>In this lesson, we'll learn how to set up Java on your computer...</p>")
+                .sectionId(section1.getId())
+                .free(false)
+                .orderIndex(1)
+                .build();
+        
+        LessonRequest lesson3 = LessonRequest.builder()
+                .title("Java Quiz")
+                .type(LessonType.QUIZ)
+                .sectionId(section1.getId())
+                .free(false)
+                .orderIndex(2)
+                .passPoint(7.0)
+                .totalPoint(10.0)
+                .duration(30)
+                .build();
+        
+        // Create lessons for Section 2
+        LessonRequest lesson4 = LessonRequest.builder()
+                .title("Variables and Data Types")
+                .type(LessonType.READING)
+                .content("<p>In this lesson, we'll learn about variables and data types in Java...</p>")
+                .sectionId(section2.getId())
+                .free(false)
+                .orderIndex(0)
+                .build();
+        
+        LessonRequest lesson5 = LessonRequest.builder()
+                .title("Control Flow Statements")
+                .type(LessonType.READING)
+                .content("<p>In this lesson, we'll learn about control flow statements in Java...</p>")
+                .sectionId(section2.getId())
+                .free(false)
+                .orderIndex(1)
+                .build();
+        
+        // Create video lessons for Section 3
+        LessonRequest videoLesson1 = LessonRequest.builder()
+                .title("Java Introduction Video")
+                .type(LessonType.VIDEO)
+                .sectionId(section3.getId())
+                .free(true)
+                .orderIndex(0)
+                .thumbnailUrl("https://example.com/thumbnails/java-intro.jpg")
+                .build();
+        
+        LessonRequest videoLesson2 = LessonRequest.builder()
+                .title("Setting Up Java Environment - Video Tutorial")
+                .type(LessonType.VIDEO)
+                .sectionId(section3.getId())
+                .free(false)
+                .orderIndex(1)
+                .thumbnailUrl("https://example.com/thumbnails/java-setup.jpg")
+                .build();
+        
+        LessonRequest videoLesson3 = LessonRequest.builder()
+                .title("Object-Oriented Programming in Java")
+                .type(LessonType.VIDEO)
+                .sectionId(section3.getId())
+                .free(false)
+                .orderIndex(2)
+                .thumbnailUrl("https://example.com/thumbnails/java-oop.jpg")
+                .build();
+        
+        // Create lessons with instructor as explicit author
+        lessonService.createLesson(lesson1, instructor);
+        lessonService.createLesson(lesson2, instructor);
+        lessonService.createLesson(lesson3, instructor);
+        lessonService.createLesson(lesson4, instructor);
+        lessonService.createLesson(lesson5, instructor);
+        
+        // Create video lessons
+        lessonService.createLesson(videoLesson1, instructor);
+        lessonService.createLesson(videoLesson2, instructor);
+        lessonService.createLesson(videoLesson3, instructor);
+        
+        // Create Spring Boot course
+        Course springBootCourse = Course.builder()
+                .name("Spring Boot for Beginners")
+                .description("Learn Spring Boot framework for Java applications")
+                .slug("spring-boot-for-beginners")
+                .price(new BigDecimal("499000"))
+                .level(CourseLevel.INTERMEDIATE)
+                .status(CourseStatus.PUBLISHED)
+                .language("Tiếng Việt")
+                .category(springBootCategory)
+                .build();
+        
+        courseRepository.save(springBootCourse);
+        
+        // Create a section for Spring Boot videos
+        Section springBootVideosSection = Section.createSection(
+                null,
+                springBootCourse,
+                "Spring Boot Video Tutorials",
+                0,
+                null
+        );
+        
+        sectionRepository.save(springBootVideosSection);
+        
+        // Add video lessons to Spring Boot course
+        LessonRequest springBootVideo1 = LessonRequest.builder()
+                .title("Introduction to Spring Boot")
+                .type(LessonType.VIDEO)
+                .sectionId(springBootVideosSection.getId())
+                .free(true)
+                .orderIndex(0)
+                .thumbnailUrl("https://example.com/thumbnails/spring-boot-intro.jpg")
+                .build();
+        
+        LessonRequest springBootVideo2 = LessonRequest.builder()
+                .title("Creating Your First Spring Boot Application")
+                .type(LessonType.VIDEO)
+                .sectionId(springBootVideosSection.getId())
+                .free(false)
+                .orderIndex(1)
+                .thumbnailUrl("https://example.com/thumbnails/spring-boot-first-app.jpg")
+                .build();
+        
+        // Create Spring Boot video lessons
+        lessonService.createLesson(springBootVideo1, instructor);
+        lessonService.createLesson(springBootVideo2, instructor);
+        
+        // Assign instructor to Spring Boot course
+        CourseInstructor courseInstructor2 = CourseInstructor.builder()
+                .instructor(instructor)
+                .course(springBootCourse)
+                .isOwner(true)
+                .build();
+        
+        courseInstructorRepository.save(courseInstructor2);
+        
+        // Create Python course
+        Course pythonCourse = Course.builder()
+                .name("Python for Data Science")
+                .description("Learn Python programming for data analysis and visualization")
+                .slug("python-for-data-science")
+                .price(new BigDecimal("399000"))
+                .level(CourseLevel.BEGINNER)
+                .status(CourseStatus.PUBLISHED)
+                .language("Tiếng Việt")
+                .category(pythonCategory)
+                .build();
+        
+        courseRepository.save(pythonCourse);
+        
+        // Assign instructor to Python course
+        CourseInstructor courseInstructor3 = CourseInstructor.builder()
+                .instructor(instructor)
+                .course(pythonCourse)
+                .isOwner(true)
+                .build();
+        
+        courseInstructorRepository.save(courseInstructor3);
+    }
 }

@@ -1,13 +1,16 @@
-package com.vinaacademy.platform.feature.course.entity;
+package com.vinaacademy.platform.feature.lesson.entity;
 
 import com.vinaacademy.platform.feature.common.entity.BaseEntity;
+import com.vinaacademy.platform.feature.section.entity.Section;
 import com.vinaacademy.platform.feature.course.enums.LessonType;
+import com.vinaacademy.platform.feature.user.entity.User;
 import com.vinaacademy.platform.feature.video.entity.UserProgress;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 import java.util.List;
+import java.util.UUID;
 
 @Data
 @Getter
@@ -22,8 +25,9 @@ import java.util.List;
 @Table(name = "lessons")
 public abstract class Lesson extends BaseEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    protected Long id;
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "id", updatable = false, nullable = false)
+    protected UUID id;
 
     @ManyToOne
     @JoinColumn(name = "section_id", nullable = false)
@@ -41,6 +45,10 @@ public abstract class Lesson extends BaseEntity {
 
     @Column(name = "order_index")
     protected int orderIndex;
+
+    @ManyToOne
+    @JoinColumn(name = "author_id", nullable = false)
+    protected User author;
 
     @OneToMany(mappedBy = "lesson", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, orphanRemoval = true)
     protected List<UserProgress> progressList;

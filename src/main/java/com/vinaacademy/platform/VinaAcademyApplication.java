@@ -24,7 +24,7 @@ public class VinaAcademyApplication {
             // Create testing data here
             testingDataService.createTestingAuthData();
             testingDataService.createTestingCategoryData();
+            testingDataService.createTestingCourseData();
         };
     }
-
 }

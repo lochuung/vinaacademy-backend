@@ -11,20 +11,38 @@ import java.util.concurrent.Executor;
 @Configuration
 @EnableAsync
 public class AsyncConfig implements AsyncConfigurer {
-    /**
-     * Creates and configures a ThreadPoolTaskExecutor bean.
-     *
-     * @return an Executor configured with a core pool size of 5,
-     *         a maximum pool size of 10, a queue capacity of 100,
-     *         and a thread name prefix of "Async-".
-     */
-    @Bean(name = "taskExecutor")
-    public Executor taskExecutor() {
+    @Bean(name = "logTaskExecutor")
+    public Executor logTaskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(5);
-        executor.setMaxPoolSize(10);
-        executor.setQueueCapacity(100);
-        executor.setThreadNamePrefix("Async-");
+        executor.setCorePoolSize(1);
+        executor.setMaxPoolSize(4);
+        executor.setQueueCapacity(10);
+        executor.setThreadNamePrefix("log-worker-");
+        executor.initialize();
+        return executor;
+    }
+
+    @Bean(name = "emailTaskExecutor")
+    public Executor emailTaskExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(2);
+        executor.setMaxPoolSize(4);
+        executor.setQueueCapacity(10);
+        executor.setThreadNamePrefix("email-worker-");
+        executor.initialize();
+        return executor;
+    }
+
+    @Bean(name = "videoTaskExecutor")
+    public Executor videoTaskExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+
+        // ⚙ Cấu hình tối ưu
+        executor.setCorePoolSize(4);     // Số luồng xử lý song song cơ bản
+        executor.setMaxPoolSize(8);      // Tối đa luồng xử lý cùng lúc
+        executor.setQueueCapacity(20);   // Độ dài queue chờ
+        executor.setThreadNamePrefix("video-worker-");
+
         executor.initialize();
         return executor;
     }

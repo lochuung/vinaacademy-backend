@@ -38,9 +38,12 @@ spring:
     show-sql: 'false'
   servlet:
     multipart:
-      maxRequestSize: 20MB
+      maxRequestSize: 1GB
       enabled: true
-      maxFileSize: 10MB
+      maxFileSize: 1GB
+  web:
+    resources:
+      staticLocations: file:${application.video.hlsOutputDir}
 springdoc:
   swagger-ui:
     path: /
@@ -53,8 +56,13 @@ application:
       expiration: 86400
   hmac:
     secret: super-secret-key-for-hmac
+  video:
+    maxSize: 1073741824
+    uploadDir: ${UPLOAD_DIR:/videos/uploads}
+    hlsOutputDir: ${HLS_OUTPUT_DIR:/videos/hls}
   url:
     frontend: http://localhost:3000
+    backend: http://localhost:8080
 logging:
   level:
     root: INFO
@@ -69,3 +77,9 @@ logging:
               BasicBinder: TRACE
           nodeValue: TRACE
         SQL: DEBUG
+server:
+  port: 8080
+  compression:
+    enabled: true
+    mime-types: application/x-mpegURL, text/plain
+    min-response-size: 1024

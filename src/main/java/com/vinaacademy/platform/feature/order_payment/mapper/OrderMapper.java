@@ -15,7 +15,7 @@ public interface OrderMapper {
 	
 	@Mapping(target = "user_id", source = "user.id")
     @Mapping(target = "coupon_id", source = "coupon.id")
-	@Mapping(target = "payment_id", expression = "java(payment.getPayment() != null ? payment.getPayment().getId() : null)")
+	@Mapping(target = "payment_id", expression = "java(order.getPayment() != null ? order.getPayment().getId() : null)")
 	OrderDto toOrderDto(Order order); 
  
     Order toEntity(OrderDto orderDto);

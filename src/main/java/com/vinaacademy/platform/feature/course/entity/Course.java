@@ -9,6 +9,7 @@ import com.vinaacademy.platform.feature.enrollment.Enrollment;
 import com.vinaacademy.platform.feature.instructor.CourseInstructor;
 import com.vinaacademy.platform.feature.order_payment.entity.OrderItem;
 import com.vinaacademy.platform.feature.review.CourseReview;
+import com.vinaacademy.platform.feature.section.entity.Section;
 import jakarta.persistence.*;
 import lombok.*;
 
