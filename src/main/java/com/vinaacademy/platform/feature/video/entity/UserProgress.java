@@ -1,7 +1,7 @@
 package com.vinaacademy.platform.feature.video.entity;
 
 import com.vinaacademy.platform.feature.common.entity.BaseEntity;
-import com.vinaacademy.platform.feature.course.entity.Lesson;
+import com.vinaacademy.platform.feature.lesson.entity.Lesson;
 import com.vinaacademy.platform.feature.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;

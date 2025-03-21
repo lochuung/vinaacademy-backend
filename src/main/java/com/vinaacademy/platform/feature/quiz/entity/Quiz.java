@@ -1,6 +1,6 @@
 package com.vinaacademy.platform.feature.quiz.entity;
 
-import com.vinaacademy.platform.feature.course.entity.Lesson;
+import com.vinaacademy.platform.feature.lesson.entity.Lesson;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;

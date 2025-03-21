@@ -24,7 +24,9 @@ import com.vinaacademy.platform.feature.user.UserRepository;
 import com.vinaacademy.platform.feature.user.entity.User;
 
 import ch.qos.logback.core.util.StringUtil;
+import org.springframework.stereotype.Service;
 
+@Service
 public class PaymentServiceImpl implements PaymentService {
 
 	private UserRepository userRepository;

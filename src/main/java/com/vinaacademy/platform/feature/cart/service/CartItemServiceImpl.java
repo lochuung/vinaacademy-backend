@@ -14,7 +14,9 @@ import com.vinaacademy.platform.feature.cart.repository.CartItemRepository;
 import com.vinaacademy.platform.feature.cart.repository.CartRepository;
 import com.vinaacademy.platform.feature.course.entity.Course;
 import com.vinaacademy.platform.feature.course.repository.CourseRepository;
+import org.springframework.stereotype.Service;
 
+@Service
 public class CartItemServiceImpl implements CartItemService{
 	
 	private CartRepository cartRepository;

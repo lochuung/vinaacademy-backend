@@ -38,7 +38,7 @@ public class LogServiceImpl implements LogService {
         doLog(name, event, null, oldData, newData);
     }
 
-    @Async("taskExecutor")
+    @Async("logTaskExecutor")
     @Override
     public void log(String name, String event, String description, Object oldData, Object newData) {
         doLog(name, event, description, oldData, newData);

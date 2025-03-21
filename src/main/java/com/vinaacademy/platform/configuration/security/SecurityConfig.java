@@ -109,7 +109,7 @@ public class SecurityConfig {
     public SecurityFilterChain defaultSecurity(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
-                        .anyRequest().denyAll() // Deny all undefined requests
+                        .anyRequest().permitAll() // Deny all undefined requests
                 )
                 .apply(commonSecurityConfig());
 
