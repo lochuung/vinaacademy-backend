@@ -10,7 +10,7 @@ import com.vinaacademy.platform.feature.section.mapper.SectionMapper;
 import com.vinaacademy.platform.feature.course.repository.CourseRepository;
 import com.vinaacademy.platform.feature.section.repository.SectionRepository;
 import com.vinaacademy.platform.feature.instructor.repository.CourseInstructorRepository;
-import com.vinaacademy.platform.feature.user.auth.SecurityUtils;
+import com.vinaacademy.platform.feature.user.auth.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

@@ -16,7 +16,7 @@ import com.vinaacademy.platform.feature.quiz.entity.Quiz;
 import com.vinaacademy.platform.feature.quiz.repository.QuizRepository;
 import com.vinaacademy.platform.feature.reading.Reading;
 import com.vinaacademy.platform.feature.reading.repository.ReadingRepository;
-import com.vinaacademy.platform.feature.user.auth.SecurityUtils;
+import com.vinaacademy.platform.feature.user.auth.utils.SecurityUtils;
 import com.vinaacademy.platform.feature.user.constant.AuthConstants;
 import com.vinaacademy.platform.feature.user.entity.User;
 import com.vinaacademy.platform.feature.video.entity.Video;
@@ -140,7 +140,7 @@ public class LessonServiceImpl implements LessonService {
     @Override
     public boolean hasAccess(UUID lessonId, User user) {
         LessonAccessInfoDto lessonAccessInfo = lessonRepository
-                .getLessonAccessInfoByLessonIdAndUserId(lessonId, user.getId())
+                .getLessonAccessInfo(lessonId, user.getId())
                 .orElseThrow(() -> BadRequestException.message("Lesson not found"));
         return lessonAccessInfo.isFree() ||
                 lessonAccessInfo.isInstructor() ||

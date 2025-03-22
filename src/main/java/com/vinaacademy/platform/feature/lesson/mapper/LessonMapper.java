@@ -29,18 +29,17 @@ public interface LessonMapper {
     LessonDto lessonToLessonDto(Lesson lesson);
 
     @AfterMapping
-    default void mapSpecificFields(@MappingTarget LessonDto dto, Lesson lesson) {
+    default void mapSpecificFields(@MappingTarget LessonDto.LessonDtoBuilder<?, ?> builder, Lesson lesson) {
         if (lesson instanceof Video video) {
-            dto.setThumbnailUrl(video.getThumbnailUrl());
-            dto.setVideoUrl(video.getVideoUrl());
-            dto.setVideoDuration(video.getDuration());
-            dto.setStatus(video.getStatus());
+            builder.thumbnailUrl(video.getThumbnailUrl());
+            builder.videoDuration(video.getDuration());
+            builder.status(video.getStatus());
         } else if (lesson instanceof Reading reading) {
-            dto.setContent(reading.getContent());
+            builder.content(reading.getContent());
         } else if (lesson instanceof Quiz quiz) {
-            dto.setPassPoint(quiz.getPassPoint());
-            dto.setTotalPoint(quiz.getTotalPoint());
-            dto.setDuration(quiz.getDuration());
+            builder.passPoint(quiz.getPassPoint());
+            builder.totalPoint(quiz.getTotalPoint());
+            builder.duration(quiz.getDuration());
         }
     }
 }

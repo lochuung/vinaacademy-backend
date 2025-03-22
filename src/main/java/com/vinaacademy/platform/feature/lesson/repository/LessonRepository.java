@@ -70,7 +70,7 @@ public interface LessonRepository extends JpaRepository<Lesson, UUID> {
             )
             FROM Lesson l JOIN l.section s
             WHERE l.id = :lessonId""")
-    Optional<LessonAccessInfoDto> getLessonAccessInfoByLessonIdAndUserId(
+    Optional<LessonAccessInfoDto> getLessonAccessInfo(
             @Param("lessonId") UUID lessonId,
             @Param("userId") UUID userId
     );
