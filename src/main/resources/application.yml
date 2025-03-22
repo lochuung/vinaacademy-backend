@@ -41,9 +41,6 @@ spring:
       maxRequestSize: 1GB
       enabled: true
       maxFileSize: 1GB
-  web:
-    resources:
-      staticLocations: file:${application.video.hlsOutputDir}
 springdoc:
   swagger-ui:
     path: /
