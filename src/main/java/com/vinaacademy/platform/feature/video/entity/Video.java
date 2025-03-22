@@ -33,9 +33,6 @@ public class Video extends Lesson {
     @Enumerated(EnumType.STRING)
     private VideoStatus status;
 
-    @Column(name = "videoUrl")
-    private String videoUrl;
-
     @Column(name = "duration")
     private long duration;
 

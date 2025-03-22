@@ -1,6 +1,7 @@
 package com.vinaacademy.platform.feature.video.dto;
 
 import com.vinaacademy.platform.feature.common.dto.BaseDto;
+import com.vinaacademy.platform.feature.video.enums.VideoStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -17,7 +18,8 @@ import java.util.UUID;
 public class VideoDto extends BaseDto {
     @EqualsAndHashCode.Include
     private String videoId;
+    private String thumbnailUrl;
     private String originalFilename;
-    private String status;
+    private VideoStatus status;
     private long duration;
 }
