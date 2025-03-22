@@ -1,7 +1,9 @@
 package com.vinaacademy.platform.feature.lesson.service;
 
+import com.vinaacademy.platform.exception.BadRequestException;
 import com.vinaacademy.platform.exception.NotFoundException;
 import com.vinaacademy.platform.exception.ValidationException;
+import com.vinaacademy.platform.feature.lesson.repository.projection.LessonAccessInfoDto;
 import com.vinaacademy.platform.feature.section.entity.Section;
 import com.vinaacademy.platform.feature.section.repository.SectionRepository;
 import com.vinaacademy.platform.feature.lesson.entity.Lesson;
@@ -15,6 +17,7 @@ import com.vinaacademy.platform.feature.quiz.repository.QuizRepository;
 import com.vinaacademy.platform.feature.reading.Reading;
 import com.vinaacademy.platform.feature.reading.repository.ReadingRepository;
 import com.vinaacademy.platform.feature.user.auth.SecurityUtils;
+import com.vinaacademy.platform.feature.user.constant.AuthConstants;
 import com.vinaacademy.platform.feature.user.entity.User;
 import com.vinaacademy.platform.feature.video.entity.Video;
 import com.vinaacademy.platform.feature.video.repository.VideoRepository;
@@ -70,7 +73,7 @@ public class LessonServiceImpl implements LessonService {
     @Override
     @Transactional
     public LessonDto createLesson(LessonRequest request, User author) {
-        log.info("Creating new lesson with title: {}, type: {} by explicit author: {}", 
+        log.info("Creating new lesson with title: {}, type: {} by explicit author: {}",
                 request.getTitle(), request.getType(), author.getUsername());
         Section section = findSectionById(request.getSectionId());
 
@@ -125,6 +128,23 @@ public class LessonServiceImpl implements LessonService {
                 oldLessonData, lessonMapper.lessonToLessonDto(existingLesson));
 
         return lessonMapper.lessonToLessonDto(existingLesson);
+    }
+
+    @Override
+    public boolean hasAccess(UUID lessonId) {
+        User currentUser = securityUtils.getCurrentUser();
+        return hasAccess(lessonId, currentUser) ||
+                securityUtils.hasRole(AuthConstants.ADMIN_ROLE);
+    }
+
+    @Override
+    public boolean hasAccess(UUID lessonId, User user) {
+        LessonAccessInfoDto lessonAccessInfo = lessonRepository
+                .getLessonAccessInfoByLessonIdAndUserId(lessonId, user.getId())
+                .orElseThrow(() -> BadRequestException.message("Lesson not found"));
+        return lessonAccessInfo.isFree() ||
+                lessonAccessInfo.isInstructor() ||
+                lessonAccessInfo.isEnrolled();
     }
 
     @Override
@@ -209,42 +229,42 @@ public class LessonServiceImpl implements LessonService {
 
     /**
      * Validates that the order index is appropriate for the section
-     * 
+     *
      * @param orderIndex the requested order index
-     * @param section the section where the lesson belongs
-     * @param lessonId the ID of the lesson being updated (null for creation)
+     * @param section    the section where the lesson belongs
+     * @param lessonId   the ID of the lesson being updated (null for creation)
      */
     private void validateOrderIndex(int orderIndex, Section section, UUID lessonId) {
         List<Lesson> existingLessons = lessonRepository.findBySectionOrderByOrderIndex(section);
-        
+
         // For updates, exclude the current lesson from duplicate check
         if (lessonId != null) {
             existingLessons = existingLessons.stream()
                     .filter(lesson -> !lesson.getId().equals(lessonId))
                     .collect(Collectors.toList());
         }
-        
+
         // Check for duplicate order index
         boolean orderIndexExists = existingLessons.stream()
                 .anyMatch(lesson -> lesson.getOrderIndex() == orderIndex);
-        
+
         if (orderIndexExists) {
             throw new ValidationException(
-                    String.format("A lesson with order index %d already exists in section '%s'", 
+                    String.format("A lesson with order index %d already exists in section '%s'",
                             orderIndex, section.getTitle()));
         }
-        
+
         // Calculate the expected maximum order index
         int maxAllowedIndex = existingLessons.size();
         if (lessonId != null) {
             // When updating, we can use the same index or one more than the current size
             maxAllowedIndex++;
         }
-        
+
         // Ensure the order index is within valid range
         if (orderIndex > maxAllowedIndex) {
             throw new ValidationException(
-                    String.format("Order index %d is too large. Maximum allowed is %d for section '%s'", 
+                    String.format("Order index %d is too large. Maximum allowed is %d for section '%s'",
                             orderIndex, maxAllowedIndex, section.getTitle()));
         }
     }

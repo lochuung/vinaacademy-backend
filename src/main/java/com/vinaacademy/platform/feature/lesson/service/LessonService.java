@@ -13,5 +13,7 @@ public interface LessonService {
     LessonDto createLesson(LessonRequest request);
     LessonDto createLesson(LessonRequest request, User author); // New method with explicit author
     LessonDto updateLesson(UUID id, LessonRequest request);
+    boolean hasAccess(UUID lessonId);
+    boolean hasAccess(UUID lessonId, User user);
     void deleteLesson(UUID id);
 }
