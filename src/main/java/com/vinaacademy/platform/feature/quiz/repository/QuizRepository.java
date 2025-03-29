@@ -1,7 +1,7 @@
 package com.vinaacademy.platform.feature.quiz.repository;
 
-import com.vinaacademy.platform.feature.section.entity.Section;
 import com.vinaacademy.platform.feature.quiz.entity.Quiz;
+import com.vinaacademy.platform.feature.section.entity.Section;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

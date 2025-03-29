@@ -1,6 +1,5 @@
 package com.vinaacademy.platform.exception;
 
-import lombok.Builder;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 

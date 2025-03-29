@@ -1,12 +1,11 @@
 package com.vinaacademy.platform.feature.order_payment.mapper;
 
-import java.util.List;
-
+import com.vinaacademy.platform.feature.order_payment.dto.PaymentDto;
+import com.vinaacademy.platform.feature.order_payment.entity.Payment;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-import com.vinaacademy.platform.feature.order_payment.dto.PaymentDto;
-import com.vinaacademy.platform.feature.order_payment.entity.Payment;
+import java.util.List;
 
 @Mapper(componentModel = "spring")
 public interface PaymentMapper {

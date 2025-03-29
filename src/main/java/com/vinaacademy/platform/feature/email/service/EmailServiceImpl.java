@@ -6,8 +6,8 @@ import com.vinaacademy.platform.feature.email.config.MailProperties;
 import com.vinaacademy.platform.feature.email.config.UrlBuilder;
 import com.vinaacademy.platform.feature.email.dto.EmailMessage;
 import com.vinaacademy.platform.feature.email.entity.EmailAccountUsage;
-import com.vinaacademy.platform.feature.email.enums.UrlPath;
 import com.vinaacademy.platform.feature.email.enums.EmailTemplate;
+import com.vinaacademy.platform.feature.email.enums.UrlPath;
 import com.vinaacademy.platform.feature.email.mq.redis.EmailProducer;
 import com.vinaacademy.platform.feature.user.entity.User;
 import jakarta.mail.internet.MimeMessage;
@@ -27,7 +27,6 @@ import org.thymeleaf.context.Context;
 import org.thymeleaf.templatemode.TemplateMode;
 import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
 
-import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;

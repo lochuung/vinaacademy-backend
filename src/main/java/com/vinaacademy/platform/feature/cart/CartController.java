@@ -1,19 +1,5 @@
 package com.vinaacademy.platform.feature.cart;
 
-import java.util.List;
-import java.util.UUID;
-
-import org.springframework.data.domain.Page;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.vinaacademy.platform.feature.cart.dto.CartDto;
 import com.vinaacademy.platform.feature.cart.dto.CartItemDto;
 import com.vinaacademy.platform.feature.cart.dto.CartItemRequest;
@@ -21,15 +7,16 @@ import com.vinaacademy.platform.feature.cart.dto.CartRequest;
 import com.vinaacademy.platform.feature.cart.service.CartItemService;
 import com.vinaacademy.platform.feature.cart.service.CartService;
 import com.vinaacademy.platform.feature.common.response.ApiResponse;
-import com.vinaacademy.platform.feature.course.dto.CourseDto;
-import com.vinaacademy.platform.feature.course.dto.CourseRequest;
 import com.vinaacademy.platform.feature.user.auth.annotation.HasAnyRole;
 import com.vinaacademy.platform.feature.user.constant.AuthConstants;
-
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/cart")

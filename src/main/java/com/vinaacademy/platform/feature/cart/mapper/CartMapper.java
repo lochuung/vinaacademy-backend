@@ -2,10 +2,12 @@ package com.vinaacademy.platform.feature.cart.mapper;
 
 import com.vinaacademy.platform.feature.cart.dto.CartDto;
 import com.vinaacademy.platform.feature.cart.dto.CartItemDto;
-import com.vinaacademy.platform.feature.cart.dto.CartItemRequest;
 import com.vinaacademy.platform.feature.cart.entity.Cart;
 import com.vinaacademy.platform.feature.cart.entity.CartItem;
-import org.mapstruct.*;
+import org.mapstruct.InheritInverseConfiguration;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+
 import java.util.List;
 
 @Mapper(componentModel = "spring")

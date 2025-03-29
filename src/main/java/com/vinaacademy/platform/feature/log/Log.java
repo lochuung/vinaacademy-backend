@@ -1,6 +1,5 @@
 package com.vinaacademy.platform.feature.log;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.vinaacademy.platform.feature.common.constant.DatabaseConstants;
 import com.vinaacademy.platform.feature.common.entity.BaseEntity;
 import jakarta.persistence.*;

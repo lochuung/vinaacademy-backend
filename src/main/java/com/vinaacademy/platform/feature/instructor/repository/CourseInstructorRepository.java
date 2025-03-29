@@ -1,17 +1,16 @@
 package com.vinaacademy.platform.feature.instructor.repository;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
+import com.vinaacademy.platform.feature.course.entity.Course;
+import com.vinaacademy.platform.feature.instructor.CourseInstructor;
+import com.vinaacademy.platform.feature.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import com.vinaacademy.platform.feature.course.entity.Course;
-import com.vinaacademy.platform.feature.instructor.CourseInstructor;
-import com.vinaacademy.platform.feature.user.entity.User;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @Repository
 public interface CourseInstructorRepository extends JpaRepository<CourseInstructor, Long> {

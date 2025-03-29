@@ -1,9 +1,6 @@
 package com.vinaacademy.platform.feature.order_payment.service;
 
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.UUID;
-
+import ch.qos.logback.core.util.StringUtil;
 import com.vinaacademy.platform.exception.BadRequestException;
 import com.vinaacademy.platform.feature.cart.repository.CartItemRepository;
 import com.vinaacademy.platform.feature.cart.repository.CartRepository;
@@ -21,10 +18,11 @@ import com.vinaacademy.platform.feature.order_payment.repository.OrderRepository
 import com.vinaacademy.platform.feature.order_payment.repository.PaymentRepository;
 import com.vinaacademy.platform.feature.order_payment.utils.VNPayConfig;
 import com.vinaacademy.platform.feature.user.UserRepository;
-import com.vinaacademy.platform.feature.user.entity.User;
-
-import ch.qos.logback.core.util.StringUtil;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
 
 @Service
 public class PaymentServiceImpl implements PaymentService {

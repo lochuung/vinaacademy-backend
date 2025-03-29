@@ -1,13 +1,14 @@
 package com.vinaacademy.platform.feature.order_payment.entity;
+
 import com.vinaacademy.platform.feature.common.entity.BaseEntity;
+import com.vinaacademy.platform.feature.order_payment.enums.DiscountType;
 import com.vinaacademy.platform.feature.order_payment.enums.OrderStatus;
 import com.vinaacademy.platform.feature.order_payment.utils.Utils;
-import com.vinaacademy.platform.feature.order_payment.enums.DiscountType;
 import com.vinaacademy.platform.feature.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
+
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;

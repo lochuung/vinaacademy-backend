@@ -1,7 +1,7 @@
 package com.vinaacademy.platform.feature.reading.repository;
 
-import com.vinaacademy.platform.feature.section.entity.Section;
 import com.vinaacademy.platform.feature.reading.Reading;
+import com.vinaacademy.platform.feature.section.entity.Section;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

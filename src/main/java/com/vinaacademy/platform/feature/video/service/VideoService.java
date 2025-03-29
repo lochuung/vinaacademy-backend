@@ -21,4 +21,6 @@ public interface VideoService {
      * @throws MalformedURLException if the path is invalid
      */
     ResponseEntity<Resource> getVideoSegment(UUID videoId, String subPath) throws MalformedURLException;
+
+    ResponseEntity<Resource> getThumbnail(UUID videoId);
 }

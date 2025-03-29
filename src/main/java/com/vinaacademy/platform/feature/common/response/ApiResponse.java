@@ -2,7 +2,6 @@ package com.vinaacademy.platform.feature.common.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
-import org.springframework.http.ResponseEntity;
 
 import java.time.Instant;
 

@@ -1,11 +1,10 @@
 package com.vinaacademy.platform.feature.course.service;
 
-import java.util.List;
-
-import org.springframework.data.domain.Page;
-
 import com.vinaacademy.platform.feature.course.dto.CourseDto;
 import com.vinaacademy.platform.feature.course.dto.CourseRequest;
+import org.springframework.data.domain.Page;
+
+import java.util.List;
 
 
 public interface CourseService {

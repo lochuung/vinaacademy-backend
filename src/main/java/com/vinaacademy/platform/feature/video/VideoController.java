@@ -7,7 +7,6 @@ import com.vinaacademy.platform.feature.user.auth.annotation.HasAnyRole;
 import com.vinaacademy.platform.feature.user.constant.AuthConstants;
 import com.vinaacademy.platform.feature.video.dto.VideoDto;
 import com.vinaacademy.platform.feature.video.dto.VideoRequest;
-import com.vinaacademy.platform.feature.video.properties.VideoProperties;
 import com.vinaacademy.platform.feature.video.service.VideoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -42,7 +41,6 @@ import java.util.UUID;
 public class VideoController {
     private final VideoService videoService;
     private final LessonService lessonService;
-    private final VideoProperties videoProperties;
 
     @Operation(summary = "Upload a video", description = "Upload a video file for a lesson")
     @ApiResponses(value = {
@@ -92,5 +90,18 @@ public class VideoController {
 
         // Delegate to service for getting the video segment
         return videoService.getVideoSegment(videoUuid, subPath);
+    }
+
+    @Operation(summary = "Get video thumbnail", description = "Get the thumbnail of a video")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Thumbnail retrieved successfully"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Thumbnail not found")
+    })
+    @GetMapping("/{videoId}/thumbnail")
+    public ResponseEntity<Resource> getThumbnail(
+            @Parameter(description = "ID of the video")
+            @PathVariable UUID videoId) throws MalformedURLException {
+        log.debug("Getting thumbnail for video: {}", videoId);
+        return videoService.getThumbnail(videoId);
     }
 }

@@ -51,10 +51,11 @@ application:
       expiration: 86400
   hmac:
     secret: super-secret-key-for-hmac
+  storage:
+    uploadDir: ${UPLOAD_DIR:/vinaacademy/uploads}
+    hlsOutputDir: ${HLS_OUTPUT_DIR:/vinaacademy/hls}
   video:
     maxSize: 1073741824
-    uploadDir: ${UPLOAD_DIR:/videos/uploads}
-    hlsOutputDir: ${HLS_OUTPUT_DIR:/videos/hls}
   url:
     frontend: http://localhost:3000
     backend: http://localhost:8080

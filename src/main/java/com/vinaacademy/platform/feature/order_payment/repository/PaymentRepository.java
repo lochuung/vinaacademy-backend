@@ -1,14 +1,13 @@
 package com.vinaacademy.platform.feature.order_payment.repository;
 
-import java.util.List;
-import java.util.UUID;
-
+import com.vinaacademy.platform.feature.order_payment.entity.Payment;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import com.vinaacademy.platform.feature.order_payment.entity.Payment;
+import java.util.List;
+import java.util.UUID;
 
 @Repository
 public interface PaymentRepository extends JpaRepository<Payment, UUID> {

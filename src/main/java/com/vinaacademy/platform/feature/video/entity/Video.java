@@ -23,9 +23,6 @@ public class Video extends Lesson {
     @Column(name = "thumbnail_url")
     private String thumbnailUrl;
 
-    @Column(name = "original_file_name")
-    private String originalFilename;
-
     @Column(name = "hls_path")
     private String hlsPath;
 
@@ -34,7 +31,7 @@ public class Video extends Lesson {
     private VideoStatus status;
 
     @Column(name = "duration")
-    private long duration;
+    private double duration;
 
     @OneToMany(mappedBy = "video", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<VideoNote> videoNotes;

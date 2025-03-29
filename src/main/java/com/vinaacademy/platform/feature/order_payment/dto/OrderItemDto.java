@@ -1,12 +1,12 @@
 package com.vinaacademy.platform.feature.order_payment.dto;
 
-import java.math.BigDecimal;
-import java.util.UUID;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.math.BigDecimal;
+import java.util.UUID;
 
 @Data
 @NoArgsConstructor

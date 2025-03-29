@@ -1,13 +1,10 @@
 package com.vinaacademy.platform.feature.order_payment.mapper;
 
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-
 import com.vinaacademy.platform.feature.order_payment.dto.OrderDto;
-import com.vinaacademy.platform.feature.order_payment.dto.OrderItemDto;
 import com.vinaacademy.platform.feature.order_payment.dto.OrderRequest;
 import com.vinaacademy.platform.feature.order_payment.entity.Order;
-import com.vinaacademy.platform.feature.order_payment.entity.OrderItem;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface OrderMapper {

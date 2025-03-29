@@ -1,7 +1,10 @@
 package com.vinaacademy.platform.feature.order_payment.dto;
 
 import com.vinaacademy.platform.feature.order_payment.enums.DiscountType;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
