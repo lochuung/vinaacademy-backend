@@ -2,7 +2,6 @@ package com.vinaacademy.platform.feature.video.service;
 
 import com.vinaacademy.platform.exception.BadRequestException;
 import com.vinaacademy.platform.feature.email.service.EmailService;
-import com.vinaacademy.platform.feature.image.service.ImageService;
 import com.vinaacademy.platform.feature.storage.properties.StorageProperties;
 import com.vinaacademy.platform.feature.video.entity.Video;
 import com.vinaacademy.platform.feature.video.enums.VideoStatus;
