@@ -1,8 +1,8 @@
 package com.vinaacademy.platform.feature.lesson.entity;
 
 import com.vinaacademy.platform.feature.common.entity.BaseEntity;
-import com.vinaacademy.platform.feature.section.entity.Section;
 import com.vinaacademy.platform.feature.course.enums.LessonType;
+import com.vinaacademy.platform.feature.section.entity.Section;
 import com.vinaacademy.platform.feature.user.entity.User;
 import com.vinaacademy.platform.feature.video.entity.UserProgress;
 import jakarta.persistence.*;

@@ -2,25 +2,21 @@ package com.vinaacademy.platform.feature.section.service;
 
 import com.vinaacademy.platform.exception.BadRequestException;
 import com.vinaacademy.platform.exception.NotFoundException;
+import com.vinaacademy.platform.feature.course.entity.Course;
+import com.vinaacademy.platform.feature.course.repository.CourseRepository;
+import com.vinaacademy.platform.feature.instructor.repository.CourseInstructorRepository;
 import com.vinaacademy.platform.feature.section.dto.SectionDto;
 import com.vinaacademy.platform.feature.section.dto.SectionRequest;
-import com.vinaacademy.platform.feature.course.entity.Course;
 import com.vinaacademy.platform.feature.section.entity.Section;
 import com.vinaacademy.platform.feature.section.mapper.SectionMapper;
-import com.vinaacademy.platform.feature.course.repository.CourseRepository;
 import com.vinaacademy.platform.feature.section.repository.SectionRepository;
-import com.vinaacademy.platform.feature.instructor.repository.CourseInstructorRepository;
 import com.vinaacademy.platform.feature.user.auth.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service

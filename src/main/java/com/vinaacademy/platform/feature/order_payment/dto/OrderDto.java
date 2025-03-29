@@ -1,19 +1,13 @@
 package com.vinaacademy.platform.feature.order_payment.dto;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-
-import com.vinaacademy.platform.feature.order_payment.entity.OrderItem;
-import com.vinaacademy.platform.feature.order_payment.entity.Payment;
 import com.vinaacademy.platform.feature.order_payment.enums.OrderStatus;
-import com.vinaacademy.platform.feature.user.entity.User;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.math.BigDecimal;
+import java.util.UUID;
 
 @Data
 @NoArgsConstructor

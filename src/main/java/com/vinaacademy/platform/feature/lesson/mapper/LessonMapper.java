@@ -1,7 +1,7 @@
 package com.vinaacademy.platform.feature.lesson.mapper;
 
-import com.vinaacademy.platform.feature.lesson.entity.Lesson;
 import com.vinaacademy.platform.feature.lesson.dto.LessonDto;
+import com.vinaacademy.platform.feature.lesson.entity.Lesson;
 import com.vinaacademy.platform.feature.quiz.entity.Quiz;
 import com.vinaacademy.platform.feature.reading.Reading;
 import com.vinaacademy.platform.feature.video.entity.Video;

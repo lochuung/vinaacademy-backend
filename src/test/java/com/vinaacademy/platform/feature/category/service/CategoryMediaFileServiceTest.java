@@ -28,7 +28,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class CategoryServiceTest {
+public class CategoryMediaFileServiceTest {
 
     @Mock
     private CategoryRepository categoryRepository;

@@ -2,7 +2,6 @@ package com.vinaacademy.platform;
 
 import com.vinaacademy.platform.feature.TestingDataService;
 import com.vinaacademy.platform.feature.common.constant.AppConstants;
-import com.vinaacademy.platform.feature.user.service.UserService;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

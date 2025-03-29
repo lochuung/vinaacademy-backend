@@ -8,8 +8,6 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
-import java.util.UUID;
-
 @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
 @SuperBuilder
 @Data
@@ -21,5 +19,5 @@ public class VideoDto extends BaseDto {
     private String thumbnailUrl;
     private String originalFilename;
     private VideoStatus status;
-    private long duration;
+    private double duration;
 }

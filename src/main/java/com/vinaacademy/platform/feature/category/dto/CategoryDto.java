@@ -1,7 +1,10 @@
 package com.vinaacademy.platform.feature.category.dto;
 
 import com.vinaacademy.platform.feature.common.dto.BaseDto;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 import java.util.List;

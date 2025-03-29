@@ -3,15 +3,18 @@ package com.vinaacademy.platform.feature.video.service.impl;
 import com.vinaacademy.platform.exception.BadRequestException;
 import com.vinaacademy.platform.feature.lesson.repository.LessonRepository;
 import com.vinaacademy.platform.feature.lesson.repository.projection.LessonAccessInfoDto;
+import com.vinaacademy.platform.feature.storage.dto.MediaFileDto;
+import com.vinaacademy.platform.feature.storage.enums.FileType;
+import com.vinaacademy.platform.feature.storage.properties.StorageProperties;
+import com.vinaacademy.platform.feature.storage.service.StorageService;
 import com.vinaacademy.platform.feature.user.auth.utils.SecurityUtils;
 import com.vinaacademy.platform.feature.user.constant.AuthConstants;
 import com.vinaacademy.platform.feature.user.entity.User;
-import com.vinaacademy.platform.feature.video.mapper.VideoMapper;
 import com.vinaacademy.platform.feature.video.dto.VideoDto;
 import com.vinaacademy.platform.feature.video.dto.VideoRequest;
 import com.vinaacademy.platform.feature.video.entity.Video;
 import com.vinaacademy.platform.feature.video.enums.VideoStatus;
-import com.vinaacademy.platform.feature.video.properties.VideoProperties;
+import com.vinaacademy.platform.feature.video.mapper.VideoMapper;
 import com.vinaacademy.platform.feature.video.repository.VideoRepository;
 import com.vinaacademy.platform.feature.video.service.VideoProcessorService;
 import com.vinaacademy.platform.feature.video.service.VideoService;
@@ -24,16 +27,16 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Comparator;
-import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -46,7 +49,10 @@ public class VideoServiceImpl implements VideoService {
     private final VideoMapper videoMapper;
     private final SecurityUtils securityUtils;
     private final LessonRepository lessonRepository;
-    private final VideoProperties videoProperties;
+
+    private final StorageProperties storageProperties;
+    private final StorageService storageService;
+
 
     @Override
     public VideoDto uploadVideo(MultipartFile file, VideoRequest videoRequest) throws IOException {
@@ -63,35 +69,19 @@ public class VideoServiceImpl implements VideoService {
         if (!lessonAccessInfo.isInstructor() && !securityUtils.hasRole(AuthConstants.ADMIN_ROLE)) {
             throw BadRequestException.message("You are not allowed to upload video to this lesson");
         }
-
+        video.setThumbnailUrl(videoRequest.getThumbnailUrl());
         video.setStatus(VideoStatus.PROCESSING);
-        video.setOriginalFilename(file.getOriginalFilename());
         video.setDuration(0);
         video.setAuthor(currentUser);
 
-        Path uploadPath = Paths.get(getUploadDir(), video.getId().toString());
-
-        if (Files.exists(uploadPath)) {
-            Files.walk(uploadPath)
-                    .sorted(Comparator.reverseOrder())
-                    .forEach(path -> {
-                        try {
-                            Files.delete(path);
-                        } catch (IOException e) {
-                            log.error(e.getMessage());
-                        }
-                    });
-        }
-        Files.createDirectories(uploadPath);
-        String originalFilename = StringUtils.cleanPath(Objects.requireNonNull(file.getOriginalFilename()));
-        Path destinationFile = uploadPath.resolve(originalFilename);
-        file.transferTo(destinationFile);
-
+        // Tạo thư mục lưu video
+        MediaFileDto mediaFile =
+                storageService.uploadFile(file, FileType.VIDEO, currentUser.getId().toString());
+        String destinationFile = mediaFile.getFilePath();
         video = videoRepository.save(video);
 
         // Xử lý FFmpeg async
-        videoProcessorService.processVideo(video.getId(), destinationFile);
-
+        videoProcessorService.processVideo(video.getId(), Paths.get(destinationFile));
 
         return videoMapper.toDto(video);
     }
@@ -99,8 +89,11 @@ public class VideoServiceImpl implements VideoService {
     @Override
     public ResponseEntity<Resource> getVideoSegment(UUID videoId, String subPath) throws MalformedURLException {
         log.debug("Getting video segment: {}/{}", videoId, subPath);
-        
-        Path segmentPath = Paths.get(videoProperties.getHlsDir(), videoId.toString(), subPath);
+
+        Video video = videoRepository.findById(videoId)
+                .orElseThrow(() -> BadRequestException.message("Video not found"));
+
+        Path segmentPath = Paths.get(video.getHlsPath(), subPath);
 
         if (!Files.exists(segmentPath)) {
             log.warn("Video segment not found: {}/{}", videoId, subPath);
@@ -125,7 +118,61 @@ public class VideoServiceImpl implements VideoService {
                 .body(resource);
     }
 
-    private String getUploadDir() {
-        return videoProperties.getUploadDir();
+    @Override
+    public ResponseEntity<Resource> getThumbnail(UUID videoId) {
+        log.debug("Getting thumbnail for video: {}", videoId);
+
+        Video video = videoRepository.findById(videoId)
+                .orElseThrow(() -> BadRequestException.message("Video not found"));
+
+        if (video.getThumbnailUrl() == null || video.getThumbnailUrl().isEmpty()) {
+            log.warn("Thumbnail URL not set for video: {}", videoId);
+            throw BadRequestException.message("Thumbnail URL not set");
+        }
+
+        String url = video.getThumbnailUrl();
+
+        try {
+            Resource resource;
+            String filename;
+            String contentType;
+
+            // ✅ Case 1: External URL
+            if (url.startsWith("http://") || url.startsWith("https://")) {
+                resource = new UrlResource(url);
+                if (!resource.exists() || !resource.isReadable()) {
+                    throw BadRequestException.message("Thumbnail URL is not accessible");
+                }
+
+                filename = Paths.get(new URI(url).getPath()).getFileName().toString();
+            }
+            // ✅ Case 2: Local file path
+            else {
+                Path thumbnailPath = Paths.get(url);
+                if (!Files.exists(thumbnailPath)) {
+                    log.warn("Thumbnail not found: {}", url);
+                    throw BadRequestException.message("Thumbnail not found");
+                }
+
+                resource = new UrlResource(thumbnailPath.toUri());
+                filename = thumbnailPath.getFileName().toString();
+            }
+
+            // ✅ Guess content type
+            contentType = URLConnection.guessContentTypeFromName(filename);
+            if (contentType == null) {
+                contentType = MediaType.APPLICATION_OCTET_STREAM_VALUE;
+            }
+
+            return ResponseEntity.ok()
+                    .contentType(MediaType.parseMediaType(contentType))
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"")
+                    .body(resource);
+
+        } catch (MalformedURLException | URISyntaxException e) {
+            log.error("Error serving thumbnail: {}", e.getMessage());
+            throw BadRequestException.message("Error serving thumbnail");
+        }
     }
+
 }

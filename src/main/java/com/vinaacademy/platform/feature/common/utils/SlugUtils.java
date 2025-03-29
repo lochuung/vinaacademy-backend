@@ -1,7 +1,6 @@
 package com.vinaacademy.platform.feature.common.utils;
 
 import java.text.Normalizer;
-import java.util.regex.Pattern;
 
 public class SlugUtils {
 

@@ -3,10 +3,7 @@ package com.vinaacademy.platform.feature.user.role.entity;
 import com.vinaacademy.platform.feature.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-import java.util.Objects;
 import java.util.Set;
 
 @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)

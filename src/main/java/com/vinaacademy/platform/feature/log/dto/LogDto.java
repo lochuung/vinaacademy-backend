@@ -1,6 +1,5 @@
 package com.vinaacademy.platform.feature.log.dto;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.vinaacademy.platform.feature.common.dto.BaseDto;
 import lombok.*;
 import lombok.experimental.SuperBuilder;

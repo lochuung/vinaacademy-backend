@@ -1,10 +1,5 @@
 package com.vinaacademy.platform.feature.order_payment.service;
 
-import java.util.List;
-import java.util.UUID;
-
-import org.springframework.stereotype.Service;
-
 import com.vinaacademy.platform.exception.BadRequestException;
 import com.vinaacademy.platform.feature.cart.entity.Cart;
 import com.vinaacademy.platform.feature.cart.entity.CartItem;
@@ -23,8 +18,11 @@ import com.vinaacademy.platform.feature.order_payment.repository.OrderItemReposi
 import com.vinaacademy.platform.feature.order_payment.repository.OrderRepository;
 import com.vinaacademy.platform.feature.user.UserRepository;
 import com.vinaacademy.platform.feature.user.entity.User;
-
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor

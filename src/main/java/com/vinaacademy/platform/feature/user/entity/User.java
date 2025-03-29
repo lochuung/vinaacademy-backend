@@ -11,13 +11,15 @@ import com.vinaacademy.platform.feature.video.entity.UserProgress;
 import com.vinaacademy.platform.feature.video.entity.VideoNote;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.ColumnDefault;
-import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.BatchSize;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 @Data
 @Getter

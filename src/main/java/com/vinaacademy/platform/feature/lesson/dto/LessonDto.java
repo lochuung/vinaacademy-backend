@@ -3,10 +3,12 @@ package com.vinaacademy.platform.feature.lesson.dto;
 import com.vinaacademy.platform.feature.common.dto.BaseDto;
 import com.vinaacademy.platform.feature.course.enums.LessonType;
 import com.vinaacademy.platform.feature.video.enums.VideoStatus;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 @EqualsAndHashCode(callSuper = false, of = {"id"})
@@ -33,7 +35,7 @@ public class LessonDto extends BaseDto {
     private String thumbnailUrl;
     private VideoStatus status;
     private String videoUrl;
-    private Long videoDuration;
+    private Double videoDuration;
 
     // For Reading lessons
     private String content;

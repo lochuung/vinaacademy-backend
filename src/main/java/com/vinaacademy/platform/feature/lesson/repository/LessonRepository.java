@@ -1,8 +1,8 @@
 package com.vinaacademy.platform.feature.lesson.repository;
 
+import com.vinaacademy.platform.feature.lesson.entity.Lesson;
 import com.vinaacademy.platform.feature.lesson.repository.projection.LessonAccessInfoDto;
 import com.vinaacademy.platform.feature.section.entity.Section;
-import com.vinaacademy.platform.feature.lesson.entity.Lesson;
 import com.vinaacademy.platform.feature.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

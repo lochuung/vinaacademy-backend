@@ -3,8 +3,8 @@ package com.vinaacademy.platform.feature.category.mapper;
 import com.vinaacademy.platform.feature.category.Category;
 import com.vinaacademy.platform.feature.category.dto.CategoryDto;
 import com.vinaacademy.platform.feature.category.dto.CategoryRequest;
-import org.mapstruct.*;
-import org.mapstruct.factory.Mappers;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
 import java.util.List;
 

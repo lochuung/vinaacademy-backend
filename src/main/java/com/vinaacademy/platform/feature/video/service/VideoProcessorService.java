@@ -2,9 +2,9 @@ package com.vinaacademy.platform.feature.video.service;
 
 import com.vinaacademy.platform.exception.BadRequestException;
 import com.vinaacademy.platform.feature.email.service.EmailService;
+import com.vinaacademy.platform.feature.storage.properties.StorageProperties;
 import com.vinaacademy.platform.feature.video.entity.Video;
 import com.vinaacademy.platform.feature.video.enums.VideoStatus;
-import com.vinaacademy.platform.feature.video.properties.VideoProperties;
 import com.vinaacademy.platform.feature.video.repository.VideoRepository;
 import com.vinaacademy.platform.feature.video.utils.FFmpegUtils;
 import lombok.RequiredArgsConstructor;
@@ -13,15 +13,9 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Comparator;
-import java.util.Objects;
 import java.util.UUID;
 
 @Slf4j
@@ -29,29 +23,28 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class VideoProcessorService {
     private final VideoRepository videoRepository;
-    private final VideoProperties videoProperties;
     private final EmailService emailService;
-
-    //    @Async("videoTaskExecutor")
-    public int convertToHLS(String videoId, Path inputFilePath) throws InterruptedException, IOException {
-        // Tạo thư mục output HLS
-        Path outputDir = Paths.get(getHlsDir(), videoId);
-        return FFmpegUtils.convertToAdaptiveHLS(inputFilePath, outputDir);
-    }
+    private final StorageProperties storageProperties;
 
     @Async("videoTaskExecutor")
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void processVideo(UUID videoId, Path destinationFile) {
+    public void processVideo(UUID videoId, Path inputFile) {
         Video video = videoRepository.findById(videoId)
                 .orElseThrow(() -> BadRequestException.message("Video not found"));
-        String videoIdStr = videoId.toString();
 
         try {
-            int exitCode = convertToHLS(videoIdStr, destinationFile);
+            Path outputDir = Paths.get(storageProperties.getHlsDir(), String.valueOf(videoId));
+            Path thumbnailFilePath = Paths.get(storageProperties.getThumbnailDir(), videoId + ".jpg");
+            int exitCode = FFmpegUtils.convertToAdaptiveHLS(inputFile, outputDir, thumbnailFilePath);
 
             if (exitCode == 0) {
                 log.info("✅ Video " + videoId + " converted to HLS successfully.");
                 video.setStatus(VideoStatus.READY);
+                video.setHlsPath(outputDir.toString());
+                video.setDuration(FFmpegUtils.getVideoDurationInSeconds(inputFile));
+                if (video.getThumbnailUrl() == null) {
+                    video.setThumbnailUrl(thumbnailFilePath.toString());
+                }
 
             } else {
                 log.error("❌ FFmpeg error for videoId: " + videoId);
@@ -77,14 +70,5 @@ public class VideoProcessorService {
         } finally {
             videoRepository.save(video);
         }
-    }
-
-
-    private String getUploadDir() {
-        return videoProperties.getUploadDir();
-    }
-
-    private String getHlsDir() {
-        return videoProperties.getHlsDir();
     }
 }

@@ -1,64 +1,63 @@
 package com.vinaacademy.platform.feature.instructor.repository;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
+import com.vinaacademy.platform.feature.course.entity.Course;
+import com.vinaacademy.platform.feature.instructor.CourseInstructor;
+import com.vinaacademy.platform.feature.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import com.vinaacademy.platform.feature.course.entity.Course;
-import com.vinaacademy.platform.feature.instructor.CourseInstructor;
-import com.vinaacademy.platform.feature.user.entity.User;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @Repository
 public interface CourseInstructorRepository extends JpaRepository<CourseInstructor, Long> {
     /**
      * Find a course instructor by instructor and course
-     * 
+     *
      * @param instructor the instructor
      * @param course the course
      * @return the course instructor if found
      */
     Optional<CourseInstructor> findByInstructorAndCourse(User instructor, Course course);
-    
+
     /**
      * Find all course instructors by instructor
-     * 
+     *
      * @param instructor the instructor
      * @return list of course instructors
      */
     List<CourseInstructor> findByInstructor(User instructor);
-    
+
     /**
      * Find all course instructors by course
-     * 
+     *
      * @param course the course
      * @return list of course instructors
      */
     List<CourseInstructor> findByCourse(Course course);
-    
+
     /**
      * Find the owner of a course
-     * 
+     *
      * @param course the course
      * @return the course instructor who is the owner
      */
     Optional<CourseInstructor> findByCourseAndIsOwnerTrue(Course course);
-    
+
     /**
      * Count the number of instructors for a course
-     * 
+     *
      * @param course the course
      * @return the number of instructors
      */
     long countByCourse(Course course);
-    
+
     /**
      * Check if a user is an instructor of a course
-     * 
+     *
      * @param instructorId the instructor ID
      * @param courseId the course ID
      * @return true if the user is an instructor of the course
