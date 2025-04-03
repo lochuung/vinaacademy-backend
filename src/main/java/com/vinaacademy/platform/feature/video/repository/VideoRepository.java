@@ -1,0 +1,24 @@
+package com.vinaacademy.platform.feature.video.repository;
+
+import com.vinaacademy.platform.feature.video.entity.Video;
+import io.lettuce.core.dynamic.annotation.Param;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+
+@Repository
+public interface VideoRepository extends JpaRepository<Video, Long> {
+    @Query("SELECT v FROM Video v JOIN v.section s JOIN s.course c WHERE c.id = :courseId")
+    List<Video> findByCourseId(@Param("courseId") Long courseId);
+
+    @Query("SELECT v FROM Video v JOIN v.section s JOIN s.course c " +
+            "JOIN c.enrollments e WHERE e.user.id = :userId")
+    List<Video> findByEnrolledUserId(@Param("userId") Long userId);
+
+    @Query("SELECT COUNT(e) > 0 FROM Video v " +
+            "JOIN v.section s JOIN s.course c " +
+            "JOIN c.enrollments e WHERE v.id = :videoId AND e.user.id = :userId")
+    boolean isUserEnrolledInCourse(@Param("videoId") Long videoId, @Param("userId") Long userId);
+}
