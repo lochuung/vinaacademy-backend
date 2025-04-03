@@ -1,4 +1,4 @@
-package com.vinaacademy.platform.feature.video.dto;
+package com.vinaacademy.platform.feature.review.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,12 +12,14 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class VideoNoteDto {
+public class CourseReviewDto {
     private Long id;
+    private UUID courseId;
+    private String courseName;
+    private int rating;
+    private String review;
     private UUID userId;
-    private Long videoId;
-    private Long timeStampSeconds;
-    private String noteText;
+    private String userFullName;
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
 }

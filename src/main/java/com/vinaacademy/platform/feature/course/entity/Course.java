@@ -8,7 +8,7 @@ import com.vinaacademy.platform.feature.course.enums.CourseStatus;
 import com.vinaacademy.platform.feature.enrollment.Enrollment;
 import com.vinaacademy.platform.feature.instructor.CourseInstructor;
 import com.vinaacademy.platform.feature.order_payment.entity.OrderItem;
-import com.vinaacademy.platform.feature.review.CourseReview;
+import com.vinaacademy.platform.feature.review.entity.CourseReview;
 import jakarta.persistence.*;
 import lombok.*;
 
