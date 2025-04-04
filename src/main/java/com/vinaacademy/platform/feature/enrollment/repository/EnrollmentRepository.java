@@ -67,6 +67,7 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
     List<Enrollment> findByProgressPercentageLessThan(Double percentage);
 
     //Cập nhật trạng thái cho tất cả đăng ký của một khóa học
+    @Modifying
     @Query("UPDATE Enrollment e SET e.status = :status WHERE e.course.id = :courseId")
     void updateStatusByCourseId(@Param("courseId") UUID courseId, @Param("status") ProgressStatus status);
 
