@@ -1,4 +1,4 @@
-package com.vinaacademy.platform.feature.review;
+package com.vinaacademy.platform.feature.review.entity;
 
 import com.vinaacademy.platform.feature.common.entity.BaseEntity;
 import com.vinaacademy.platform.feature.course.entity.Course;
