@@ -9,11 +9,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -24,6 +22,7 @@ public class AuthenticationController {
 
     @Operation(summary = "Register new user")
     @PostMapping("/register")
+    @ResponseStatus(HttpStatus.CREATED )
     public ApiResponse<?> register(@RequestBody @Valid RegisterRequest registerRequest) {
         authenticationService.register(registerRequest);
         return ApiResponse.success("Vui lòng kiểm tra email để xác thực tài khoản");

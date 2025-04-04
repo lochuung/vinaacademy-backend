@@ -1,7 +1,10 @@
 package com.vinaacademy.platform.feature.user.service;
 
+import com.vinaacademy.platform.feature.user.UserMapper;
 import com.vinaacademy.platform.feature.user.UserRepository;
+import com.vinaacademy.platform.feature.user.auth.utils.SecurityUtils;
 import com.vinaacademy.platform.feature.user.constant.AuthConstants;
+import com.vinaacademy.platform.feature.user.dto.UserDto;
 import com.vinaacademy.platform.feature.user.entity.User;
 import com.vinaacademy.platform.feature.user.role.entity.Role;
 import com.vinaacademy.platform.feature.user.role.repository.RoleRepository;
@@ -19,6 +22,7 @@ public class UserServiceImpl implements UserService {
     private final RoleRepository roleRepository;
 
     private final PasswordEncoder passwordEncoder;
+    private final SecurityUtils securityUtils;
 
     @Override
     @Transactional
@@ -75,5 +79,14 @@ public class UserServiceImpl implements UserService {
         userRepository.save(instructor);
         userRepository.save(student);
 
+    }
+
+    @Override
+    public UserDto getCurrentUser() {
+        User user = securityUtils.getCurrentUser();
+        if (user == null) {
+            throw new IllegalArgumentException("User not found");
+        }
+        return UserMapper.INSTANCE.toDto(user);
     }
 }

@@ -21,7 +21,7 @@ public class RegisterRequest {
     @Email(message = "Email không hợp lệ")
     private String email;
     @NotBlank(message = "Vui lòng nhập mật khẩu")
-    @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[a-zA-Z\\d]{8,}$", message = "Mật khẩu phải chứa ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường và số")
+    @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{8,}$", message = "Mật khẩu phải chứa ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường và số")
     private String password;
     @NotBlank(message = "Vui lòng nhập lại mật khẩu")
     private String retypedPassword;

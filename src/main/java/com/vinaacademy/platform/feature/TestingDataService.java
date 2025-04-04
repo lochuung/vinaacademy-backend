@@ -54,7 +54,7 @@ public class TestingDataService {
 
         User admin = User.builder()
                 .username("admin")
-                .password("admin")
+                .password("admin123")
                 .email("locn562836@gmail.com")
                 .enabled(true)
                 .roles(Set.of(roleRepository.findByCode(AuthConstants.ADMIN_ROLE)))
@@ -63,7 +63,7 @@ public class TestingDataService {
 
         User staff = User.builder()
                 .username("staff")
-                .password("staff")
+                .password("staff123")
                 .email("huuloc2155@gmail.com")
                 .enabled(true)
                 .roles(Set.of(roleRepository.findByCode(AuthConstants.STAFF_ROLE)))
@@ -72,7 +72,7 @@ public class TestingDataService {
 
         User instructor = User.builder()
                 .username("instructor")
-                .password("instructor")
+                .password("instructor123")
                 .email("linhpht263@outlook.com.vn")
                 .enabled(true)
                 .roles(Set.of(roleRepository.findByCode(AuthConstants.INSTRUCTOR_ROLE)))
@@ -81,7 +81,7 @@ public class TestingDataService {
 
         User student = User.builder()
                 .username("student")
-                .password("student")
+                .password("student123")
                 .email("trihung987@gmail.com")
                 .enabled(true)
                 .roles(Set.of(roleRepository.findByCode(AuthConstants.STUDENT_ROLE)))
