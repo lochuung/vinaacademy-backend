@@ -80,6 +80,8 @@ public class TestingDataService {
                 .email("linhpht263@outlook.com.vn")
                 .enabled(true)
                 .roles(Set.of(roleRepository.findByCode(AuthConstants.INSTRUCTOR_ROLE)))
+                .fullName("Linh Phan")
+                .description("ABCxyz")
                 .build();
         instructor.setPassword(passwordEncoder.encode(instructor.getPassword()));
 

@@ -2,7 +2,9 @@ package com.vinaacademy.platform.feature.course;
 
 import com.vinaacademy.platform.feature.common.response.ApiResponse;
 import com.vinaacademy.platform.feature.course.dto.CourseDto;
+import com.vinaacademy.platform.feature.course.dto.CourseDetailsResponse;
 import com.vinaacademy.platform.feature.course.dto.CourseRequest;
+import com.vinaacademy.platform.feature.course.dto.CourseSearchRequest;
 import com.vinaacademy.platform.feature.course.service.CourseService;
 import com.vinaacademy.platform.feature.user.auth.annotation.HasAnyRole;
 import com.vinaacademy.platform.feature.user.constant.AuthConstants;
@@ -31,10 +33,10 @@ public class CourseController {
         return ApiResponse.success(courseService.createCourse(request));
     }
     
-    @GetMapping
-    public ApiResponse<List<CourseDto>> getCourses() {
-    	log.debug("get list course");
-        return ApiResponse.success(courseService.getCourses());
+    @GetMapping("/{slug}")
+    public ApiResponse<CourseDetailsResponse> getCourseDetails(@PathVariable String slug) {
+        log.debug("Getting detailed course information for slug: {}", slug);
+        return ApiResponse.success(courseService.getCourse(slug));
     }
     
     @GetMapping("/pagination")
@@ -48,6 +50,19 @@ public class CourseController {
         Page<CourseDto> coursePage = courseService.getCoursesPaginated(
                 page, size, sortBy, sortDirection, categorySlug, minRating);
     	log.debug("get list course by sort");
+        return ApiResponse.success(coursePage.toList());
+    }
+    
+    @GetMapping("/search")
+    public ApiResponse<List<CourseDto>> searchCourses(
+            @Valid @ModelAttribute CourseSearchRequest searchRequest,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "name") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDirection) {
+        Page<CourseDto> coursePage = courseService.searchCourses(
+                searchRequest, page, size, sortBy, sortDirection);
+        log.debug("Filter courses with criteria: {}", searchRequest);
         return ApiResponse.success(coursePage.toList());
     }
 

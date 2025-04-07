@@ -2,19 +2,22 @@ package com.vinaacademy.platform.feature.course.repository;
 
 import com.vinaacademy.platform.feature.course.entity.Course;
 import com.vinaacademy.platform.feature.course.enums.CourseStatus;
+import com.vinaacademy.platform.feature.course.enums.CourseLevel;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface CourseRepository extends JpaRepository<Course, UUID> {
+public interface CourseRepository extends JpaRepository<Course, UUID>, JpaSpecificationExecutor<Course> {
 
     Optional<Course> findBySlug(String slug);
 
@@ -74,4 +77,26 @@ public interface CourseRepository extends JpaRepository<Course, UUID> {
     //Đếm số lượng khóa học mà người dùng đã tạo
     @Query("SELECT COUNT(c) FROM Course c JOIN c.instructors i WHERE i.instructor.id = :instructorId")
     long countCoursesByInstructorId(@Param("instructorId") UUID instructorId);
+
+    //Tìm kiếm khóa học theo nhiều tiêu chí
+    @Query("SELECT c FROM Course c WHERE " +
+            "(:keyword IS NULL OR LOWER(c.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+            "LOWER(c.description) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
+            "AND (:status IS NULL OR c.status = :status) " +
+            "AND (:categoryId IS NULL OR c.category.id = :categoryId) " +
+            "AND (:level IS NULL OR c.level = :level) " +
+            "AND (:language IS NULL OR c.language = :language) " +
+            "AND (:minPrice IS NULL OR c.price >= :minPrice) " +
+            "AND (:maxPrice IS NULL OR c.price <= :maxPrice) " +
+            "AND (:minRating IS NULL OR c.rating >= :minRating)")
+    Page<Course> advancedSearchCourses(
+            @Param("keyword") String keyword,
+            @Param("status") CourseStatus status,
+            @Param("categoryId") UUID categoryId,
+            @Param("level") CourseLevel level,
+            @Param("language") String language,
+            @Param("minPrice") BigDecimal minPrice,
+            @Param("maxPrice") BigDecimal maxPrice,
+            @Param("minRating") Double minRating,
+            Pageable pageable);
 }
