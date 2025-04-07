@@ -56,7 +56,7 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
     //Thống kê số lượng đăng ký khóa học theo ngày
     @Query("SELECT DATE(e.startAt) as date, COUNT(e) as count FROM Enrollment e " +
             "WHERE e.startAt BETWEEN :startDate AND :endDate " +
-            "GROUP BY DATE(e.startAt) ORDER BY date")
+            "GROUP BY DATE(e.startAt) ORDER BY DATE(e.startAt)")
     List<Object[]> countEnrollmentsByDay(@Param("startDate") LocalDateTime startDate,
                                          @Param("endDate") LocalDateTime endDate);
 
