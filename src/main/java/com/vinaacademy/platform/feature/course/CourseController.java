@@ -40,7 +40,7 @@ public class CourseController {
     }
     
     @GetMapping("/pagination")
-    public ApiResponse<List<CourseDto>> getCoursesPaginated(
+    public ApiResponse<Page<CourseDto>> getCoursesPaginated(
     		@RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size,
             @RequestParam(defaultValue = "name") String sortBy,
@@ -50,11 +50,11 @@ public class CourseController {
         Page<CourseDto> coursePage = courseService.getCoursesPaginated(
                 page, size, sortBy, sortDirection, categorySlug, minRating);
     	log.debug("get list course by sort");
-        return ApiResponse.success(coursePage.toList());
+        return ApiResponse.success(coursePage);
     }
     
     @GetMapping("/search")
-    public ApiResponse<List<CourseDto>> searchCourses(
+    public ApiResponse<Page<CourseDto>> searchCourses(
             @Valid @ModelAttribute CourseSearchRequest searchRequest,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -63,7 +63,7 @@ public class CourseController {
         Page<CourseDto> coursePage = courseService.searchCourses(
                 searchRequest, page, size, sortBy, sortDirection);
         log.debug("Filter courses with criteria: {}", searchRequest);
-        return ApiResponse.success(coursePage.toList());
+        return ApiResponse.success(coursePage);
     }
 
     @HasAnyRole({AuthConstants.ADMIN_ROLE, AuthConstants.INSTRUCTOR_ROLE})
