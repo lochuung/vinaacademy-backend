@@ -13,7 +13,7 @@ public interface PaymentMapper {
 	
 	@Mapping(source = "order.id", target = "orderId")
 	@Mapping(target = "urlPayment", ignore = true)
-    PaymentDto toDTO(Payment payment);
+    PaymentDto toDTO(Payment payment); 
 
 	List<PaymentDto> toDTOList(List<Payment> payments);
 }
