@@ -1,6 +1,7 @@
 package com.vinaacademy.platform.feature.course.mapper;
 
 
+import com.vinaacademy.platform.feature.course.dto.CourseDetailsResponse;
 import com.vinaacademy.platform.feature.course.dto.CourseDto;
 import com.vinaacademy.platform.feature.course.dto.CourseRequest;
 import com.vinaacademy.platform.feature.course.entity.Course;
@@ -14,6 +15,14 @@ public interface CourseMapper {
 
     @Mapping(source = "category.name", target = "categoryName")
     CourseDto toDTO(Course course);
+    
+    @Mapping(source = "category.name", target = "categoryName")
+    @Mapping(source = "category.slug", target = "categorySlug")
+    @Mapping(target = "instructors", ignore = true)
+    @Mapping(target = "ownerInstructor", ignore = true)
+    @Mapping(target = "sections", ignore = true)
+    @Mapping(target = "reviews", ignore = true)
+    CourseDetailsResponse toCourseDetailsResponse(Course course);
 
     @Mapping(target = "category", ignore = true)
     @Mapping(target = "cartItems", ignore = true)

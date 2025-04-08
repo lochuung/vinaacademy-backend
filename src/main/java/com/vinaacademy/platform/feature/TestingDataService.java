@@ -1,16 +1,16 @@
 package com.vinaacademy.platform.feature;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vinaacademy.platform.feature.category.Category;
 import com.vinaacademy.platform.feature.category.repository.CategoryRepository;
+import com.vinaacademy.platform.feature.common.utils.SlugUtils;
 import com.vinaacademy.platform.feature.course.entity.Course;
 import com.vinaacademy.platform.feature.course.enums.CourseLevel;
 import com.vinaacademy.platform.feature.course.enums.CourseStatus;
-import com.vinaacademy.platform.feature.course.enums.LessonType;
 import com.vinaacademy.platform.feature.course.repository.CourseRepository;
 import com.vinaacademy.platform.feature.instructor.CourseInstructor;
 import com.vinaacademy.platform.feature.instructor.repository.CourseInstructorRepository;
-import com.vinaacademy.platform.feature.lesson.dto.LessonRequest;
-import com.vinaacademy.platform.feature.lesson.service.LessonService;
 import com.vinaacademy.platform.feature.section.entity.Section;
 import com.vinaacademy.platform.feature.section.repository.SectionRepository;
 import com.vinaacademy.platform.feature.user.UserRepository;
@@ -19,15 +19,20 @@ import com.vinaacademy.platform.feature.user.entity.User;
 import com.vinaacademy.platform.feature.user.role.entity.Role;
 import com.vinaacademy.platform.feature.user.role.repository.RoleRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigDecimal;
-import java.util.Set;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class TestingDataService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
@@ -35,7 +40,6 @@ public class TestingDataService {
     private final CourseRepository courseRepository;
     private final SectionRepository sectionRepository;
     private final CourseInstructorRepository courseInstructorRepository;
-    private final LessonService lessonService;
 
     private final PasswordEncoder passwordEncoder;
 
@@ -76,6 +80,8 @@ public class TestingDataService {
                 .email("linhpht263@outlook.com.vn")
                 .enabled(true)
                 .roles(Set.of(roleRepository.findByCode(AuthConstants.INSTRUCTOR_ROLE)))
+                .fullName("Linh Phan")
+                .description("ABCxyz")
                 .build();
         instructor.setPassword(passwordEncoder.encode(instructor.getPassword()));
 
@@ -94,334 +100,232 @@ public class TestingDataService {
         userRepository.save(student);
     }
 
+    /**
+     * Create seed data for categories and courses from JSON file
+     * All courses will have empty sections, zero students, and zero ratings
+     */
     @Transactional
-    public void createTestingCategoryData() {
-        if (categoryRepository.count() > 0) {
+    public void createSeedDataFromJson() {
+        if (courseRepository.count() > 0) {
+            log.info("Courses already exist in the database, skipping seed data creation");
             return;
         }
 
-        // Create root categories
-        Category root1 = Category.builder()
-                .name("IT")
-                .slug("it")
-                .build();
+        try {
+            // Get instructor user or create one if not exists
+            User instructor = userRepository.findByUsername("instructor")
+                    .orElseGet(() -> {
+                        User newInstructor = User.builder()
+                                .username("instructor")
+                                .password(passwordEncoder.encode("instructor123"))
+                                .email("instructor@example.com")
+                                .enabled(true)
+                                .roles(Set.of(roleRepository.findByCode(AuthConstants.INSTRUCTOR_ROLE)))
+                                .build();
+                        return userRepository.save(newInstructor);
+                    });
 
-        Category root2 = Category.builder()
-                .name("Marketing")
-                .slug("marketing")
-                .build();
+            // Read the JSON data from the file
+            ObjectMapper objectMapper = new ObjectMapper();
+            ClassPathResource resource = new ClassPathResource("data/categories-courses.json");
+            try (InputStream inputStream = resource.getInputStream()) {
+                JsonNode rootNode = objectMapper.readTree(inputStream);
+                JsonNode categoriesNode = rootNode.get("categories");
+                JsonNode coursesNode = rootNode.get("courses");
 
-        Category root3 = Category.builder()
-                .name("Design")
-                .slug("design")
-                .build();
+                // Create categories and build a map for quick lookup
+                Map<String, Category> categoryMap = createCategoriesFromJson(categoriesNode);
 
-        categoryRepository.save(root1);
-        categoryRepository.save(root2);
-        categoryRepository.save(root3);
+                // Create courses with empty sections
+                createCoursesFromJson(coursesNode, categoryMap, instructor);
 
-        // Create sub categories
-        Category sub1 = Category.builder()
-                .name("Java")
-                .slug("java")
-                .parent(root1)
-                .build();
-
-        Category sub2 = Category.builder()
-                .name("Python")
-                .slug("python")
-                .parent(root1)
-                .build();
-
-        Category sub3 = Category.builder()
-                .name("Digital Marketing")
-                .slug("digital-marketing")
-                .parent(root2)
-                .build();
-
-        Category sub4 = Category.builder()
-                .name("Graphic Design")
-                .slug("graphic-design")
-                .parent(root3)
-                .build();
-
-        categoryRepository.save(sub1);
-        categoryRepository.save(sub2);
-        categoryRepository.save(sub3);
-        categoryRepository.save(sub4);
-
-        // Create sub sub categories
-        Category subSub1 = Category.builder()
-                .name("Spring Boot")
-                .slug("spring-boot")
-                .parent(sub1)
-                .build();
-
-        Category subSub2 = Category.builder()
-                .name("Spring Cloud")
-                .slug("spring-cloud")
-                .parent(sub1)
-                .build();
-
-        Category subSub3 = Category.builder()
-                .name("Django")
-                .slug("django")
-                .parent(sub2)
-                .build();
-
-        Category subSub4 = Category.builder()
-                .name("Flask")
-                .slug("flask")
-                .parent(sub2)
-                .build();
-
-        categoryRepository.save(subSub1);
-        categoryRepository.save(subSub2);
-        categoryRepository.save(subSub3);
-        categoryRepository.save(subSub4);
-
+                log.info("Successfully created seed data from JSON file");
+            }
+        } catch (IOException e) {
+            log.error("Error reading categories-courses.json", e);
+        } catch (Exception e) {
+            log.error("Error creating seed data", e);
+        }
     }
 
-    @Transactional
-    public void createTestingCourseData() {
-        if (courseRepository.count() > 0) {
-            return;
+    /**
+     * Create categories from JSON and return a map of id to Category object
+     */
+    private Map<String, Category> createCategoriesFromJson(JsonNode categoriesNode) {
+        Map<String, Category> categoryMap = new HashMap<>();
+        Map<String, Category> tempMap = new HashMap<>();
+        Set<String> existingSlugs = new HashSet<>(); // Keep track of existing slugs
+
+        // First pass: create all categories without parent relationships
+        for (JsonNode categoryNode : categoriesNode) {
+            String id = categoryNode.get("id").asText();
+            String name = categoryNode.get("name").asText();
+
+            // Generate slug using SlugUtils if needed, or use the one from JSON
+            String originalSlug;
+            if (categoryNode.has("slug") && !categoryNode.get("slug").isNull()) {
+                originalSlug = categoryNode.get("slug").asText();
+
+                if (existingSlugs.contains(originalSlug)) {
+                    originalSlug = SlugUtils.toSlug(name);
+                }
+            } else {
+                originalSlug = SlugUtils.toSlug(name);
+            }
+
+            // Check for duplicate slug and make it unique if needed
+            String slug = ensureUniqueSlug(originalSlug, existingSlugs);
+
+            Category category = Category.builder()
+                    .name(name)
+                    .slug(slug)
+                    .build();
+
+            tempMap.put(id, category);
         }
 
-        // Get instructor user
-        User instructor = userRepository.findByUsername("instructor")
-                .orElseThrow(() -> new RuntimeException("Instructor user not found"));
-        
-        // Get categories
-        Category javaCategory = categoryRepository.findBySlug("java")
-                .orElseThrow(() -> new RuntimeException("Java category not found"));
-        
-        Category pythonCategory = categoryRepository.findBySlug("python")
-                .orElseThrow(() -> new RuntimeException("Python category not found"));
-        
-        Category springBootCategory = categoryRepository.findBySlug("spring-boot")
-                .orElseThrow(() -> new RuntimeException("Spring Boot category not found"));
-        
-        // Create Java course
-        Course javaCourse = Course.builder()
-                .name("Java Programming Fundamentals")
-                .description("Learn the basics of Java programming language")
-                .slug("java-programming-fundamentals")
-                .price(new BigDecimal("299000"))
-                .level(CourseLevel.BEGINNER)
-                .status(CourseStatus.PUBLISHED)
-                .language("Tiếng Việt")
-                .category(javaCategory)
-                .build();
-        
-        courseRepository.save(javaCourse);
-        
-        // Assign instructor to course
-        CourseInstructor courseInstructor = CourseInstructor.builder()
-                .instructor(instructor)
-                .course(javaCourse)
-                .isOwner(true)
-                .build();
-        
-        courseInstructorRepository.save(courseInstructor);
-        
-        // Create sections for Java course
-        Section section1 = Section.createSection(
-                null, 
-                javaCourse,
-                "Introduction to Java",
-                0,
-                null
-        );
-        
-        Section section2 = Section.createSection(
-                null, 
-                javaCourse,
-                "Java Basics",
-                1,
-                null
-        );
-        
-        // Add a section for video content
-        Section section3 = Section.createSection(
-                null,
-                javaCourse,
-                "Java Videos",
-                2,
-                null
-        );
-        
-        sectionRepository.save(section1);
-        sectionRepository.save(section2);
-        sectionRepository.save(section3);
-        
-        // Create lessons for Section 1
-        LessonRequest lesson1 = LessonRequest.builder()
-                .title("What is Java?")
-                .type(LessonType.READING)
-                .content("<p>Java is a high-level, class-based, object-oriented programming language...</p>")
-                .sectionId(section1.getId())
-                .free(true)
-                .orderIndex(0)
-                .build();
-        
-        LessonRequest lesson2 = LessonRequest.builder()
-                .title("Setting up Java Development Environment")
-                .type(LessonType.READING)
-                .content("<p>In this lesson, we'll learn how to set up Java on your computer...</p>")
-                .sectionId(section1.getId())
-                .free(false)
-                .orderIndex(1)
-                .build();
-        
-        LessonRequest lesson3 = LessonRequest.builder()
-                .title("Java Quiz")
-                .type(LessonType.QUIZ)
-                .sectionId(section1.getId())
-                .free(false)
-                .orderIndex(2)
-                .passPoint(7.0)
-                .totalPoint(10.0)
-                .duration(30)
-                .build();
-        
-        // Create lessons for Section 2
-        LessonRequest lesson4 = LessonRequest.builder()
-                .title("Variables and Data Types")
-                .type(LessonType.READING)
-                .content("<p>In this lesson, we'll learn about variables and data types in Java...</p>")
-                .sectionId(section2.getId())
-                .free(false)
-                .orderIndex(0)
-                .build();
-        
-        LessonRequest lesson5 = LessonRequest.builder()
-                .title("Control Flow Statements")
-                .type(LessonType.READING)
-                .content("<p>In this lesson, we'll learn about control flow statements in Java...</p>")
-                .sectionId(section2.getId())
-                .free(false)
-                .orderIndex(1)
-                .build();
-        
-        // Create video lessons for Section 3
-        LessonRequest videoLesson1 = LessonRequest.builder()
-                .title("Java Introduction Video")
-                .type(LessonType.VIDEO)
-                .sectionId(section3.getId())
-                .free(true)
-                .orderIndex(0)
-                .thumbnailUrl("https://example.com/thumbnails/java-intro.jpg")
-                .build();
-        
-        LessonRequest videoLesson2 = LessonRequest.builder()
-                .title("Setting Up Java Environment - Video Tutorial")
-                .type(LessonType.VIDEO)
-                .sectionId(section3.getId())
-                .free(false)
-                .orderIndex(1)
-                .thumbnailUrl("https://example.com/thumbnails/java-setup.jpg")
-                .build();
-        
-        LessonRequest videoLesson3 = LessonRequest.builder()
-                .title("Object-Oriented Programming in Java")
-                .type(LessonType.VIDEO)
-                .sectionId(section3.getId())
-                .free(false)
-                .orderIndex(2)
-                .thumbnailUrl("https://example.com/thumbnails/java-oop.jpg")
-                .build();
-        
-        // Create lessons with instructor as explicit author
-        lessonService.createLesson(lesson1, instructor);
-        lessonService.createLesson(lesson2, instructor);
-        lessonService.createLesson(lesson3, instructor);
-        lessonService.createLesson(lesson4, instructor);
-        lessonService.createLesson(lesson5, instructor);
-        
-        // Create video lessons
-        lessonService.createLesson(videoLesson1, instructor);
-        lessonService.createLesson(videoLesson2, instructor);
-        lessonService.createLesson(videoLesson3, instructor);
-        
-        // Create Spring Boot course
-        Course springBootCourse = Course.builder()
-                .name("Spring Boot for Beginners")
-                .description("Learn Spring Boot framework for Java applications")
-                .slug("spring-boot-for-beginners")
-                .price(new BigDecimal("499000"))
-                .level(CourseLevel.INTERMEDIATE)
-                .status(CourseStatus.PUBLISHED)
-                .language("Tiếng Việt")
-                .category(springBootCategory)
-                .build();
-        
-        courseRepository.save(springBootCourse);
-        
-        // Create a section for Spring Boot videos
-        Section springBootVideosSection = Section.createSection(
-                null,
-                springBootCourse,
-                "Spring Boot Video Tutorials",
-                0,
-                null
-        );
-        
-        sectionRepository.save(springBootVideosSection);
-        
-        // Add video lessons to Spring Boot course
-        LessonRequest springBootVideo1 = LessonRequest.builder()
-                .title("Introduction to Spring Boot")
-                .type(LessonType.VIDEO)
-                .sectionId(springBootVideosSection.getId())
-                .free(true)
-                .orderIndex(0)
-                .thumbnailUrl("https://example.com/thumbnails/spring-boot-intro.jpg")
-                .build();
-        
-        LessonRequest springBootVideo2 = LessonRequest.builder()
-                .title("Creating Your First Spring Boot Application")
-                .type(LessonType.VIDEO)
-                .sectionId(springBootVideosSection.getId())
-                .free(false)
-                .orderIndex(1)
-                .thumbnailUrl("https://example.com/thumbnails/spring-boot-first-app.jpg")
-                .build();
-        
-        // Create Spring Boot video lessons
-        lessonService.createLesson(springBootVideo1, instructor);
-        lessonService.createLesson(springBootVideo2, instructor);
-        
-        // Assign instructor to Spring Boot course
-        CourseInstructor courseInstructor2 = CourseInstructor.builder()
-                .instructor(instructor)
-                .course(springBootCourse)
-                .isOwner(true)
-                .build();
-        
-        courseInstructorRepository.save(courseInstructor2);
-        
-        // Create Python course
-        Course pythonCourse = Course.builder()
-                .name("Python for Data Science")
-                .description("Learn Python programming for data analysis and visualization")
-                .slug("python-for-data-science")
-                .price(new BigDecimal("399000"))
-                .level(CourseLevel.BEGINNER)
-                .status(CourseStatus.PUBLISHED)
-                .language("Tiếng Việt")
-                .category(pythonCategory)
-                .build();
-        
-        courseRepository.save(pythonCourse);
-        
-        // Assign instructor to Python course
-        CourseInstructor courseInstructor3 = CourseInstructor.builder()
-                .instructor(instructor)
-                .course(pythonCourse)
-                .isOwner(true)
-                .build();
-        
-        courseInstructorRepository.save(courseInstructor3);
+        // Second pass: set parent relationships and save categories
+        for (JsonNode categoryNode : categoriesNode) {
+            String id = categoryNode.get("id").asText();
+            JsonNode parentIdNode = categoryNode.get("parentId");
+
+            Category category = tempMap.get(id);
+
+            if (parentIdNode != null && !parentIdNode.isNull()) {
+                String parentId = parentIdNode.asText();
+                Category parentCategory = tempMap.get(parentId);
+                category.setParent(parentCategory);
+            }
+
+            categoryRepository.save(category);
+            categoryMap.put(id, category);
+        }
+
+        log.info("Created {} categories from JSON", categoryMap.size());
+        return categoryMap;
+    }
+
+    /**
+     * Helper method to ensure slug uniqueness
+     */
+    private String ensureUniqueSlug(String originalSlug, Set<String> existingSlugs) {
+        String slug = originalSlug;
+        int counter = 1;
+        // If the slug already exists, append a counter until we have a unique slug
+        while (existingSlugs.contains(slug) || categoryRepository.findBySlug(slug).isPresent()) {
+            slug = originalSlug + "-" + counter;
+            counter++;
+        }
+        existingSlugs.add(slug);
+        return slug;
+    }
+
+    /**
+     * Create courses with empty sections from JSON
+     */
+    private void createCoursesFromJson(JsonNode coursesNode, Map<String, Category> categoryMap, User instructor) {
+        int count = 0;
+        for (JsonNode courseNode : coursesNode) {
+            // Skip incomplete course entries
+            if (!courseNode.has("id") || !courseNode.has("name") || !courseNode.has("slug") ||
+                    !courseNode.has("description") || !courseNode.has("categoryId")) {
+                continue;
+            }
+
+            try {
+                String name = courseNode.get("name").asText();
+                String description = courseNode.get("description").asText();
+                String slug = courseNode.get("slug").asText();
+                String image = courseNode.has("image") ? courseNode.get("image").asText() : "";
+
+                // Get category
+                String categoryId = courseNode.get("categoryId").asText();
+                Category category = categoryMap.get(categoryId);
+                if (category == null) {
+                    log.warn("Category with ID {} not found for course {}", categoryId, name);
+                    continue;
+                }
+
+                // Parse price - default to 0 if not present or invalid
+                BigDecimal price = BigDecimal.ZERO;
+                if (courseNode.has("price") && !courseNode.get("price").isNull()) {
+                    try {
+                        price = new BigDecimal(courseNode.get("price").asText());
+                    } catch (NumberFormatException e) {
+                        log.warn("Invalid price format for course {}: {}", name, e.getMessage());
+                    }
+                }
+
+                // Parse level - default to BEGINNER
+                CourseLevel level = CourseLevel.BEGINNER;
+                if (courseNode.has("level") && !courseNode.get("level").isNull()) {
+                    try {
+                        level = CourseLevel.valueOf(courseNode.get("level").asText());
+                    } catch (IllegalArgumentException e) {
+                        log.warn("Invalid level for course {}: {}", name, e.getMessage());
+                    }
+                }
+
+                // Get language - default to Tiếng Việt
+                String language = courseNode.has("language") ? courseNode.get("language").asText() : "Tiếng Việt";
+
+                // Create the course with zero students and ratings
+                Course course = Course.builder()
+                        .name(name)
+                        .description(description)
+                        .slug(slug)
+                        .image(image)
+                        .price(price)
+                        .level(level)
+                        .status(CourseStatus.PUBLISHED)
+                        .language(language)
+                        .category(category)
+                        .rating(0.0)
+                        .totalRating(0)
+                        .totalStudent(0)
+                        .totalSection(2)
+                        .totalLesson(0)
+                        .sections(new ArrayList<>())
+                        .instructors(new ArrayList<>())
+                        .build();
+
+                courseRepository.save(course);
+
+                // Assign instructor
+                CourseInstructor courseInstructor = CourseInstructor.builder()
+                        .instructor(instructor)
+                        .course(course)
+                        .isOwner(true)
+                        .build();
+
+                courseInstructorRepository.save(courseInstructor);
+
+                // Create introduction section
+                Section introSection = Section.createSection(
+                        null,
+                        course,
+                        "Giới thiệu khóa học",
+                        0,
+                        null
+                );
+                sectionRepository.save(introSection);
+
+                // Create content section
+                Section contentSection = Section.createSection(
+                        null,
+                        course,
+                        "Nội dung khóa học",
+                        1,
+                        null
+                );
+                sectionRepository.save(contentSection);
+
+                count++;
+            } catch (Exception e) {
+                log.error("Error creating course: {}", e.getMessage());
+            }
+        }
+
+        log.info("Created {} courses with empty sections from JSON", count);
     }
 }

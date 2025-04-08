@@ -21,9 +21,8 @@ public class VinaAcademyApplication {
     public CommandLineRunner createTestingData(TestingDataService testingDataService) {
         return args -> {
             // Create testing data here
-            testingDataService.createTestingAuthData();
-            testingDataService.createTestingCategoryData();
-            testingDataService.createTestingCourseData();
+            testingDataService.createTestingAuthData(); // Create roles and users
+            testingDataService.createSeedDataFromJson(); // Create categories and courses from JSON file
         };
     }
 }

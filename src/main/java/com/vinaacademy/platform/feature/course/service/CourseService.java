@@ -1,11 +1,12 @@
 package com.vinaacademy.platform.feature.course.service;
 
 import com.vinaacademy.platform.feature.course.dto.CourseDto;
+import com.vinaacademy.platform.feature.course.dto.CourseDetailsResponse;
 import com.vinaacademy.platform.feature.course.dto.CourseRequest;
+import com.vinaacademy.platform.feature.course.dto.CourseSearchRequest;
 import org.springframework.data.domain.Page;
 
 import java.util.List;
-
 
 public interface CourseService {
     List<CourseDto> getCourses();
@@ -20,7 +21,14 @@ public interface CourseService {
             String categorySlug,
             double minRating);
 
-    CourseDto getCourse(String slug);
+    Page<CourseDto> searchCourses(
+            CourseSearchRequest searchRequest,
+            int page,
+            int size,
+            String sortBy,
+            String sortDirection);
+
+    CourseDetailsResponse getCourse(String slug);
 
     CourseDto createCourse(CourseRequest request);
 
