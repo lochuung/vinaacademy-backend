@@ -5,6 +5,7 @@ import com.vinaacademy.platform.feature.enrollment.enums.ProgressStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -53,9 +54,9 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
     List<Enrollment> findByStatusAndCompleteAtIsNotNull(ProgressStatus status);
 
     //Thống kê số lượng đăng ký khóa học theo ngày
-    @Query("SELECT DATE(e.startAt) as date, COUNT(e) as count FROM Enrollment e " +
+    @Query("SELECT DATE(e.startAt), COUNT(e) FROM Enrollment e " +
             "WHERE e.startAt BETWEEN :startDate AND :endDate " +
-            "GROUP BY DATE(e.startAt) ORDER BY date")
+            "GROUP BY DATE(e.startAt) ORDER BY DATE(e.startAt)")
     List<Object[]> countEnrollmentsByDay(@Param("startDate") LocalDateTime startDate,
                                          @Param("endDate") LocalDateTime endDate);
 
