@@ -85,11 +85,61 @@ public class Course extends BaseEntity {
     public void addSection(Section section) {
         sections.add(section);
         section.setCourse(this);
+        totalSection = sections.size();
+        totalLesson = sections.stream()
+                              .mapToLong(s -> s.getLessons().size())
+                              .sum();
     }
 
     public void removeSection(Section section) {
         sections.remove(section);
         section.setCourse(null);
+        totalSection = sections.size();
+        totalLesson = sections.stream()
+                              .mapToLong(s -> s.getLessons().size())
+                              .sum();
+    }
+    
+    public void addEnrollment(Enrollment enrollment) {
+        if (enrollments == null) {
+            enrollments = new ArrayList<>();
+        }
+        enrollments.add(enrollment);
+        enrollment.setCourse(this);
+        totalStudent = enrollments.size();
+    }
+
+    public void removeEnrollment(Enrollment enrollment) {
+        if (enrollments != null) {
+            enrollments.remove(enrollment);
+            enrollment.setCourse(null);
+            totalStudent = enrollments.size();
+        }
+    }
+
+    public void addReview(CourseReview review) {
+        courseReviews.add(review);
+        review.setCourse(this);
+        recalculateRating();
+    }
+
+    public void removeReview(CourseReview review) {
+        courseReviews.remove(review);
+        review.setCourse(null);
+        recalculateRating();
+    }
+
+    private void recalculateRating() {
+        if (courseReviews.isEmpty()) {
+            rating = 0.0;
+            totalRating = 0;
+        } else {
+            totalRating = courseReviews.size();
+            rating = courseReviews.stream()
+                                  .mapToDouble(CourseReview::getRating)
+                                  .average()
+                                  .orElse(0.0);
+        }
     }
 
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL)
