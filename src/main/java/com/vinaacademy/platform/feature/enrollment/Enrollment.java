@@ -11,8 +11,6 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.time.LocalDateTime;
 
 @Data
-@Getter
-@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
