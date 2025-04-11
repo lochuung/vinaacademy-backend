@@ -13,6 +13,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -81,5 +82,12 @@ public class CourseController {
         // Only INSTRUCTOR can update their courses
         log.debug("Course updated");
         return ApiResponse.success(courseService.updateCourse(slug, request));
+    }
+
+    @GetMapping("/{slug}/learning")
+    @PreAuthorize("isAuthenticated()")
+    public ApiResponse<CourseDto> getCourseLearning(@PathVariable String slug) {
+        log.debug("Getting course learning information for slug: {}", slug);
+        return ApiResponse.success(courseService.getCourseLearning(slug));
     }
 }
