@@ -35,4 +35,6 @@ public interface CourseService {
     CourseDto updateCourse(String slug, CourseRequest request);
     
     void deleteCourse(String slug);
+
+    CourseDto getCourseLearning(String slug);
 }

@@ -7,7 +7,7 @@ import com.vinaacademy.platform.feature.enrollment.Enrollment;
 import com.vinaacademy.platform.feature.instructor.CourseInstructor;
 import com.vinaacademy.platform.feature.review.entity.CourseReview;
 import com.vinaacademy.platform.feature.user.role.entity.Role;
-import com.vinaacademy.platform.feature.video.entity.UserProgress;
+import com.vinaacademy.platform.feature.lesson.entity.UserProgress;
 import com.vinaacademy.platform.feature.video.entity.VideoNote;
 import jakarta.persistence.*;
 import lombok.*;

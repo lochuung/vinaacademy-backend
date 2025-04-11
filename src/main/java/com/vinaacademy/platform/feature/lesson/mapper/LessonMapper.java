@@ -2,6 +2,7 @@ package com.vinaacademy.platform.feature.lesson.mapper;
 
 import com.vinaacademy.platform.feature.lesson.dto.LessonDto;
 import com.vinaacademy.platform.feature.lesson.entity.Lesson;
+import com.vinaacademy.platform.feature.course.enums.LessonType;
 import com.vinaacademy.platform.feature.quiz.entity.Quiz;
 import com.vinaacademy.platform.feature.reading.Reading;
 import com.vinaacademy.platform.feature.video.entity.Video;
@@ -41,5 +42,90 @@ public interface LessonMapper {
             builder.totalPoint(quiz.getTotalPoint());
             builder.duration(quiz.getDuration());
         }
+    }
+
+    /**
+     * Factory method to create the appropriate Lesson type based on the DTO
+     * @param dto The LessonDto to convert
+     * @return The concrete implementation of Lesson
+     */
+    default Lesson toEntity(LessonDto dto) {
+        if (dto == null) {
+            return null;
+        }
+        
+        LessonType type = dto.getType();
+        if (type == null) {
+            // Default to Reading if type is not specified
+            type = LessonType.READING;
+        }
+        
+        switch (type) {
+            case VIDEO:
+                return createVideo(dto);
+            case QUIZ:
+                return createQuiz(dto);
+            case READING:
+            default:
+                return createReading(dto);
+        }
+    }
+    
+    /**
+     * Creates a Video entity from LessonDto
+     */
+    default Video createVideo(LessonDto dto) {
+        Video video = Video.builder()
+                .title(dto.getTitle())
+                .free(dto.isFree())
+                .orderIndex(dto.getOrderIndex())
+                .thumbnailUrl(dto.getThumbnailUrl())
+                .duration(dto.getVideoDuration())
+                .status(dto.getStatus())
+                .build();
+        
+        if (dto.getId() != null) {
+            video.setId(dto.getId());
+        }
+        
+        return video;
+    }
+    
+    /**
+     * Creates a Reading entity from LessonDto
+     */
+    default Reading createReading(LessonDto dto) {
+        Reading reading = Reading.builder()
+                .title(dto.getTitle())
+                .free(dto.isFree())
+                .orderIndex(dto.getOrderIndex())
+                .content(dto.getContent())
+                .build();
+        
+        if (dto.getId() != null) {
+            reading.setId(dto.getId());
+        }
+        
+        return reading;
+    }
+    
+    /**
+     * Creates a Quiz entity from LessonDto
+     */
+    default Quiz createQuiz(LessonDto dto) {
+        Quiz quiz = Quiz.builder()
+                .title(dto.getTitle())
+                .free(dto.isFree())
+                .orderIndex(dto.getOrderIndex())
+                .passPoint(dto.getPassPoint())
+                .totalPoint(dto.getTotalPoint())
+                .duration(dto.getDuration())
+                .build();
+        
+        if (dto.getId() != null) {
+            quiz.setId(dto.getId());
+        }
+        
+        return quiz;
     }
 }
