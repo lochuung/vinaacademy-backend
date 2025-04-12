@@ -233,7 +233,7 @@ public class CourseServiceImpl implements CourseService {
                 && !instructors.contains(currentUser)) {
             Enrollment courseEnrollment = enrollmentRepository.findByCourseAndUser(course, currentUser)
                     .orElseThrow(() -> BadRequestException.message("Người dùng không có quyền truy cập khóa học này"));
-            courseDto.setProgress(EnrollmentMapper.INSTANCE.toDto(courseEnrollment));
+            courseDto.setProgress(EnrollmentMapper.INSTANCE.toDto2(courseEnrollment));
         } else {
             courseDto.setProgress(new EnrollmentProgressDto());
         }

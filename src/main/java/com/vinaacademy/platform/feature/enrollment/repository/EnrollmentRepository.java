@@ -80,5 +80,7 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
 
     //Lấy tất cả đăng ký khóa học của một khóa học theo trạng thái (có phân trang)
     Page<Enrollment> findByCourseIdAndStatus(UUID courseId, ProgressStatus status, Pageable pageable);
+    
+    Optional<Enrollment> findByCourseAndUser(Course course, User currentUser);
 
 }

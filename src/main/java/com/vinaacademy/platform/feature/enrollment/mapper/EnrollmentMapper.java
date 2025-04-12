@@ -1,7 +1,7 @@
 package com.vinaacademy.platform.feature.enrollment.mapper;
 
 import com.vinaacademy.platform.feature.enrollment.Enrollment;
-
+import com.vinaacademy.platform.feature.enrollment.dto.EnrollmentProgressDto;
 import com.vinaacademy.platform.feature.enrollment.dto.EnrollmentResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -16,5 +16,7 @@ public interface EnrollmentMapper {
     @Mapping(source = "course.name", target = "courseName")
     @Mapping(source = "course.image", target = "courseImage")
     EnrollmentResponse toDto(Enrollment enrollment);
+    
+    EnrollmentProgressDto toDto2(Enrollment courseEnrollment);
 }
 
