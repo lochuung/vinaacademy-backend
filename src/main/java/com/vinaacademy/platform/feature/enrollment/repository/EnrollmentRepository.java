@@ -34,10 +34,7 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
     //Lấy tất cả đăng ký khóa học của một khóa học
     List<Enrollment> findByCourseId(UUID courseId);
 
-    //Lấy tất cả đăng ký khóa học của một khóa học (có phân trang)
-    Page<Enrollment> findByCourseId(UUID courseId, Pageable pageable);
-
-    //Lấy tất cả đăng ký khóa học của một người dùng theo trạng thái
+        //Lấy tất cả đăng ký khóa học của một người dùng theo trạng thái
     List<Enrollment> findByUserIdAndStatus(UUID userId, ProgressStatus status);
 
     //Lấy tất cả đăng ký khóa học của một người dùng theo trạng thái (có phân trang)
@@ -56,12 +53,11 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
     List<Enrollment> findByStatusAndCompleteAtIsNotNull(ProgressStatus status);
 
     //Thống kê số lượng đăng ký khóa học theo ngày
-    @Query("SELECT DATE(e.startAt) as date, COUNT(e) as count FROM Enrollment e " +
+    @Query("SELECT DATE(e.startAt), COUNT(e) FROM Enrollment e " +
             "WHERE e.startAt BETWEEN :startDate AND :endDate " +
             "GROUP BY DATE(e.startAt) ORDER BY DATE(e.startAt)")
     List<Object[]> countEnrollmentsByDay(@Param("startDate") LocalDateTime startDate,
                                          @Param("endDate") LocalDateTime endDate);
-
 
     //Tìm những đăng ký khóa học có tiến độ cao hơn một giá trị cụ thể
     List<Enrollment> findByProgressPercentageGreaterThanEqual(Double percentage);
@@ -78,5 +74,11 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
     @Query("SELECT e FROM Enrollment e WHERE e.user.id = :userId AND e.status = 'IN_PROGRESS'")
     List<Enrollment> findActiveEnrollmentsByUserId(@Param("userId") UUID userId);
 
-    Optional<Enrollment> findByCourseAndUser(Course course, User currentUser);
+
+    //Lấy tất cả đăng ký khóa học của một khóa học (có phân trang)
+    Page<Enrollment> findByCourseId(UUID courseId, Pageable pageable);
+
+    //Lấy tất cả đăng ký khóa học của một khóa học theo trạng thái (có phân trang)
+    Page<Enrollment> findByCourseIdAndStatus(UUID courseId, ProgressStatus status, Pageable pageable);
+
 }
