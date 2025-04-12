@@ -48,8 +48,10 @@ public class FFmpegUtils {
         String masterContent = "#EXTM3U\n" + masterPlaylistBuilder;
         Files.writeString(masterPlaylist, masterContent);
 
-        generateThumbnailAtHalfway(inputFilePath, thumbnailFilePath);
-        log.info("Thumbnail generated at: {}", thumbnailFilePath);
+        tryGenerateThumbnailAtTimestamp(inputFilePath, thumbnailFilePath, "00:00:01");
+
+//        generateThumbnailAtHalfway(inputFilePath, thumbnailFilePath);
+//        log.info("Thumbnail generated at: {}", thumbnailFilePath);
         return 0;
     }
 

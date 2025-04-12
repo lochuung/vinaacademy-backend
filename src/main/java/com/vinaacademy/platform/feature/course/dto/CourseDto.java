@@ -3,6 +3,8 @@ package com.vinaacademy.platform.feature.course.dto;
 import com.vinaacademy.platform.feature.common.dto.BaseDto;
 import com.vinaacademy.platform.feature.course.enums.CourseLevel;
 import com.vinaacademy.platform.feature.course.enums.CourseStatus;
+import com.vinaacademy.platform.feature.enrollment.dto.EnrollmentProgressDto;
+import com.vinaacademy.platform.feature.section.dto.SectionDto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -10,6 +12,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.UUID;
 
 @EqualsAndHashCode(callSuper = false)
@@ -17,9 +20,9 @@ import java.util.UUID;
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CourseDto extends BaseDto{
-	
-	private UUID id;
+public class CourseDto extends BaseDto {
+
+    private UUID id;
 
     private String image;
 
@@ -35,7 +38,7 @@ public class CourseDto extends BaseDto{
 
     private CourseStatus status;
 
-    private String language ;
+    private String language;
 
     private String categoryName;
 
@@ -47,6 +50,10 @@ public class CourseDto extends BaseDto{
 
     private long totalSection;
 
-    private long totalLesson; 
-	
+    private long totalLesson;
+
+    private EnrollmentProgressDto progress;
+
+    private List<SectionDto> sections;
+
 }

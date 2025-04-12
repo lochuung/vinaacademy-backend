@@ -1,7 +1,9 @@
 package com.vinaacademy.platform.feature.enrollment.repository;
 
+import com.vinaacademy.platform.feature.course.entity.Course;
 import com.vinaacademy.platform.feature.enrollment.Enrollment;
 import com.vinaacademy.platform.feature.enrollment.enums.ProgressStatus;
+import com.vinaacademy.platform.feature.user.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -72,9 +74,11 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
     @Query("SELECT e FROM Enrollment e WHERE e.user.id = :userId AND e.status = 'IN_PROGRESS'")
     List<Enrollment> findActiveEnrollmentsByUserId(@Param("userId") UUID userId);
 
+
     //Lấy tất cả đăng ký khóa học của một khóa học (có phân trang)
     Page<Enrollment> findByCourseId(UUID courseId, Pageable pageable);
 
     //Lấy tất cả đăng ký khóa học của một khóa học theo trạng thái (có phân trang)
     Page<Enrollment> findByCourseIdAndStatus(UUID courseId, ProgressStatus status, Pageable pageable);
+
 }
