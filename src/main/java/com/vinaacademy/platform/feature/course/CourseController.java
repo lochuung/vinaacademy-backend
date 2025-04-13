@@ -16,7 +16,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/courses")
@@ -89,5 +92,20 @@ public class CourseController {
     public ApiResponse<CourseDto> getCourseLearning(@PathVariable String slug) {
         log.debug("Getting course learning information for slug: {}", slug);
         return ApiResponse.success(courseService.getCourseLearning(slug));
+    }
+
+    @GetMapping("/id/{id}")
+    public ApiResponse<CourseDto> getCourseById(@PathVariable UUID id) {
+        log.debug("Getting course information for id: {}", id);
+        return ApiResponse.success(courseService.getCourseById(id));
+    }
+
+    @GetMapping("/slug/{id}")
+    public ApiResponse<Map<String, String>> getCourseSlugById(@PathVariable UUID id) {
+        log.debug("Getting course slug for id: {}", id);
+        String slug = courseService.getCourseSlugById(id);
+        Map<String, String> response = new HashMap<>();
+        response.put("slug", slug);
+        return ApiResponse.success(response);
     }
 }

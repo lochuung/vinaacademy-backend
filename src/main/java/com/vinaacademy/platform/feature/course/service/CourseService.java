@@ -7,6 +7,7 @@ import com.vinaacademy.platform.feature.course.dto.CourseSearchRequest;
 import org.springframework.data.domain.Page;
 
 import java.util.List;
+import java.util.UUID;
 
 public interface CourseService {
     List<CourseDto> getCourses();
@@ -37,4 +38,8 @@ public interface CourseService {
     void deleteCourse(String slug);
 
     CourseDto getCourseLearning(String slug);
+
+    CourseDto getCourseById(UUID id);
+
+    String getCourseSlugById(UUID id);
 }
