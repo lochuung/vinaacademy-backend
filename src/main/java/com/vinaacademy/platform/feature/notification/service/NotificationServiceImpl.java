@@ -2,6 +2,9 @@ package com.vinaacademy.platform.feature.notification.service;
 
 import com.vinaacademy.platform.feature.notification.dto.NotificationDTO;
 import com.vinaacademy.platform.exception.BadRequestException;
+import com.vinaacademy.platform.feature.course.repository.CourseRepository;
+import com.vinaacademy.platform.feature.enrollment.mapper.EnrollmentMapper;
+import com.vinaacademy.platform.feature.enrollment.repository.EnrollmentRepository;
 import com.vinaacademy.platform.feature.notification.dto.NotificationCreateDTO;
 import com.vinaacademy.platform.feature.notification.entity.Notification;
 import com.vinaacademy.platform.feature.notification.enums.NotificationType;
@@ -10,6 +13,9 @@ import com.vinaacademy.platform.feature.notification.repository.NotificationRepo
 import com.vinaacademy.platform.feature.notification.service.NotificationService;
 import com.vinaacademy.platform.feature.user.UserRepository;
 import com.vinaacademy.platform.feature.user.entity.User;
+
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -20,15 +26,12 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class NotificationServiceImpl implements NotificationService {
 
     private final NotificationRepository notificationRepository;
     private final UserRepository userRepository;
 
-    public NotificationServiceImpl(NotificationRepository notificationRepository, UserRepository userRepository) {
-        this.notificationRepository = notificationRepository;
-        this.userRepository = userRepository;
-    }
 
     @Override
     public NotificationDTO createNotification(NotificationCreateDTO dto) {
