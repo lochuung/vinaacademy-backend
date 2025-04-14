@@ -8,8 +8,6 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 @Data
-@Getter
-@Setter
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -17,6 +15,6 @@ import lombok.experimental.SuperBuilder;
 @Entity
 @DiscriminatorValue("READING")
 public class Reading extends Lesson {
-    @Column(name = "content")
+    @Column(name = "content", columnDefinition = "TEXT")
     private String content;
 }

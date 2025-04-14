@@ -21,7 +21,7 @@ spring:
     properties:
       hibernate:
         default_batch_fetch_size: 20
-        jdbc:
+        jdbc: 
           batch_size: 20
           lob:
             non_contextual_creation: true

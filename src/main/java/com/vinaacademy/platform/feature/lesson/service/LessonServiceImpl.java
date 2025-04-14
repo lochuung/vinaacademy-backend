@@ -6,6 +6,8 @@ import com.vinaacademy.platform.exception.ValidationException;
 import com.vinaacademy.platform.feature.lesson.dto.LessonDto;
 import com.vinaacademy.platform.feature.lesson.dto.LessonRequest;
 import com.vinaacademy.platform.feature.lesson.entity.Lesson;
+import com.vinaacademy.platform.feature.lesson.factory.LessonCreator;
+import com.vinaacademy.platform.feature.lesson.factory.LessonCreatorFactory;
 import com.vinaacademy.platform.feature.lesson.mapper.LessonMapper;
 import com.vinaacademy.platform.feature.lesson.repository.LessonRepository;
 import com.vinaacademy.platform.feature.lesson.repository.projection.LessonAccessInfoDto;
@@ -37,12 +39,10 @@ public class LessonServiceImpl implements LessonService {
 
     private final LessonRepository lessonRepository;
     private final SectionRepository sectionRepository;
-    private final VideoRepository videoRepository;
-    private final ReadingRepository readingRepository;
-    private final QuizRepository quizRepository;
     private final SecurityUtils securityUtils;
     private final LogService logService;
     private final LessonMapper lessonMapper;
+    private final LessonCreatorFactory lessonCreatorFactory;
 
     @Override
     @Transactional(readOnly = true)
@@ -77,10 +77,13 @@ public class LessonServiceImpl implements LessonService {
                 request.getTitle(), request.getType(), author.getUsername());
         Section section = findSectionById(request.getSectionId());
 
-        validateLessonRequest(request);
         validateOrderIndex(request.getOrderIndex(), section, null);
 
-        Lesson lesson = createLessonByType(request, section, author);
+        // Get the appropriate creator for this lesson type
+        LessonCreator creator = lessonCreatorFactory.getCreator(request.getType());
+
+        // Use the factory method to create the lesson
+        Lesson lesson = creator.createLesson(request, section, author);
 
         // Log the creation
         logService.log("Lesson", "CREATE",
@@ -110,6 +113,7 @@ public class LessonServiceImpl implements LessonService {
 
         // Basic update for common fields
         existingLesson.setTitle(request.getTitle());
+        existingLesson.setDescription(request.getDescription());
         existingLesson.setSection(section);
         existingLesson.setFree(request.isFree());
         existingLesson.setOrderIndex(request.getOrderIndex());
@@ -241,7 +245,7 @@ public class LessonServiceImpl implements LessonService {
         if (lessonId != null) {
             existingLessons = existingLessons.stream()
                     .filter(lesson -> !lesson.getId().equals(lessonId))
-                    .collect(Collectors.toList());
+                    .toList();
         }
 
         // Check for duplicate order index
@@ -269,77 +273,16 @@ public class LessonServiceImpl implements LessonService {
         }
     }
 
-    private Lesson createLessonByType(LessonRequest request, Section section, User author) {
-        Lesson lesson = switch (request.getType()) {
-            case VIDEO -> {
-                Video video = Video.builder()
-                        .title(request.getTitle())
-                        .section(section)
-                        .free(request.isFree())
-                        .orderIndex(request.getOrderIndex())
-                        .author(author)
-                        .build();
-                yield videoRepository.save(video);
-            }
-            case READING -> {
-                Reading reading = Reading.builder()
-                        .title(request.getTitle())
-                        .section(section)
-                        .free(request.isFree())
-                        .orderIndex(request.getOrderIndex())
-                        .author(author)
-                        .content(request.getContent())
-                        .build();
-                yield readingRepository.save(reading);
-            }
-            case QUIZ -> {
-                Quiz quiz = Quiz.builder()
-                        .title(request.getTitle())
-                        .section(section)
-                        .free(request.isFree())
-                        .orderIndex(request.getOrderIndex())
-                        .author(author)
-                        .passPoint(request.getPassPoint())
-                        .totalPoint(request.getTotalPoint())
-                        .duration(request.getDuration())
-                        .build();
-                yield quizRepository.save(quiz);
-            }
-            default -> throw new ValidationException("Unsupported lesson type: " + request.getType());
-        };
-
-        // Use section's helper method to maintain bidirectional relationship
-        section.addLesson(lesson);
-
-        return lesson;
-    }
-
     private void updateLessonByType(Lesson lesson, LessonRequest request) {
-        switch (lesson.getType()) {
-            case VIDEO:
-                if (lesson instanceof Video video) {
-                    videoRepository.save(video);
-                }
-                break;
-
-            case READING:
-                if (lesson instanceof Reading reading) {
-                    reading.setContent(request.getContent());
-                    readingRepository.save(reading);
-                }
-                break;
-
-            case QUIZ:
-                if (lesson instanceof Quiz quiz) {
-                    quiz.setPassPoint(request.getPassPoint());
-                    quiz.setTotalPoint(request.getTotalPoint());
-                    quiz.setDuration(request.getDuration());
-                    quizRepository.save(quiz);
-                }
-                break;
-
-            default:
-                throw new ValidationException("Unsupported lesson type: " + lesson.getType());
+        // Validate that we're not trying to change the lesson type
+        if (lesson.getType() != request.getType()) {
+            throw new ValidationException("Cannot change lesson type. Delete and create a new lesson instead.");
         }
+
+        // Get the appropriate creator for this lesson type using our factory
+        LessonCreator creator = lessonCreatorFactory.getCreator(lesson.getType());
+
+        // Use the creator to update the lesson
+        creator.updateLesson(lesson, request);
     }
 }

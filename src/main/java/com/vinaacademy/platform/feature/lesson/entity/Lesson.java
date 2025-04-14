@@ -36,6 +36,9 @@ public abstract class Lesson extends BaseEntity {
     @Column(name = "title")
     protected String title;
 
+    @Column(name = "description", columnDefinition = "TEXT")
+    protected String description;
+
     @Column(name = "lesson_type", nullable = false, insertable = false, updatable = false)
     @Enumerated(EnumType.STRING)
     protected LessonType type = LessonType.READING;
