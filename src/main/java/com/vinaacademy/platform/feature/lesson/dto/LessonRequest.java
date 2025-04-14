@@ -27,6 +27,8 @@ public class LessonRequest {
     
     @NotNull(message = "Lesson type is required")
     private LessonType type;
+
+    private String description;
     
     private boolean free;
     

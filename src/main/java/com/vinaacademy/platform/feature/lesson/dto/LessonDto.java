@@ -20,6 +20,7 @@ import java.util.UUID;
 public class LessonDto extends BaseDto {
     private UUID id;
     private String title;
+    private String description;
     private LessonType type;
     private boolean free;
     private int orderIndex;
