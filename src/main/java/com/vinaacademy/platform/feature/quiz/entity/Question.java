@@ -28,14 +28,18 @@ public class Question extends BaseEntity {
     @JoinColumn(name = "quiz_id", nullable = false)
     private Quiz quiz;
 
-    @Column(name = "question_text")
+    @Column(name = "question_text", columnDefinition = "TEXT")
     private String questionText;
 
+    @Column(name = "explanation", columnDefinition = "TEXT")
+    private String explanation;
+
     @Column(name = "point")
-    private double point = 0.0;
+    private double point = 1.0;
 
     @Column(name = "question_type")
-    private QuestionType questionType;
+    @Enumerated(EnumType.STRING)
+    private QuestionType questionType = QuestionType.SINGLE_CHOICE;
 
     @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Answer> answers = new ArrayList<>();
