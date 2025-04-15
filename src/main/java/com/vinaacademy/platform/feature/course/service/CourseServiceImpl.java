@@ -313,4 +313,20 @@ public class CourseServiceImpl implements CourseService {
         Direction direction = sortDirection.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
         return PageRequest.of(page, size, Sort.by(direction, sortBy));
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public CourseDto getCourseById(UUID id) {
+        Course course = courseRepository.findById(id)
+                .orElseThrow(() -> BadRequestException.message("Khóa học không tồn tại"));
+        return courseMapper.toDTO(course);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public String getCourseSlugById(UUID id) {
+        Course course = courseRepository.findById(id)
+                .orElseThrow(() -> BadRequestException.message("Khóa học không tồn tại"));
+        return course.getSlug();
+    }
 }
