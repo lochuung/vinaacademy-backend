@@ -47,7 +47,8 @@ public class QuizSubmission extends BaseEntity {
     
     @Column(name = "is_passed")
     private boolean isPassed;
-    
+
+    @Builder.Default
     @OneToMany(mappedBy = "submission", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<UserAnswer> userAnswers = new ArrayList<>();
     

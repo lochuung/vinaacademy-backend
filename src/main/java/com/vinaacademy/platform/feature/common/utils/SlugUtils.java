@@ -18,6 +18,9 @@ public class SlugUtils {
         // Convert to lower case
         String slug = input.toLowerCase();
 
+        // Replace Vietnamese 'đ' with 'd' before normalization
+        slug = slug.replace('đ', 'd');
+
         // Normalize the string and remove accents (for Vietnamese characters)
         slug = Normalizer.normalize(slug, Normalizer.Form.NFD);
         slug = slug.replaceAll("\\p{M}", "");

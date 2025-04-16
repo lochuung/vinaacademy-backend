@@ -25,28 +25,3 @@ public class QuizSubmissionResultDto {
     private Boolean isPassed;
     private List<UserAnswerResultDto> answers = new ArrayList<>();
 }
-
-//@Data
-//@Builder
-//@NoArgsConstructor
-//@AllArgsConstructor
-//class UserAnswerResultDto {
-//    private UUID questionId;
-//    private String questionText;
-//    private Double points;
-//    private Double earnedPoints;
-//    private Boolean isCorrect;
-//    private List<AnswerResultDto> answers = new ArrayList<>();
-//    private String textAnswer;
-//}
-//
-//@Data
-//@Builder
-//@NoArgsConstructor
-//@AllArgsConstructor
-//class AnswerResultDto {
-//    private UUID id;
-//    private String text;
-//    private Boolean isSelected;
-//    private Boolean isCorrect;
-//}

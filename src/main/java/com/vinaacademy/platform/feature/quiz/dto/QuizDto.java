@@ -1,6 +1,6 @@
 package com.vinaacademy.platform.feature.quiz.dto;
 
-import com.vinaacademy.platform.feature.lesson.dto.LessonDto;
+import com.vinaacademy.platform.feature.common.dto.BaseDto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -16,18 +16,23 @@ import java.util.UUID;
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-public class QuizDto extends LessonDto {
-    private Double totalPoint;
-    private Double passPoint;
-    private Integer duration;
+public class QuizDto extends BaseDto {
+    private UUID id;
+    private String title;
+    private String description;
+    private double totalPoint;
+    private double passPoint;
+    private int duration;
+    private UUID sectionId;
+    private String sectionTitle;
     
     // Quiz settings
-    private Boolean randomizeQuestions;
-    private Boolean showCorrectAnswers;
-    private Boolean allowRetake;
-    private Boolean requirePassingScore;
-    private Double passingScore;
-    private Integer timeLimit;
+    private boolean randomizeQuestions;
+    private boolean showCorrectAnswers;
+    private boolean allowRetake;
+    private boolean requirePassingScore;
+    private double passingScore;
+    private int timeLimit;
     
     private List<QuestionDto> questions = new ArrayList<>();
 }
