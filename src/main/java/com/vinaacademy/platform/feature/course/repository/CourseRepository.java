@@ -99,4 +99,10 @@ public interface CourseRepository extends JpaRepository<Course, UUID>, JpaSpecif
             @Param("maxPrice") BigDecimal maxPrice,
             @Param("minRating") Double minRating,
             Pageable pageable);
+
+    @Query("SELECT CASE WHEN COUNT(c) > 0 THEN true ELSE false END " +
+            "FROM Course c JOIN c.enrollments e JOIN c.sections s " +
+            "JOIN s.lessons ls" +
+            " WHERE e.user.id = :studentId AND ls.id = :lessonId")
+    boolean existsByStudentAndLesson(UUID studentId, UUID lessonId);
 }
