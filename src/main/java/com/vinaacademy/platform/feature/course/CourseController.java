@@ -43,6 +43,12 @@ public class CourseController {
         return ApiResponse.success(courseService.getCourse(slug));
     }
     
+    @GetMapping("/check/{slug}")
+    public ApiResponse<Boolean> checkCourse(@PathVariable String slug) {
+        log.debug("Check course with slug: {}", slug);
+        return ApiResponse.success(courseService.existByCourseSlug(slug));
+    }
+    
     @GetMapping("/pagination")
     public ApiResponse<Page<CourseDto>> getCoursesPaginated(
     		@RequestParam(defaultValue = "0") int page,
