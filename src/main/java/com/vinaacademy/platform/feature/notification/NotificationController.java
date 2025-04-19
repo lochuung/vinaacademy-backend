@@ -33,7 +33,7 @@ public class NotificationController {
 
     private final NotificationService notificationService;
     
-    @HasAnyRole({AuthConstants.ADMIN_ROLE, AuthConstants.STAFF_ROLE})
+    @HasAnyRole({AuthConstants.ADMIN_ROLE, AuthConstants.STAFF_ROLE, AuthConstants.INSTRUCTOR_ROLE, AuthConstants.STUDENT_ROLE})
     @PostMapping
     public ApiResponse<NotificationDTO> createNotification(@RequestBody NotificationCreateDTO dto) {
         log.debug("create notification for user with id {}", dto.getUserId());
