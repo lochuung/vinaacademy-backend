@@ -33,7 +33,7 @@ public class CourseController {
     @PostMapping
     public ApiResponse<CourseDto> createCourse(@RequestBody @Valid CourseRequest request) {
         // Only ADMIN and INSTRUCTOR can create courses
-        log.debug("Course created");
+        log.debug("Course creating "+request.getName());
         return ApiResponse.success(courseService.createCourse(request));
     }
     

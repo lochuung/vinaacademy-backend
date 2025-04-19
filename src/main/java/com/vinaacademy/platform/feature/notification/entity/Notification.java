@@ -3,6 +3,7 @@ package com.vinaacademy.platform.feature.notification.entity;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import com.vinaacademy.platform.feature.common.entity.BaseEntity;
 import com.vinaacademy.platform.feature.course.enums.CourseStatus;
 import com.vinaacademy.platform.feature.notification.enums.NotificationType;
 import com.vinaacademy.platform.feature.user.entity.User;
@@ -50,7 +51,7 @@ public class Notification {
 	@Column(name = "is_read", nullable = false)
 	private Boolean isRead;
 	
-	@Column(name = "read_at", nullable = false)
+	@Column(name = "read_at", nullable = true)
 	private LocalDateTime readAt;
 	
 	@ManyToOne

@@ -134,8 +134,12 @@ public class CourseServiceImpl implements CourseService {
                 .level(request.getLevel())
                 .price(request.getPrice())
                 .rating(0)
+//                .totalLesson(0)
+//                .totalRating(0)
+//                .totalSection(0)
+//                .totalLesson(0)
                 .slug(slug)
-                .status(CourseStatus.PENDING)
+                .status(CourseStatus.DRAFT)
                 .build();
 
         courseRepository.save(course);
