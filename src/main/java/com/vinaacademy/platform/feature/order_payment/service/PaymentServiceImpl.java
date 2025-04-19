@@ -33,13 +33,13 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class PaymentServiceImpl implements PaymentService {
 
-	private UserRepository userRepository;
+	private final UserRepository userRepository;
 
-	private OrderRepository orderRepository;
+	private final OrderRepository orderRepository;
 
-	private PaymentMapper paymentMapper;
+	private final PaymentMapper paymentMapper;
 	
-	private PaymentRepository paymentRepository;
+	private final PaymentRepository paymentRepository;
 
 	@Override
 	public PaymentDto createPayment(UUID orderId, String urlChecking) {

@@ -2,6 +2,8 @@ package com.vinaacademy.platform.feature.notification.service;
 
 import com.vinaacademy.platform.feature.notification.dto.NotificationDTO;
 import com.vinaacademy.platform.exception.BadRequestException;
+import com.vinaacademy.platform.feature.category.mapper.CategoryMapper;
+import com.vinaacademy.platform.feature.category.mapper.CategoryMapperImpl;
 import com.vinaacademy.platform.feature.course.repository.CourseRepository;
 import com.vinaacademy.platform.feature.enrollment.mapper.EnrollmentMapper;
 import com.vinaacademy.platform.feature.enrollment.repository.EnrollmentRepository;
@@ -22,6 +24,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Locale.Category;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -41,7 +44,7 @@ public class NotificationServiceImpl implements NotificationService {
         notification.setCreatedAt(LocalDateTime.now());
         notification.setIsDeleted(false);
         notification.setIsRead(false);
-        notification = notificationRepository.save(notification);
+        notification = notificationRepository.save(notification);     
         return NotificationMapper.INSTANCE.toDTO(notification);
     }
     
