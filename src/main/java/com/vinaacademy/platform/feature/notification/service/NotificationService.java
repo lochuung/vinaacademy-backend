@@ -11,8 +11,8 @@ import java.util.UUID;
 
 public interface NotificationService {
     NotificationDTO createNotification(NotificationCreateDTO dto);
-    Page<NotificationDTO> getUserNotificationsPaginated(String email, Boolean read, NotificationType type, Pageable pageable);
+    Page<NotificationDTO> getUserNotificationsPaginated(Boolean read, NotificationType type, Pageable pageable);
     void markAsRead(UUID notificationId);
     void deleteNotification(UUID notificationId);
-    void markReadAll(String email);
+    void markReadAll();
 }
