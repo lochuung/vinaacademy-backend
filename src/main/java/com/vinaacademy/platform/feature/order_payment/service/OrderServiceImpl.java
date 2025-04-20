@@ -28,21 +28,21 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class OrderServiceImpl implements OrderService{
 	
-	private UserRepository userRepository;
+	private final UserRepository userRepository;
 	
-	private OrderItemRepository orderItemRepository;
+	private final OrderItemRepository orderItemRepository;
 	
-	private OrderRepository orderRepository;
+	private final OrderRepository orderRepository;
 	
-	private CartRepository cartRepository;
+	private final CartRepository cartRepository;
 	
-	private CartItemRepository cartItemRepository;
+	private final CartItemRepository cartItemRepository;
 	
-	private OrderItemMapper orderItemMapper;
+	private final OrderItemMapper orderItemMapper;
 	
-	private OrderMapper orderMapper;
+	private final OrderMapper orderMapper;
 	
-	private CouponRepository couponRepository;
+	private final CouponRepository couponRepository;
 
 	@Override
 	public OrderDto createOrder(UUID userId) {

@@ -10,6 +10,7 @@ import com.vinaacademy.platform.feature.cart.repository.CartItemRepository;
 import com.vinaacademy.platform.feature.cart.repository.CartRepository;
 import com.vinaacademy.platform.feature.course.entity.Course;
 import com.vinaacademy.platform.feature.course.repository.CourseRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -18,10 +19,13 @@ import java.util.UUID;
 
 @Service
 public class CartItemServiceImpl implements CartItemService{
-	
+	@Autowired
 	private CartRepository cartRepository;
+	@Autowired
 	private CartItemRepository cartItemRepository;
+	@Autowired
 	private CartMapper cartMapper;
+	@Autowired
 	private CourseRepository courseRepository;
 	
 	@Override

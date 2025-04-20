@@ -33,7 +33,7 @@ public class CourseController {
     @PostMapping
     public ApiResponse<CourseDto> createCourse(@RequestBody @Valid CourseRequest request) {
         // Only ADMIN and INSTRUCTOR can create courses
-        log.debug("Course created");
+        log.debug("Course creating "+request.getName());
         return ApiResponse.success(courseService.createCourse(request));
     }
     
@@ -41,6 +41,12 @@ public class CourseController {
     public ApiResponse<CourseDetailsResponse> getCourseDetails(@PathVariable String slug) {
         log.debug("Getting detailed course information for slug: {}", slug);
         return ApiResponse.success(courseService.getCourse(slug));
+    }
+    
+    @GetMapping("/check/{slug}")
+    public ApiResponse<Boolean> checkCourse(@PathVariable String slug) {
+        log.debug("Check course with slug: {}", slug);
+        return ApiResponse.success(courseService.existByCourseSlug(slug));
     }
     
     @GetMapping("/pagination")

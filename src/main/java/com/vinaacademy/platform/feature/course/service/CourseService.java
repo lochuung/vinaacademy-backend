@@ -42,4 +42,6 @@ public interface CourseService {
     CourseDto getCourseById(UUID id);
 
     String getCourseSlugById(UUID id);
+    
+    Boolean existByCourseSlug(String slug);
 }

@@ -10,18 +10,20 @@ import com.vinaacademy.platform.feature.order_payment.entity.Coupon;
 import com.vinaacademy.platform.feature.order_payment.repository.CouponRepository;
 import com.vinaacademy.platform.feature.user.UserRepository;
 import com.vinaacademy.platform.feature.user.entity.User;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 
 @Service
-@RequiredArgsConstructor
 public class CartServiceImpl implements CartService {
-
+	@Autowired
 	private CartRepository cartRepository;
+	@Autowired
 	private UserRepository userRepository;
+	@Autowired
 	private CartMapper cartMapper;
+	@Autowired
 	private CouponRepository couponRepository;
 
 	@Override

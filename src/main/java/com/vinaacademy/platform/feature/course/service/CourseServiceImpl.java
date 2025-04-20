@@ -71,6 +71,16 @@ public class CourseServiceImpl implements CourseService {
     public List<CourseDto> getCourses() {
         return courseRepository.findAll().stream().map(courseMapper::toDTO).toList();
     }
+    
+    @Override
+	public Boolean existByCourseSlug(String slug) {
+    	Course course = courseRepository.findBySlug(slug)
+                .orElse(null);
+    	if (course==null) {
+    		return false;
+    	}
+    	return true;
+	}
 
     @Override
     @Transactional(readOnly = true)
@@ -124,8 +134,12 @@ public class CourseServiceImpl implements CourseService {
                 .level(request.getLevel())
                 .price(request.getPrice())
                 .rating(0)
+//                .totalLesson(0)
+//                .totalRating(0)
+//                .totalSection(0)
+//                .totalLesson(0)
                 .slug(slug)
-                .status(CourseStatus.PENDING)
+                .status(CourseStatus.DRAFT)
                 .build();
 
         courseRepository.save(course);
@@ -156,7 +170,6 @@ public class CourseServiceImpl implements CourseService {
         course.setLevel(request.getLevel());
         course.setPrice(request.getPrice());
         course.setStatus(request.getStatus());
-        course.setRating(request.getRating());
         courseRepository.save(course);
         return courseMapper.toDTO(course);
     }
@@ -329,4 +342,6 @@ public class CourseServiceImpl implements CourseService {
                 .orElseThrow(() -> BadRequestException.message("Khóa học không tồn tại"));
         return course.getSlug();
     }
+
+	
 }

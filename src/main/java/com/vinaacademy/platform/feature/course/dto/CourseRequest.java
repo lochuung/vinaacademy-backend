@@ -36,13 +36,5 @@ public class CourseRequest {
 
     private Long categoryId;
 
-    private double rating;
-
-    private long totalRating;
-
-    private long totalStudent;
-
-    private long totalSection;
-
-    private long totalLesson; 
+   
 }
