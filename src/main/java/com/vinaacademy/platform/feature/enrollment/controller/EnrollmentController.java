@@ -9,6 +9,7 @@ import com.vinaacademy.platform.feature.enrollment.enums.ProgressStatus;
 import com.vinaacademy.platform.feature.enrollment.service.EnrollmentService;
 import com.vinaacademy.platform.feature.user.UserRepository;
 import com.vinaacademy.platform.feature.user.auth.annotation.HasAnyRole;
+import com.vinaacademy.platform.feature.user.auth.helpers.SecurityHelper;
 import com.vinaacademy.platform.feature.user.constant.AuthConstants;
 import com.vinaacademy.platform.feature.user.entity.User;
 import io.swagger.v3.oas.annotations.Operation;
@@ -40,6 +41,7 @@ public class EnrollmentController {
 
     private final EnrollmentService enrollmentService;
     private final UserRepository userRepository;
+    private final SecurityHelper securityHelper;
 
     /**
      * Đăng ký khóa học mới
@@ -50,25 +52,7 @@ public class EnrollmentController {
     public ResponseEntity<ApiResponse<EnrollmentResponse>> enrollCourse(
             @Valid @RequestBody EnrollmentRequest request) {
 
-        // Lấy thông tin người dùng hiện tại từ SecurityContext
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(ApiResponse.<EnrollmentResponse>builder()
-                            .status("error")
-                            .message("Người dùng chưa xác thực")
-                            .build());
-        }
-
-        // Lấy email từ principal name
-        String email = authentication.getName();
-
-        // Tìm người dùng bằng email
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy người dùng"));
-
-        UUID userId = user.getId();
+        UUID userId = securityHelper.getCurrentUser().getId();
 
         EnrollmentResponse enrollmentResponse = enrollmentService.enrollCourse(request, userId);
 
@@ -88,26 +72,7 @@ public class EnrollmentController {
     @Operation(summary = "Kiểm tra đăng ký", description = "Kiểm tra xem học viên đã đăng ký khóa học chưa")
     public ResponseEntity<ApiResponse<Boolean>> checkEnrollment(
             @RequestParam UUID courseId) {
-
-        // Lấy thông tin người dùng hiện tại từ SecurityContext
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(ApiResponse.<Boolean>builder()
-                            .status("error")
-                            .message("Người dùng chưa xác thực")
-                            .build());
-        }
-
-        // Lấy email từ principal name
-        String email = authentication.getName();
-
-        // Tìm người dùng bằng email
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy người dùng"));
-
-        UUID userId = user.getId();
+        UUID userId = securityHelper.getCurrentUser().getId();
         boolean isEnrolled = enrollmentService.isEnrolled(userId, courseId);
 
         return ResponseEntity.ok(ApiResponse.<Boolean>builder()
@@ -127,25 +92,7 @@ public class EnrollmentController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) ProgressStatus status) {
 
-        // Lấy thông tin người dùng hiện tại từ SecurityContext
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(ApiResponse.<PaginationResponse<EnrollmentResponse>>builder()
-                            .status("error")
-                            .message("Người dùng chưa xác thực")
-                            .build());
-        }
-
-        // Lấy email từ principal name
-        String email = authentication.getName();
-
-        // Tìm người dùng bằng email
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy người dùng"));
-
-        UUID userId = user.getId();
+        UUID userId = securityHelper.getCurrentUser().getId();
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("startAt").descending());
 
@@ -185,8 +132,8 @@ public class EnrollmentController {
     public ResponseEntity<ApiResponse<EnrollmentResponse>> getEnrollment(
             @PathVariable Long enrollmentId) {
 
-        // Kiểm tra xác thực
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Authentication authentication = securityHelper.getAuthentication();
+
         if (authentication == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(ApiResponse.<EnrollmentResponse>builder()
@@ -213,22 +160,7 @@ public class EnrollmentController {
             @PathVariable Long enrollmentId,
             @RequestParam Double progressPercentage) {
 
-        // Kiểm tra xác thực
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(ApiResponse.<EnrollmentResponse>builder()
-                            .status("error")
-                            .message("Người dùng chưa xác thực")
-                            .build());
-        }
-
-        // Lấy email từ principal name
-        String email = authentication.getName();
-
-        // Tìm người dùng bằng email
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy người dùng"));
+        User user = securityHelper.getCurrentUser();
 
         // Kiểm tra xem người dùng có quyền cập nhật tiến độ này không
         // Logic kiểm tra quyền có thể thêm vào đây hoặc trong Service layer
@@ -252,15 +184,8 @@ public class EnrollmentController {
             @PathVariable Long enrollmentId,
             @RequestParam ProgressStatus status) {
 
-        // Kiểm tra xác thực
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(ApiResponse.<EnrollmentResponse>builder()
-                            .status("error")
-                            .message("Người dùng chưa xác thực")
-                            .build());
-        }
+
+        User user = securityHelper.getCurrentUser();
 
         EnrollmentResponse updatedEnrollment = enrollmentService.updateStatus(enrollmentId, status);
 
@@ -280,22 +205,7 @@ public class EnrollmentController {
     public ResponseEntity<ApiResponse<Void>> cancelEnrollment(
             @PathVariable Long enrollmentId) {
 
-        // Kiểm tra xác thực
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(ApiResponse.<Void>builder()
-                            .status("error")
-                            .message("Người dùng chưa xác thực")
-                            .build());
-        }
-
-        // Lấy email từ principal name
-        String email = authentication.getName();
-
-        // Tìm người dùng bằng email
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy người dùng"));
+        User user = securityHelper.getCurrentUser();
 
         // Có thể thêm logic kiểm tra quyền hủy đăng ký tại đây hoặc trong Service layer
 
@@ -319,15 +229,7 @@ public class EnrollmentController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) ProgressStatus status) {
 
-        // Kiểm tra xác thực
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(ApiResponse.<PaginationResponse<EnrollmentResponse>>builder()
-                            .status("error")
-                            .message("Người dùng chưa xác thực")
-                            .build());
-        }
+        User user = securityHelper.getCurrentUser();
 
         // Có thể thêm logic kiểm tra quyền truy cập khóa học tại đây
 
