@@ -43,6 +43,8 @@ public class CourseController {
         return ApiResponse.success(courseService.getCourse(slug));
     }
     
+    //Kiểm tra slug đã tồn tại hay chưa
+    @HasAnyRole({AuthConstants.ADMIN_ROLE, AuthConstants.INSTRUCTOR_ROLE})
     @GetMapping("/check/{slug}")
     public ApiResponse<Boolean> checkCourse(@PathVariable String slug) {
         log.debug("Check course with slug: {}", slug);

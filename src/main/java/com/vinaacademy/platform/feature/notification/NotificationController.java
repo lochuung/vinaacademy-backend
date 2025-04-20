@@ -7,6 +7,7 @@ import com.vinaacademy.platform.feature.notification.dto.NotificationCreateDTO;
 import com.vinaacademy.platform.feature.notification.enums.NotificationType;
 import com.vinaacademy.platform.feature.notification.service.NotificationService;
 import com.vinaacademy.platform.feature.user.auth.annotation.HasAnyRole;
+import com.vinaacademy.platform.feature.user.auth.helpers.SecurityHelper;
 import com.vinaacademy.platform.feature.user.constant.AuthConstants;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -40,7 +41,7 @@ public class NotificationController {
         return ApiResponse.success(notificationService.createNotification(dto));
     }
 
-    @HasAnyRole({AuthConstants.STUDENT_ROLE, AuthConstants.INSTRUCTOR_ROLE})
+    @HasAnyRole({AuthConstants.STUDENT_ROLE, AuthConstants.INSTRUCTOR_ROLE, AuthConstants.ADMIN_ROLE, AuthConstants.STAFF_ROLE})
     @Operation(summary = "Lấy thông báo", description = "Danh sách thông báo của student")
     @GetMapping("/paginated")
     public ApiResponse<Page<NotificationDTO>> getUserNotificationsPaginated(
@@ -51,24 +52,15 @@ public class NotificationController {
             @RequestParam(defaultValue = "createdAt") String sortBy,
             @RequestParam(defaultValue = "desc") String direction
     ) {
-    	// Lấy thông tin người dùng hiện tại từ SecurityContext
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null) {
-            return ApiResponse.error("Người dùng chưa xác thực!");
-        }
-
-        // Lấy email từ principal name
-        String email = authentication.getName();
-
+    	
         Sort sort = direction.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(page, size, sort);
         log.debug("get pagination page: {}, size: {}, sortBy: {}, direction: {}, type: {}, isRead: {}", page, size, sortBy, direction, type, isRead);
-        return ApiResponse.success(notificationService.getUserNotificationsPaginated(email, isRead, type, pageable));
+        return ApiResponse.success(notificationService.getUserNotificationsPaginated(isRead, type, pageable));
         
     }
     
-    @HasAnyRole({AuthConstants.STUDENT_ROLE, AuthConstants.INSTRUCTOR_ROLE})
+    @HasAnyRole({AuthConstants.STUDENT_ROLE, AuthConstants.INSTRUCTOR_ROLE, AuthConstants.ADMIN_ROLE, AuthConstants.STAFF_ROLE})
     @Operation(summary = "Đọc thông báo", description = "Đánh dấu thông báo này đã đọc")
     @PutMapping("/{notificationId}/read")
     public void markAsRead(@PathVariable UUID notificationId) {
@@ -76,24 +68,15 @@ public class NotificationController {
         log.debug("Mark read notification ", notificationId);
     }
     
-    @HasAnyRole({AuthConstants.STUDENT_ROLE, AuthConstants.INSTRUCTOR_ROLE})
+    @HasAnyRole({AuthConstants.STUDENT_ROLE, AuthConstants.INSTRUCTOR_ROLE, AuthConstants.ADMIN_ROLE, AuthConstants.STAFF_ROLE})
     @Operation(summary = "Đọc tất cả thông báo", description = "Đánh dấu tất cả thông báo này đã đọc")
     @PostMapping("/readall")
     public void markAllAsRead() {
-    	// Lấy thông tin người dùng hiện tại từ SecurityContext
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null) {
-           throw BadRequestException.message("Không xác thực được người dùng");
-        }
-
-        // Lấy email từ principal name
-        String email = authentication.getName();
-        notificationService.markReadAll(email);
-        log.debug("Mark read all notifications for user with email {}", email);
+        notificationService.markReadAll();
+        log.debug("Marked read all notifications");
     }
     
-    @HasAnyRole({AuthConstants.STUDENT_ROLE, AuthConstants.INSTRUCTOR_ROLE})
+    @HasAnyRole({AuthConstants.STUDENT_ROLE, AuthConstants.INSTRUCTOR_ROLE, AuthConstants.ADMIN_ROLE, AuthConstants.STAFF_ROLE})
     @Operation(summary = "Xóa thông báo", description = "Đánh dấu thông báo này bị xóa")
     @DeleteMapping("/{notificationId}")
     public void deleteNotification(@PathVariable UUID notificationId) {
