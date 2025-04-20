@@ -74,7 +74,7 @@ public class AuthorizationCheckerAspect {
                     if (arg == null) continue;
 
                     try {
-                        Object value = PropertyUtils.getProperty(arg, idParam);
+                        Object value = PropertyUtils.getProperty(arg, parts[1]);
                         if (value instanceof UUID uuid) {
                             return uuid;
                         }
