@@ -12,6 +12,7 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.core.io.Resource;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Field;
@@ -49,7 +50,7 @@ public class AuthorizationCheckerAspect {
 
         // If no permission, throw an exception
         if (!hasPermission) {
-            throw new ValidationException("User does not have permission to " +
+            throw new AccessDeniedException("User does not have permission to " +
                     annotation.permission() + " this " + annotation.resourceType());
         }
     }
