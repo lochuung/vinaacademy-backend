@@ -5,7 +5,6 @@ import com.vinaacademy.platform.feature.lesson.repository.LessonRepository;
 import com.vinaacademy.platform.feature.lesson.repository.projection.LessonAccessInfoDto;
 import com.vinaacademy.platform.feature.storage.dto.MediaFileDto;
 import com.vinaacademy.platform.feature.storage.enums.FileType;
-import com.vinaacademy.platform.feature.storage.properties.StorageProperties;
 import com.vinaacademy.platform.feature.storage.service.StorageService;
 import com.vinaacademy.platform.feature.user.auth.helpers.SecurityHelper;
 import com.vinaacademy.platform.feature.user.constant.AuthConstants;
@@ -19,8 +18,8 @@ import com.vinaacademy.platform.feature.video.repository.VideoRepository;
 import com.vinaacademy.platform.feature.video.service.VideoProcessorService;
 import com.vinaacademy.platform.feature.video.service.VideoService;
 import com.vinaacademy.platform.feature.video.validator.VideoValidator;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
@@ -40,18 +39,22 @@ import java.nio.file.Paths;
 import java.util.UUID;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class VideoServiceImpl implements VideoService {
-    private final VideoRepository videoRepository;
-    private final VideoProcessorService videoProcessorService;
-    private final VideoValidator videoValidator;
-    private final VideoMapper videoMapper;
-    private final SecurityHelper securityHelper;
-    private final LessonRepository lessonRepository;
+    @Autowired
+    private VideoRepository videoRepository;
+    @Autowired
+    private VideoProcessorService videoProcessorService;
+    @Autowired
+    private StorageService storageService;
 
-    private final StorageProperties storageProperties;
-    private final StorageService storageService;
+    @Autowired
+    private LessonRepository lessonRepository;
+
+    @Autowired
+    private VideoValidator videoValidator;
+    @Autowired
+    private SecurityHelper securityHelper;
 
 
     @Override
@@ -83,7 +86,7 @@ public class VideoServiceImpl implements VideoService {
         // Xử lý FFmpeg async
         videoProcessorService.processVideo(video.getId(), Paths.get(destinationFile));
 
-        return videoMapper.toDto(video);
+        return VideoMapper.INSTANCE.toDto(video);
     }
 
     @Override

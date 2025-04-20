@@ -2,7 +2,6 @@ package com.vinaacademy.platform.feature.quiz.dto;
 
 import com.vinaacademy.platform.feature.lesson.dto.LessonRequest;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;

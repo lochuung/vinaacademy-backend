@@ -8,10 +8,10 @@ import com.vinaacademy.platform.feature.video.dto.VideoNoteRequestDto;
 import com.vinaacademy.platform.feature.video.entity.Video;
 import com.vinaacademy.platform.feature.video.entity.VideoNote;
 import com.vinaacademy.platform.feature.video.mapper.VideoNoteMapper;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 import com.vinaacademy.platform.feature.video.repository.VideoNoteRepository;
 import com.vinaacademy.platform.feature.video.repository.VideoRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -25,7 +25,6 @@ public class VideoNoteServiceImpl implements VideoNoteService {
     private final VideoNoteRepository videoNoteRepository;
     private final UserRepository userRepository;
     private final VideoRepository videoRepository;
-    private final VideoNoteMapper videoNoteMapper;
 
 
     @Override
@@ -40,10 +39,10 @@ public class VideoNoteServiceImpl implements VideoNoteService {
         // Kiểm tra người dùng có quyền truy cập video này không
         // Đây là nơi bạn có thể kiểm tra xem người dùng đã đăng ký khóa học chứa video này chưa
 
-        VideoNote videoNote = videoNoteMapper.toEntity(requestDto, user, video);
+        VideoNote videoNote = VideoNoteMapper.INSTANCE.toEntity(requestDto, user, video);
         VideoNote savedNote = videoNoteRepository.save(videoNote);
 
-        return videoNoteMapper.toDto(savedNote);
+        return VideoNoteMapper.INSTANCE.toDto(savedNote);
     }
 
     @Override
@@ -62,10 +61,10 @@ public class VideoNoteServiceImpl implements VideoNoteService {
             videoNote.setVideo(newVideo);
         }
 
-        videoNoteMapper.updateEntityFromDto(requestDto, videoNote);
+        VideoNoteMapper.INSTANCE.updateEntityFromDto(requestDto, videoNote);
         VideoNote updatedNote = videoNoteRepository.save(videoNote);
 
-        return videoNoteMapper.toDto(updatedNote);
+        return VideoNoteMapper.INSTANCE.toDto(updatedNote);
     }
 
     @Override
@@ -75,7 +74,7 @@ public class VideoNoteServiceImpl implements VideoNoteService {
 
         List<VideoNote> videoNotes = videoNoteRepository.findByVideoIdAndUserId(videoId, userId);
         return videoNotes.stream()
-                .map(videoNoteMapper::toDto)
+                .map(VideoNoteMapper.INSTANCE::toDto)
                 .collect(Collectors.toList());
     }
 
@@ -84,7 +83,7 @@ public class VideoNoteServiceImpl implements VideoNoteService {
     public List<VideoNoteDto> getAllVideoNotesByUser(UUID userId) {
         List<VideoNote> videoNotes = videoNoteRepository.findByUserId(userId);
         return videoNotes.stream()
-                .map(videoNoteMapper::toDto)
+                .map(VideoNoteMapper.INSTANCE::toDto)
                 .collect(Collectors.toList());
     }
 
@@ -94,7 +93,7 @@ public class VideoNoteServiceImpl implements VideoNoteService {
         VideoNote videoNote = videoNoteRepository.findByIdAndUserId(noteId, userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy ghi chú với ID: " + noteId));
 
-        return videoNoteMapper.toDto(videoNote);
+        return VideoNoteMapper.INSTANCE.toDto(videoNote);
     }
 
     @Override

@@ -1,28 +1,18 @@
 package com.vinaacademy.platform.feature.order_payment.service;
 
 import ch.qos.logback.core.util.StringUtil;
-import lombok.RequiredArgsConstructor;
-
 import com.vinaacademy.platform.exception.BadRequestException;
-import com.vinaacademy.platform.feature.cart.repository.CartItemRepository;
-import com.vinaacademy.platform.feature.cart.repository.CartRepository;
-import com.vinaacademy.platform.feature.course.repository.CourseRepository;
-import com.vinaacademy.platform.feature.enrollment.mapper.EnrollmentMapper;
-import com.vinaacademy.platform.feature.enrollment.repository.EnrollmentRepository;
 import com.vinaacademy.platform.feature.order_payment.dto.PaymentDto;
 import com.vinaacademy.platform.feature.order_payment.dto.PaymentRequest;
 import com.vinaacademy.platform.feature.order_payment.entity.Order;
 import com.vinaacademy.platform.feature.order_payment.entity.Payment;
 import com.vinaacademy.platform.feature.order_payment.enums.PaymentStatus;
-import com.vinaacademy.platform.feature.order_payment.mapper.OrderItemMapper;
-import com.vinaacademy.platform.feature.order_payment.mapper.OrderMapper;
 import com.vinaacademy.platform.feature.order_payment.mapper.PaymentMapper;
-import com.vinaacademy.platform.feature.order_payment.repository.CouponRepository;
-import com.vinaacademy.platform.feature.order_payment.repository.OrderItemRepository;
 import com.vinaacademy.platform.feature.order_payment.repository.OrderRepository;
 import com.vinaacademy.platform.feature.order_payment.repository.PaymentRepository;
 import com.vinaacademy.platform.feature.order_payment.utils.VNPayConfig;
 import com.vinaacademy.platform.feature.user.UserRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;

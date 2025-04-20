@@ -32,7 +32,6 @@ public class CourseReviewServiceImpl implements CourseReviewService {
     private final UserRepository userRepository;
     private final CourseRepository courseRepository;
     private final EnrollmentRepository enrollmentRepository;
-    private final CourseReviewMapper courseReviewMapper;
 
     @Override
     @Transactional
@@ -54,18 +53,18 @@ public class CourseReviewServiceImpl implements CourseReviewService {
 
         if (courseReview == null) {
             // Tạo đánh giá mới
-            courseReview = courseReviewMapper.toEntity(requestDto, user, course);
+            courseReview = CourseReviewMapper.INSTANCE.toEntity(requestDto, user, course);
             courseReview = courseReviewRepository.save(courseReview);
         } else {
             // Cập nhật đánh giá hiện có
-            courseReviewMapper.updateEntityFromDto(requestDto, courseReview);
+            CourseReviewMapper.INSTANCE.updateEntityFromDto(requestDto, courseReview);
             courseReview = courseReviewRepository.save(courseReview);
         }
 
         // Cập nhật đánh giá trung bình của khóa học
         updateCourseAverageRating(course.getId());
 
-        return courseReviewMapper.toDto(courseReview);
+        return CourseReviewMapper.INSTANCE.toDto(courseReview);
     }
 
     @Override
@@ -77,7 +76,7 @@ public class CourseReviewServiceImpl implements CourseReviewService {
         }
 
         Page<CourseReview> reviewPage = courseReviewRepository.findByCourseId(courseId, pageable);
-        return reviewPage.map(courseReviewMapper::toDto);
+        return reviewPage.map(CourseReviewMapper.INSTANCE::toDto);
     }
 
     @Override
@@ -90,7 +89,7 @@ public class CourseReviewServiceImpl implements CourseReviewService {
 
         List<CourseReview> reviews = courseReviewRepository.findByUserId(userId);
         return reviews.stream()
-                .map(courseReviewMapper::toDto)
+                .map(CourseReviewMapper.INSTANCE::toDto)
                 .collect(Collectors.toList());
     }
 
@@ -100,14 +99,14 @@ public class CourseReviewServiceImpl implements CourseReviewService {
         CourseReview review = courseReviewRepository.findById(reviewId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đánh giá với ID: " + reviewId));
 
-        return courseReviewMapper.toDto(review);
+        return CourseReviewMapper.INSTANCE.toDto(review);
     }
 
     @Override
     @Transactional(readOnly = true)
     public CourseReviewDto getUserReviewForCourse(UUID userId, UUID courseId) {
         return courseReviewRepository.findByCourseIdAndUserId(courseId, userId)
-                .map(courseReviewMapper::toDto)
+                .map(CourseReviewMapper.INSTANCE::toDto)
                 .orElse(null);
     }
 

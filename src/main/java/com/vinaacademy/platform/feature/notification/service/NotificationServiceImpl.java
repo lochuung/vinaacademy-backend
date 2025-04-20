@@ -1,34 +1,23 @@
 package com.vinaacademy.platform.feature.notification.service;
 
-import com.vinaacademy.platform.feature.notification.dto.NotificationDTO;
 import com.vinaacademy.platform.exception.BadRequestException;
 import com.vinaacademy.platform.exception.UnauthorizedException;
-import com.vinaacademy.platform.feature.category.mapper.CategoryMapper;
-import com.vinaacademy.platform.feature.category.mapper.CategoryMapperImpl;
-import com.vinaacademy.platform.feature.course.repository.CourseRepository;
-import com.vinaacademy.platform.feature.enrollment.mapper.EnrollmentMapper;
-import com.vinaacademy.platform.feature.enrollment.repository.EnrollmentRepository;
 import com.vinaacademy.platform.feature.notification.dto.NotificationCreateDTO;
+import com.vinaacademy.platform.feature.notification.dto.NotificationDTO;
 import com.vinaacademy.platform.feature.notification.entity.Notification;
 import com.vinaacademy.platform.feature.notification.enums.NotificationType;
 import com.vinaacademy.platform.feature.notification.mapper.NotificationMapper;
 import com.vinaacademy.platform.feature.notification.repository.NotificationRepository;
-import com.vinaacademy.platform.feature.notification.service.NotificationService;
 import com.vinaacademy.platform.feature.user.UserRepository;
 import com.vinaacademy.platform.feature.user.auth.helpers.SecurityHelper;
 import com.vinaacademy.platform.feature.user.entity.User;
-
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Locale.Category;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor

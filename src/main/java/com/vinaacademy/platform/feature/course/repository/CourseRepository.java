@@ -1,8 +1,8 @@
 package com.vinaacademy.platform.feature.course.repository;
 
 import com.vinaacademy.platform.feature.course.entity.Course;
-import com.vinaacademy.platform.feature.course.enums.CourseStatus;
 import com.vinaacademy.platform.feature.course.enums.CourseLevel;
+import com.vinaacademy.platform.feature.course.enums.CourseStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

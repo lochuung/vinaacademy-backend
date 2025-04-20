@@ -1,6 +1,5 @@
 package com.vinaacademy.platform.feature.enrollment.service;
 
-import com.vinaacademy.platform.feature.enrollment.Enrollment;
 import com.vinaacademy.platform.feature.enrollment.dto.EnrollmentRequest;
 import com.vinaacademy.platform.feature.enrollment.dto.EnrollmentResponse;
 import com.vinaacademy.platform.feature.enrollment.enums.ProgressStatus;
