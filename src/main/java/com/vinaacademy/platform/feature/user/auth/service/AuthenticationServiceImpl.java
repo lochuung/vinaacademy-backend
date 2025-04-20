@@ -326,6 +326,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             throw BadRequestException.message("Token đã hết hạn");
         }
 
+        if (!StringUtils.equals(request.getPassword(), request.getRetypedPassword())) {
+            throw BadRequestException.message("Mật khẩu không khớp");
+        }
+
         User user = actionToken.getUser();
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         userRepository.save(user);
