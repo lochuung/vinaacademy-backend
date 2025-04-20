@@ -1,11 +1,11 @@
 package com.vinaacademy.platform.feature.enrollment.dto;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import jakarta.validation.constraints.NotNull;
 import java.util.UUID;
 
 @Data

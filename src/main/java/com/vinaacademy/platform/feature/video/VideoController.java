@@ -1,6 +1,5 @@
 package com.vinaacademy.platform.feature.video;
 
-import com.vinaacademy.platform.exception.UnauthorizedException;
 import com.vinaacademy.platform.feature.common.response.ApiResponse;
 import com.vinaacademy.platform.feature.lesson.service.LessonService;
 import com.vinaacademy.platform.feature.user.auth.annotation.HasAnyRole;

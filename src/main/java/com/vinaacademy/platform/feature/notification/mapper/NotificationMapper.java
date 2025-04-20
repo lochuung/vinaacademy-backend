@@ -1,7 +1,7 @@
 package com.vinaacademy.platform.feature.notification.mapper;
 
-import com.vinaacademy.platform.feature.notification.dto.NotificationDTO;
 import com.vinaacademy.platform.feature.notification.dto.NotificationCreateDTO;
+import com.vinaacademy.platform.feature.notification.dto.NotificationDTO;
 import com.vinaacademy.platform.feature.notification.entity.Notification;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

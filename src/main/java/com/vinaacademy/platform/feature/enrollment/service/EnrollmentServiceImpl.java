@@ -9,7 +9,6 @@ import com.vinaacademy.platform.feature.enrollment.dto.EnrollmentResponse;
 import com.vinaacademy.platform.feature.enrollment.enums.ProgressStatus;
 import com.vinaacademy.platform.feature.enrollment.mapper.EnrollmentMapper;
 import com.vinaacademy.platform.feature.enrollment.repository.EnrollmentRepository;
-import com.vinaacademy.platform.feature.enrollment.service.EnrollmentService;
 import com.vinaacademy.platform.feature.user.UserRepository;
 import com.vinaacademy.platform.feature.user.entity.User;
 import lombok.RequiredArgsConstructor;

@@ -1,6 +1,5 @@
 package com.vinaacademy.platform.feature.enrollment.controller;
 
-import com.vinaacademy.platform.feature.common.exception.ResourceNotFoundException;
 import com.vinaacademy.platform.feature.common.response.ApiResponse;
 import com.vinaacademy.platform.feature.common.response.PaginationResponse;
 import com.vinaacademy.platform.feature.enrollment.dto.EnrollmentRequest;
@@ -25,7 +24,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;

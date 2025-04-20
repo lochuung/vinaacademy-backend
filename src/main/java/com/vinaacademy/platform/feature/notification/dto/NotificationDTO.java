@@ -1,7 +1,6 @@
 package com.vinaacademy.platform.feature.notification.dto;
 
 import com.vinaacademy.platform.feature.notification.enums.NotificationType;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

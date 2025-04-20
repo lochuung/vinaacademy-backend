@@ -25,7 +25,6 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class StorageServiceImpl implements StorageService {
     private final StorageUtils storageUtils;
-    private final MediaFileMapper mediaFileMapper;
 
     private final MediaFileRepository mediaFileRepository;
 
@@ -54,7 +53,7 @@ public class StorageServiceImpl implements StorageService {
                 .userId(userId)
                 .build();
         mediaFile = mediaFileRepository.save(mediaFile);
-        return mediaFileMapper.toDto(mediaFile);
+        return MediaFileMapper.INSTANCE.toDto(mediaFile);
     }
 
     @Override
@@ -68,7 +67,7 @@ public class StorageServiceImpl implements StorageService {
         } catch (IOException e) {
             throw new RuntimeException("Could not read file: " + filePath, e);
         }
-        MediaFileDto mediaFileDto = mediaFileMapper.toDto(mediaFile);
+        MediaFileDto mediaFileDto = MediaFileMapper.INSTANCE.toDto(mediaFile);
         mediaFileDto.setFileResource(resource);
         return mediaFileDto;
     }
@@ -77,6 +76,6 @@ public class StorageServiceImpl implements StorageService {
     public MediaFileDto getMediaFileById(UUID id) {
         MediaFile mediaFile = mediaFileRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("File not found"));
-        return mediaFileMapper.toDto(mediaFile);
+        return MediaFileMapper.INSTANCE.toDto(mediaFile);
     }
 }
