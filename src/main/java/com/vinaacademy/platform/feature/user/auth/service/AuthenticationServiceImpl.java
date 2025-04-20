@@ -23,8 +23,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.retry.annotation.Retryable;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.*;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -111,9 +113,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
      * @throws BadRequestException if the user is not found, not enabled, or locked.
      */
     public AuthenticationResponse login(AuthenticationRequest loginRequest) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequest.getEmail(),
-                        loginRequest.getPassword()));
+        Authentication authentication = authenticateUser(loginRequest.getEmail(), loginRequest.getPassword());
+
         UserDetails userDetails = userDetailsService.loadUserByUsername(loginRequest.getEmail());
         if (userDetails == null) {
             throw BadRequestException.message("Không tìm thấy người dùng: " + loginRequest.getEmail());
@@ -140,6 +141,25 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         logService.log(LogConstants.AUTH_KEY, LogConstants.LOGIN_ACTION, null, null);
         return new AuthenticationResponse(accessToken, refreshToken);
+    }
+
+    private Authentication authenticateUser(String email, String password) {
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(email, password)
+            );
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            return authentication;
+
+        } catch (BadCredentialsException ex) {
+            throw BadRequestException.message("Sai tên đăng nhập hoặc mật khẩu");
+        } catch (DisabledException ex) {
+            throw BadRequestException.message("Tài khoản chưa được xác thực");
+        } catch (LockedException ex) {
+            throw BadRequestException.message("Tài khoản đã bị khóa");
+        } catch (AuthenticationException ex) {
+            throw BadRequestException.message("Lỗi xác thực không xác định");
+        }
     }
 
     /**
