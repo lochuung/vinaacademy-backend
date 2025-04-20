@@ -151,15 +151,24 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             SecurityContextHolder.getContext().setAuthentication(authentication);
             return authentication;
 
-        } catch (BadCredentialsException ex) {
-            throw BadRequestException.message("Sai tên đăng nhập hoặc mật khẩu");
-        } catch (DisabledException ex) {
-            throw BadRequestException.message("Tài khoản chưa được xác thực");
-        } catch (LockedException ex) {
-            throw BadRequestException.message("Tài khoản đã bị khóa");
         } catch (AuthenticationException ex) {
-            throw BadRequestException.message("Lỗi xác thực không xác định");
+            String message = authenticationExceptionMessage(ex);
+            throw BadRequestException.message(message);
         }
+    }
+
+    private static String authenticationExceptionMessage(AuthenticationException ex) {
+        String message = "Lỗi xác thực không xác định";
+        if (ex instanceof BadCredentialsException) {
+            message = "Sai tên đăng nhập hoặc mật khẩu";
+        } else if (ex instanceof DisabledException) {
+            message = "Tài khoản đã bị khóa";
+        } else if (ex instanceof LockedException) {
+            message = "Tài khoản đã bị khóa";
+        } else if (ex instanceof AccountExpiredException) {
+            message = "Tài khoản đã hết hạn";
+        }
+        return message;
     }
 
     /**
