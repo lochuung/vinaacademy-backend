@@ -31,7 +31,7 @@ import com.vinaacademy.platform.feature.section.dto.SectionDto;
 import com.vinaacademy.platform.feature.section.mapper.SectionMapper;
 import com.vinaacademy.platform.feature.review.dto.CourseReviewDto;
 import com.vinaacademy.platform.feature.user.UserMapper;
-import com.vinaacademy.platform.feature.user.auth.utils.SecurityUtils;
+import com.vinaacademy.platform.feature.user.auth.helpers.SecurityHelper;
 import com.vinaacademy.platform.feature.user.constant.AuthConstants;
 import com.vinaacademy.platform.feature.user.entity.User;
 import lombok.RequiredArgsConstructor;
@@ -65,7 +65,7 @@ public class CourseServiceImpl implements CourseService {
     private final SectionMapper sectionMapper;
     private final LessonMapper lessonMapper;
 
-    private final SecurityUtils securityUtils;
+    private final SecurityHelper securityHelper;
 
     @Override
     public List<CourseDto> getCourses() {
@@ -224,12 +224,12 @@ public class CourseServiceImpl implements CourseService {
             throw BadRequestException.message("Khóa học chưa được công khai");
         }
 
-        User currentUser = securityUtils.getCurrentUser();
+        User currentUser = securityHelper.getCurrentUser();
         // enrollment progress
         List<User> instructors = course.getInstructors().stream()
                 .map(CourseInstructor::getInstructor)
                 .toList();
-        if (!securityUtils.hasAnyRole(AuthConstants.ADMIN_ROLE, AuthConstants.STAFF_ROLE)
+        if (!securityHelper.hasAnyRole(AuthConstants.ADMIN_ROLE, AuthConstants.STAFF_ROLE)
                 && !instructors.contains(currentUser)) {
             Enrollment courseEnrollment = enrollmentRepository.findByCourseAndUser(course, currentUser)
                     .orElseThrow(() -> BadRequestException.message("Người dùng không có quyền truy cập khóa học này"));

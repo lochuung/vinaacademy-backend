@@ -4,7 +4,9 @@ import com.vinaacademy.platform.exception.UnauthorizedException;
 import com.vinaacademy.platform.feature.common.response.ApiResponse;
 import com.vinaacademy.platform.feature.lesson.service.LessonService;
 import com.vinaacademy.platform.feature.user.auth.annotation.HasAnyRole;
+import com.vinaacademy.platform.feature.user.auth.annotation.RequiresResourcePermission;
 import com.vinaacademy.platform.feature.user.constant.AuthConstants;
+import com.vinaacademy.platform.feature.user.constant.ResourceConstants;
 import com.vinaacademy.platform.feature.video.dto.VideoDto;
 import com.vinaacademy.platform.feature.video.dto.VideoRequest;
 import com.vinaacademy.platform.feature.video.service.VideoService;
@@ -73,15 +75,12 @@ public class VideoController {
     })
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/{videoId}/**")
+    @RequiresResourcePermission(resourceType = ResourceConstants.LESSON,
+            idParam = "videoId",
+            permission = ResourceConstants.VIEW)
     public ResponseEntity<Resource> getSegment(HttpServletRequest request,
                                                @PathVariable String videoId) throws MalformedURLException {
         UUID videoUuid = UUID.fromString(videoId);
-
-        // Check user access
-        if (!lessonService.hasAccess(videoUuid)) {
-            log.warn("Unauthorized access attempt to video: {}", videoId);
-            throw UnauthorizedException.message("You don't have access to this video");
-        }
 
         // Extract path after videoId (e.g., 720p/playlist.m3u8)
         String fullPath = (String) request.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE);

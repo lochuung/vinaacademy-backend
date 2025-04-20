@@ -4,7 +4,7 @@ import com.vinaacademy.platform.feature.image.service.ImageService;
 import com.vinaacademy.platform.feature.storage.dto.MediaFileDto;
 import com.vinaacademy.platform.feature.storage.enums.FileType;
 import com.vinaacademy.platform.feature.storage.service.StorageService;
-import com.vinaacademy.platform.feature.user.auth.utils.SecurityUtils;
+import com.vinaacademy.platform.feature.user.auth.helpers.SecurityHelper;
 import com.vinaacademy.platform.feature.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,11 +18,11 @@ import java.util.UUID;
 public class ImageServiceImpl implements ImageService {
     private final StorageService storageService;
 
-    private final SecurityUtils securityUtils;
+    private final SecurityHelper securityHelper;
 
     @Override
     public MediaFileDto uploadImage(MultipartFile file) {
-        User user = securityUtils.getCurrentUser();
+        User user = securityHelper.getCurrentUser();
         MediaFileDto mediaFileDto;
         try {
             mediaFileDto = storageService

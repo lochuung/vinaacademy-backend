@@ -105,4 +105,8 @@ public interface CourseRepository extends JpaRepository<Course, UUID>, JpaSpecif
             "JOIN s.lessons ls" +
             " WHERE e.user.id = :studentId AND ls.id = :lessonId")
     boolean existsByStudentAndLesson(UUID studentId, UUID lessonId);
+
+    @Query("SELECT c FROM Course c JOIN c.sections s " +
+            "WHERE s.id = :sectionId")
+    Optional<Course> getCourseBySectionId(UUID sectionId);
 }

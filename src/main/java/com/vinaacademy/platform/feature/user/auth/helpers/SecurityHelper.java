@@ -1,4 +1,4 @@
-package com.vinaacademy.platform.feature.user.auth.utils;
+package com.vinaacademy.platform.feature.user.auth.helpers;
 
 import com.vinaacademy.platform.exception.UnauthorizedException;
 import com.vinaacademy.platform.feature.user.UserRepository;
@@ -13,12 +13,15 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
-import java.util.UUID;
 
+/**
+ * Utility class for security-related operations.
+ * Focuses on current user information retrieval from security context.
+ */
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class SecurityUtils {
+public class SecurityHelper {
 
     private final UserRepository userRepository;
 
@@ -102,21 +105,11 @@ public class SecurityUtils {
     }
 
     /**
-     * Checks if the current user has permission to modify the resource
-     *
-     * @param resourceAuthorId The ID of the resource author
-     * @return true if user is the author or an admin
+     * Get the current authentication object from security context
+     * 
+     * @return The current authentication or null if not authenticated
      */
-    @Transactional
-    public boolean canModifyResource(UUID resourceAuthorId) {
-        try {
-            User currentUser = getCurrentUser();
-            return currentUser.getId().equals(resourceAuthorId) ||
-                    currentUser.getRoles().stream()
-                            .anyMatch(role -> "ADMIN".equals(role.getCode()));
-        } catch (UnauthorizedException e) {
-            log.warn("Unauthorized user attempted to modify resource: {}", e.getMessage());
-            return false;
-        }
+    public Authentication getAuthentication() {
+        return SecurityContextHolder.getContext().getAuthentication();
     }
 }

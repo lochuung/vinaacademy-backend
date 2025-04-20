@@ -2,8 +2,6 @@ package com.vinaacademy.platform.feature.quiz.service;
 
 import com.vinaacademy.platform.exception.NotFoundException;
 import com.vinaacademy.platform.exception.ValidationException;
-import com.vinaacademy.platform.feature.course.repository.CourseRepository;
-import com.vinaacademy.platform.feature.instructor.repository.CourseInstructorRepository;
 import com.vinaacademy.platform.feature.quiz.dto.*;
 import com.vinaacademy.platform.feature.quiz.entity.*;
 import com.vinaacademy.platform.feature.quiz.enums.QuestionType;
@@ -11,7 +9,9 @@ import com.vinaacademy.platform.feature.quiz.mapper.QuizMapper;
 import com.vinaacademy.platform.feature.quiz.repository.*;
 import com.vinaacademy.platform.feature.section.entity.Section;
 import com.vinaacademy.platform.feature.section.repository.SectionRepository;
-import com.vinaacademy.platform.feature.user.auth.utils.SecurityUtils;
+import com.vinaacademy.platform.feature.user.auth.annotation.RequiresResourcePermission;
+import com.vinaacademy.platform.feature.user.auth.helpers.SecurityHelper;
+import com.vinaacademy.platform.feature.user.constant.ResourceConstants;
 import com.vinaacademy.platform.feature.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,14 +32,14 @@ public class QuizServiceImpl implements QuizService {
     private final QuizSubmissionRepository quizSubmissionRepository;
     private final SectionRepository sectionRepository;
     private final QuizMapper quizMapper;
-    private final SecurityUtils securityUtils;
-    private final CourseInstructorRepository courseInstructorRepository;
-    private final CourseRepository courseRepository;
+    private final SecurityHelper securityHelper;
 
     @Override
     @Transactional(readOnly = true)
+    @RequiresResourcePermission(resourceType = ResourceConstants.LESSON,
+            permission = ResourceConstants.VIEW_OWN)
     public QuizDto getQuizByIdForInstructor(UUID id) {
-        User user = securityUtils.getCurrentUser();
+        User user = securityHelper.getCurrentUser();
         if (user == null) {
             throw new ValidationException("User not found");
         }
@@ -48,22 +48,17 @@ public class QuizServiceImpl implements QuizService {
         if (quiz.getSection() == null) {
             throw new ValidationException("Quiz does not belong to any section");
         }
-        if (!courseInstructorRepository.existsByInstructorIdAndCourseId(user.getId(), quiz.getSection().getCourse().getId())) {
-            throw new ValidationException("User does not have permission to view this quiz");
-        }
+
         return quizMapper.quizToQuizDto(quiz);
     }
 
     @Override
     @Transactional(readOnly = true)
+    @RequiresResourcePermission(resourceType = ResourceConstants.LESSON)
     public QuizDto getQuizForStudent(UUID id) {
-        User user = securityUtils.getCurrentUser();
+        User user = securityHelper.getCurrentUser();
         if (user == null) {
             throw new ValidationException("User not found");
-        }
-
-        if (!courseRepository.existsByStudentAndLesson(user.getId(), id)) {
-            throw new ValidationException("User does not have permission to view this quiz");
         }
 
         Quiz quiz = findQuizById(id);
@@ -93,6 +88,8 @@ public class QuizServiceImpl implements QuizService {
 
     @Override
     @Transactional
+    @RequiresResourcePermission(resourceType = ResourceConstants.LESSON,
+            permission = ResourceConstants.CREATE)
     public QuestionDto createQuestion(UUID quizId, QuestionDto questionDto) {
         Quiz quiz = findQuizById(quizId);
 
@@ -231,8 +228,11 @@ public class QuizServiceImpl implements QuizService {
 
     @Override
     @Transactional
+    @RequiresResourcePermission(resourceType = ResourceConstants.LESSON,
+            permission = ResourceConstants.VIEW,
+            idParam = "request.quizId")
     public QuizSubmissionResultDto submitQuiz(QuizSubmissionRequest request) {
-        User currentUser = securityUtils.getCurrentUser();
+        User currentUser = securityHelper.getCurrentUser();
         Quiz quiz = findQuizById(request.getQuizId());
 
         // Check if we allow retaking quizzes and if the student has already taken this quiz
@@ -287,8 +287,10 @@ public class QuizServiceImpl implements QuizService {
 
     @Override
     @Transactional(readOnly = true)
+    @RequiresResourcePermission(resourceType = ResourceConstants.LESSON,
+            permission = ResourceConstants.VIEW)
     public QuizSubmissionResultDto getLatestSubmission(UUID quizId) {
-        User currentUser = securityUtils.getCurrentUser();
+        User currentUser = securityHelper.getCurrentUser();
 
         Optional<QuizSubmission> latestSubmission = quizSubmissionRepository
                 .findFirstByQuizIdAndUserIdOrderByCreatedDateDesc(quizId, currentUser.getId());
@@ -302,8 +304,10 @@ public class QuizServiceImpl implements QuizService {
 
     @Override
     @Transactional(readOnly = true)
+    @RequiresResourcePermission(resourceType = ResourceConstants.LESSON,
+            permission = ResourceConstants.VIEW)
     public List<QuizSubmissionResultDto> getSubmissionHistory(UUID quizId) {
-        User currentUser = securityUtils.getCurrentUser();
+        User currentUser = securityHelper.getCurrentUser();
 
         List<QuizSubmission> submissions = quizSubmissionRepository
                 .findByQuizIdAndUserIdOrderByCreatedDateDesc(quizId, currentUser.getId());
@@ -319,14 +323,8 @@ public class QuizServiceImpl implements QuizService {
 
     @Override
     @Transactional(readOnly = true)
+    @RequiresResourcePermission(resourceType = ResourceConstants.LESSON)
     public List<QuizSubmissionResultDto> getQuizSubmissions(UUID quizId) {
-        // TODO: Implement pagination for large datasets
-
-        Quiz quiz = findQuizById(quizId);
-
-        // Ensure the user has permission to view submissions (must be an instructor or admin)
-        // Logic can be added here or in controller
-
         List<QuizSubmission> submissions = quizSubmissionRepository
                 .findByQuizIdAndUserIdOrderByCreatedDateDesc(quizId, null);
 

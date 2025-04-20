@@ -7,7 +7,7 @@ import com.vinaacademy.platform.feature.storage.dto.MediaFileDto;
 import com.vinaacademy.platform.feature.storage.enums.FileType;
 import com.vinaacademy.platform.feature.storage.properties.StorageProperties;
 import com.vinaacademy.platform.feature.storage.service.StorageService;
-import com.vinaacademy.platform.feature.user.auth.utils.SecurityUtils;
+import com.vinaacademy.platform.feature.user.auth.helpers.SecurityHelper;
 import com.vinaacademy.platform.feature.user.constant.AuthConstants;
 import com.vinaacademy.platform.feature.user.entity.User;
 import com.vinaacademy.platform.feature.video.dto.VideoDto;
@@ -47,7 +47,7 @@ public class VideoServiceImpl implements VideoService {
     private final VideoProcessorService videoProcessorService;
     private final VideoValidator videoValidator;
     private final VideoMapper videoMapper;
-    private final SecurityUtils securityUtils;
+    private final SecurityHelper securityHelper;
     private final LessonRepository lessonRepository;
 
     private final StorageProperties storageProperties;
@@ -60,13 +60,13 @@ public class VideoServiceImpl implements VideoService {
                 .orElseThrow(() -> BadRequestException.message("Lesson not found"));
         videoValidator.validate(file);
 
-        User currentUser = securityUtils.getCurrentUser();
+        User currentUser = securityHelper.getCurrentUser();
 
         LessonAccessInfoDto lessonAccessInfo = lessonRepository
                 .getLessonAccessInfo(videoRequest.getLessonId(),
                         currentUser.getId())
                 .orElseThrow(() -> BadRequestException.message("Lesson not found"));
-        if (!lessonAccessInfo.isInstructor() && !securityUtils.hasRole(AuthConstants.ADMIN_ROLE)) {
+        if (!lessonAccessInfo.isInstructor() && !securityHelper.hasRole(AuthConstants.ADMIN_ROLE)) {
             throw BadRequestException.message("You are not allowed to upload video to this lesson");
         }
         video.setThumbnailUrl(videoRequest.getThumbnailUrl());
