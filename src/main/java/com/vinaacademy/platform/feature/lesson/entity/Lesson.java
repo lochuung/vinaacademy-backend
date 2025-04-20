@@ -3,8 +3,8 @@ package com.vinaacademy.platform.feature.lesson.entity;
 import com.vinaacademy.platform.feature.common.entity.BaseEntity;
 import com.vinaacademy.platform.feature.course.enums.LessonType;
 import com.vinaacademy.platform.feature.section.entity.Section;
+import com.vinaacademy.platform.feature.storage.entity.MediaFile;
 import com.vinaacademy.platform.feature.user.entity.User;
-import com.vinaacademy.platform.feature.video.entity.UserProgress;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
@@ -36,6 +36,9 @@ public abstract class Lesson extends BaseEntity {
     @Column(name = "title")
     protected String title;
 
+    @Column(name = "description", columnDefinition = "TEXT")
+    protected String description;
+
     @Column(name = "lesson_type", nullable = false, insertable = false, updatable = false)
     @Enumerated(EnumType.STRING)
     protected LessonType type = LessonType.READING;
@@ -52,5 +55,13 @@ public abstract class Lesson extends BaseEntity {
 
     @OneToMany(mappedBy = "lesson", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, orphanRemoval = true)
     protected List<UserProgress> progressList;
+
+    @ManyToMany
+    @JoinTable(
+            name = "lesson_media_files",
+            joinColumns = @JoinColumn(name = "lesson_id"),
+            inverseJoinColumns = @JoinColumn(name = "media_file_id")
+    )
+    protected List<MediaFile> mediaFiles;
 
 }

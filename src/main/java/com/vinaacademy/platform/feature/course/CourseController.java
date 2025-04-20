@@ -13,9 +13,13 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/courses")
@@ -29,7 +33,7 @@ public class CourseController {
     @PostMapping
     public ApiResponse<CourseDto> createCourse(@RequestBody @Valid CourseRequest request) {
         // Only ADMIN and INSTRUCTOR can create courses
-        log.debug("Course created");
+        log.debug("Course creating "+request.getName());
         return ApiResponse.success(courseService.createCourse(request));
     }
     
@@ -37,6 +41,14 @@ public class CourseController {
     public ApiResponse<CourseDetailsResponse> getCourseDetails(@PathVariable String slug) {
         log.debug("Getting detailed course information for slug: {}", slug);
         return ApiResponse.success(courseService.getCourse(slug));
+    }
+    
+    //Kiểm tra slug đã tồn tại hay chưa
+    @HasAnyRole({AuthConstants.ADMIN_ROLE, AuthConstants.INSTRUCTOR_ROLE})
+    @GetMapping("/check/{slug}")
+    public ApiResponse<Boolean> checkCourse(@PathVariable String slug) {
+        log.debug("Check course with slug: {}", slug);
+        return ApiResponse.success(courseService.existByCourseSlug(slug));
     }
     
     @GetMapping("/pagination")
@@ -81,5 +93,27 @@ public class CourseController {
         // Only INSTRUCTOR can update their courses
         log.debug("Course updated");
         return ApiResponse.success(courseService.updateCourse(slug, request));
+    }
+
+    @GetMapping("/{slug}/learning")
+    @PreAuthorize("isAuthenticated()")
+    public ApiResponse<CourseDto> getCourseLearning(@PathVariable String slug) {
+        log.debug("Getting course learning information for slug: {}", slug);
+        return ApiResponse.success(courseService.getCourseLearning(slug));
+    }
+
+    @GetMapping("/id/{id}")
+    public ApiResponse<CourseDto> getCourseById(@PathVariable UUID id) {
+        log.debug("Getting course information for id: {}", id);
+        return ApiResponse.success(courseService.getCourseById(id));
+    }
+
+    @GetMapping("/slug/{id}")
+    public ApiResponse<Map<String, String>> getCourseSlugById(@PathVariable UUID id) {
+        log.debug("Getting course slug for id: {}", id);
+        String slug = courseService.getCourseSlugById(id);
+        Map<String, String> response = new HashMap<>();
+        response.put("slug", slug);
+        return ApiResponse.success(response);
     }
 }

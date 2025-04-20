@@ -10,7 +10,7 @@ import com.vinaacademy.platform.feature.section.dto.SectionRequest;
 import com.vinaacademy.platform.feature.section.entity.Section;
 import com.vinaacademy.platform.feature.section.mapper.SectionMapper;
 import com.vinaacademy.platform.feature.section.repository.SectionRepository;
-import com.vinaacademy.platform.feature.user.auth.utils.SecurityUtils;
+import com.vinaacademy.platform.feature.user.auth.helpers.SecurityHelper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -28,7 +28,7 @@ public class SectionServiceImpl implements SectionService {
     private final CourseRepository courseRepository;
     private final CourseInstructorRepository courseInstructorRepository;
     private final SectionMapper sectionMapper;
-    private final SecurityUtils securityUtils;
+    private final SecurityHelper securityHelper;
 
     @Override
     @Transactional(readOnly = true)
@@ -203,7 +203,7 @@ public class SectionServiceImpl implements SectionService {
     }
     
     private void checkCoursePermission(Course course) {
-        UUID currentUserId = securityUtils.getCurrentUser().getId();
+        UUID currentUserId = securityHelper.getCurrentUser().getId();
         
         // Check if user is instructor of the course
         boolean isInstructor = courseInstructorRepository.existsByInstructorIdAndCourseId(

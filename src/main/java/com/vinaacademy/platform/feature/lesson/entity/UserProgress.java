@@ -1,7 +1,7 @@
-package com.vinaacademy.platform.feature.video.entity;
+package com.vinaacademy.platform.feature.lesson.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.vinaacademy.platform.feature.common.entity.BaseEntity;
-import com.vinaacademy.platform.feature.lesson.entity.Lesson;
 import com.vinaacademy.platform.feature.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -18,14 +18,17 @@ import lombok.*;
 public class UserProgress extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @JsonIgnore
     private Long id;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
+    @JsonIgnore
     private User user;
 
     @ManyToOne
     @JoinColumn(name = "lesson_id", nullable = false)
+    @JsonIgnore
     private Lesson lesson;
 
     @Column(name = "completed", nullable = false)

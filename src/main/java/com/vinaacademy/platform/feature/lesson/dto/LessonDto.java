@@ -2,6 +2,7 @@ package com.vinaacademy.platform.feature.lesson.dto;
 
 import com.vinaacademy.platform.feature.common.dto.BaseDto;
 import com.vinaacademy.platform.feature.course.enums.LessonType;
+import com.vinaacademy.platform.feature.lesson.entity.UserProgress;
 import com.vinaacademy.platform.feature.video.enums.VideoStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -19,6 +20,7 @@ import java.util.UUID;
 public class LessonDto extends BaseDto {
     private UUID id;
     private String title;
+    private String description;
     private LessonType type;
     private boolean free;
     private int orderIndex;
@@ -30,6 +32,8 @@ public class LessonDto extends BaseDto {
     private String courseName;
 
     // Fields specific to lesson types
+
+    private UserProgress currentUserProgress;
 
     // For Video lessons
     private String thumbnailUrl;

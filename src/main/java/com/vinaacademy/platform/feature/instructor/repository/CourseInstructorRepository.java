@@ -65,4 +65,6 @@ public interface CourseInstructorRepository extends JpaRepository<CourseInstruct
     @Query("SELECT CASE WHEN COUNT(ci) > 0 THEN true ELSE false END FROM CourseInstructor ci " +
            "WHERE ci.instructor.id = :instructorId AND ci.course.id = :courseId")
     boolean existsByInstructorIdAndCourseId(@Param("instructorId") UUID instructorId, @Param("courseId") UUID courseId);
+
+    boolean existsByCourseIdAndInstructorId(UUID courseId, UUID id);
 }

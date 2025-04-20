@@ -1,9 +1,14 @@
 package com.vinaacademy.platform.feature.order_payment.service;
 
 import ch.qos.logback.core.util.StringUtil;
+import lombok.RequiredArgsConstructor;
+
 import com.vinaacademy.platform.exception.BadRequestException;
 import com.vinaacademy.platform.feature.cart.repository.CartItemRepository;
 import com.vinaacademy.platform.feature.cart.repository.CartRepository;
+import com.vinaacademy.platform.feature.course.repository.CourseRepository;
+import com.vinaacademy.platform.feature.enrollment.mapper.EnrollmentMapper;
+import com.vinaacademy.platform.feature.enrollment.repository.EnrollmentRepository;
 import com.vinaacademy.platform.feature.order_payment.dto.PaymentDto;
 import com.vinaacademy.platform.feature.order_payment.dto.PaymentRequest;
 import com.vinaacademy.platform.feature.order_payment.entity.Order;
@@ -25,27 +30,16 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class PaymentServiceImpl implements PaymentService {
 
-	private UserRepository userRepository;
+	private final UserRepository userRepository;
 
-	private OrderItemRepository orderItemRepository;
+	private final OrderRepository orderRepository;
 
-	private OrderRepository orderRepository;
-
-	private CartRepository cartRepository;
-
-	private CartItemRepository cartItemRepository;
-
-	private OrderItemMapper orderItemMapper;
-
-	private OrderMapper orderMapper;
+	private final PaymentMapper paymentMapper;
 	
-	private PaymentMapper paymentMapper;
-	
-	private PaymentRepository paymentRepository;
-
-	private CouponRepository couponRepository;
+	private final PaymentRepository paymentRepository;
 
 	@Override
 	public PaymentDto createPayment(UUID orderId, String urlChecking) {
