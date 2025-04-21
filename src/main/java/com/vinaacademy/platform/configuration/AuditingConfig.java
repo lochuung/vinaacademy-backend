@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.oauth2.jwt.Jwt;
 
 import java.util.Optional;
 
@@ -24,6 +25,8 @@ public class AuditingConfig {
             Object principal = authentication.getPrincipal();
             if (principal instanceof UserDetails) {
                 username = ((UserDetails) principal).getUsername();
+            } else if (principal instanceof Jwt jwt) {
+                username = jwt.getClaimAsString("sub");
             } else {
                 username = principal.toString();
             }
