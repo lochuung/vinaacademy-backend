@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -15,5 +16,6 @@ import java.util.UUID;
 @AllArgsConstructor
 public class QuizSubmissionRequest {
     private UUID quizId;
+    private LocalDateTime startTime;
     private List<UserAnswerRequest> answers = new ArrayList<>();
 }
