@@ -484,6 +484,9 @@ public class QuizServiceImpl implements QuizService {
         List<UserAnswerResultDto> userAnswerResults = submission.getUserAnswers().stream()
                 .map(userAnswer -> {
                     List<AnswerResultDto> answerResults = new ArrayList<>();
+                    if (userAnswer.getSelectedAnswers() == null) {
+                        userAnswer.setSelectedAnswers(new ArrayList<>());
+                    }
 
                     // Process each answer for the question
                     userAnswer.getQuestion().getAnswers().forEach(answer -> {
@@ -525,7 +528,7 @@ public class QuizServiceImpl implements QuizService {
      * Helper method to find an active quiz session
      */
     private Optional<QuizSession> findActiveQuizSession(UUID quizId, UUID userId) {
-        return quizSessionRepository.findByQuizIdAndUserIdAndActiveTrue(quizId, userId);
+        return quizSessionRepository.findFirstByQuizIdAndUserIdAndActiveTrue(quizId, userId);
     }
 
     /**
