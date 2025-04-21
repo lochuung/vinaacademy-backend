@@ -4,6 +4,7 @@ import com.vinaacademy.platform.feature.common.response.ApiResponse;
 import com.vinaacademy.platform.feature.quiz.dto.QuizDto;
 import com.vinaacademy.platform.feature.quiz.dto.QuizSubmissionRequest;
 import com.vinaacademy.platform.feature.quiz.dto.QuizSubmissionResultDto;
+import com.vinaacademy.platform.feature.quiz.entity.QuizSession;
 import com.vinaacademy.platform.feature.quiz.service.QuizService;
 import com.vinaacademy.platform.feature.user.auth.annotation.HasAnyRole;
 import com.vinaacademy.platform.feature.user.constant.AuthConstants;
@@ -47,6 +48,24 @@ public class QuizStudentController {
     @GetMapping("/{id}")
     public ApiResponse<QuizDto> getQuiz(@PathVariable UUID id) {
         return ApiResponse.success(quizService.getQuizForStudent(id));
+    }
+    
+    @Operation(summary = "Start a quiz and record server start time")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "Successfully started quiz session",
+                    content = @Content(schema = @Schema(implementation = QuizSession.class))
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "404",
+                    description = "Quiz not found"
+            )
+    })
+    @HasAnyRole({AuthConstants.STUDENT_ROLE})
+    @PostMapping("/{quizId}/start")
+    public ApiResponse<QuizSession> startQuiz(@PathVariable UUID quizId) {
+        return ApiResponse.success(quizService.startQuiz(quizId));
     }
     
     @Operation(summary = "Submit quiz answers")

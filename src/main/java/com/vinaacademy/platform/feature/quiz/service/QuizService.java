@@ -1,6 +1,7 @@
 package com.vinaacademy.platform.feature.quiz.service;
 
 import com.vinaacademy.platform.feature.quiz.dto.*;
+import com.vinaacademy.platform.feature.quiz.entity.QuizSession;
 
 import java.util.List;
 import java.util.UUID;
@@ -55,6 +56,11 @@ public interface QuizService {
      * Delete an answer
      */
     void deleteAnswer(UUID answerId);
+    
+    /**
+     * Start a quiz attempt and record the server start time
+     */
+    QuizSession startQuiz(UUID quizId);
     
     /**
      * Submit a quiz attempt as a student
