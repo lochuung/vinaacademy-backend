@@ -246,17 +246,14 @@ public class QuizServiceImpl implements QuizService {
         Quiz quiz = findQuizById(quizId);
 
         // Check if there's an active session already
-        Optional<QuizSession> existingSession = quizSessionRepository
-                .findByQuizIdAndUserIdAndActiveTrue(quizId, currentUser.getId());
+        Optional<QuizSession> existingSession = findActiveQuizSession(quizId, currentUser.getId());
 
         if (existingSession.isPresent()) {
             QuizSession session = existingSession.get();
             
             // If the session has expired but is still marked active, deactivate it
             if (session.isExpired()) {
-                entityManager.lock(session, LockModeType.PESSIMISTIC_WRITE);
-                session.setActive(false);
-                quizSessionRepository.save(session);
+                deactivateSession(session);
             } else {
                 // Return the existing active session
                 return session;
@@ -278,52 +275,17 @@ public class QuizServiceImpl implements QuizService {
         Quiz quiz = findQuizById(request.getQuizId());
 
         // Check if we allow retaking quizzes and if the student has already taken this quiz
-        if (!quiz.isAllowRetake()) {
-            boolean hasSubmission = quizSubmissionRepository
-                    .findFirstByQuizIdAndUserIdOrderByCreatedDateDesc(quiz.getId(), currentUser.getId())
-                    .isPresent();
-
-            if (hasSubmission) {
-                throw new ValidationException("Retaking this quiz is not allowed");
-            }
-        }
+        validateRetakePolicy(quiz, currentUser.getId());
 
         // Get current time as end time
         LocalDateTime endTime = LocalDateTime.now();
-        LocalDateTime startTime;
         
-        // Find active session for this quiz and user
-        Optional<QuizSession> activeSession = quizSessionRepository
-                .findByQuizIdAndUserIdAndActiveTrue(request.getQuizId(), currentUser.getId());
-        
-        if (activeSession.isPresent()) {
-            
-            // Mark the session as inactive once submitted
-            QuizSession session = activeSession.get();
-            startTime = session.getStartTime();
-
-            entityManager.lock(session, LockModeType.PESSIMISTIC_WRITE);
-            session.setActive(false);
-            quizSessionRepository.save(session);
-            
-            // Check if the session has expired
-            if (session.isExpired()) {
-                throw new ValidationException("Quiz session has expired. Time limit is " + 
-                        quiz.getTimeLimit() + " minutes.");
-            }
-        } else {
-            throw new ValidationException("No active quiz session found. Please start the quiz before submitting.");
-        }
+        // Find and validate the active session
+        QuizSession session = validateAndEndActiveSession(request.getQuizId(), currentUser.getId());
+        LocalDateTime startTime = session.getStartTime();
         
         // Validate time limit if quiz has one
-        if (quiz.getTimeLimit() > 0) {
-            long durationInMinutes = java.time.Duration.between(startTime, endTime).toMinutes();
-            
-            if (durationInMinutes > quiz.getTimeLimit()) {
-                throw new ValidationException("Time limit exceeded. Quiz time limit is " + 
-                        quiz.getTimeLimit() + " minutes, but you took " + durationInMinutes + " minutes");
-            }
-        }
+        validateTimeLimit(quiz, startTime, endTime);
 
         // Create new quiz submission
         QuizSubmission submission = QuizSubmission.builder()
@@ -557,5 +519,74 @@ public class QuizServiceImpl implements QuizService {
                 .isPassed(submission.isPassed())
                 .answers(userAnswerResults)
                 .build();
+    }
+
+    /**
+     * Helper method to find an active quiz session
+     */
+    private Optional<QuizSession> findActiveQuizSession(UUID quizId, UUID userId) {
+        return quizSessionRepository.findByQuizIdAndUserIdAndActiveTrue(quizId, userId);
+    }
+
+    /**
+     * Helper method to deactivate a quiz session
+     */
+    private void deactivateSession(QuizSession session) {
+        entityManager.lock(session, LockModeType.PESSIMISTIC_WRITE);
+        session.setActive(false);
+        quizSessionRepository.save(session);
+    }
+
+    /**
+     * Helper method to validate retake policy for a quiz
+     */
+    private void validateRetakePolicy(Quiz quiz, UUID userId) {
+        if (!quiz.isAllowRetake()) {
+            boolean hasSubmission = quizSubmissionRepository
+                    .findFirstByQuizIdAndUserIdOrderByCreatedDateDesc(quiz.getId(), userId)
+                    .isPresent();
+
+            if (hasSubmission) {
+                throw new ValidationException("Retaking this quiz is not allowed");
+            }
+        }
+    }
+
+    /**
+     * Helper method to validate and end an active session
+     */
+    private QuizSession validateAndEndActiveSession(UUID quizId, UUID userId) {
+        Optional<QuizSession> activeSession = findActiveQuizSession(quizId, userId);
+
+        if (activeSession.isEmpty()) {
+            throw new ValidationException("No active quiz session found. Please start the quiz before submitting.");
+        }
+
+        QuizSession session = activeSession.get();
+
+        // Mark the session as inactive once submitted
+        deactivateSession(session);
+
+        // Check if the session has expired
+        if (session.isExpired()) {
+            throw new ValidationException("Quiz session has expired. Time limit is " +
+                    session.getQuiz().getTimeLimit() + " minutes.");
+        }
+
+        return session;
+    }
+
+    /**
+     * Helper method to validate time limit for a quiz
+     */
+    private void validateTimeLimit(Quiz quiz, LocalDateTime startTime, LocalDateTime endTime) {
+        if (quiz.getTimeLimit() > 0) {
+            long durationInMinutes = java.time.Duration.between(startTime, endTime).toMinutes();
+
+            if (durationInMinutes > quiz.getTimeLimit()) {
+                throw new ValidationException("Time limit exceeded. Quiz time limit is " +
+                        quiz.getTimeLimit() + " minutes, but you took " + durationInMinutes + " minutes");
+            }
+        }
     }
 }
