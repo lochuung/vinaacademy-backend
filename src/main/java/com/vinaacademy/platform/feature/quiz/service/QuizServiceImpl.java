@@ -17,6 +17,9 @@ import com.vinaacademy.platform.feature.user.auth.annotation.RequiresResourcePer
 import com.vinaacademy.platform.feature.user.auth.helpers.SecurityHelper;
 import com.vinaacademy.platform.feature.user.constant.ResourceConstants;
 import com.vinaacademy.platform.feature.user.entity.User;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.LockModeType;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -38,6 +41,9 @@ public class QuizServiceImpl implements QuizService {
     private final SectionRepository sectionRepository;
     private final QuizMapper quizMapper;
     private final SecurityHelper securityHelper;
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     @Override
     @Transactional(readOnly = true)
@@ -248,6 +254,7 @@ public class QuizServiceImpl implements QuizService {
             
             // If the session has expired but is still marked active, deactivate it
             if (session.isExpired()) {
+                entityManager.lock(session, LockModeType.PESSIMISTIC_WRITE);
                 session.setActive(false);
                 quizSessionRepository.save(session);
             } else {
@@ -290,11 +297,12 @@ public class QuizServiceImpl implements QuizService {
                 .findByQuizIdAndUserIdAndActiveTrue(request.getQuizId(), currentUser.getId());
         
         if (activeSession.isPresent()) {
-            // Use the server-recorded start time
-            startTime = activeSession.get().getStartTime();
             
             // Mark the session as inactive once submitted
             QuizSession session = activeSession.get();
+            startTime = session.getStartTime();
+
+            entityManager.lock(session, LockModeType.PESSIMISTIC_WRITE);
             session.setActive(false);
             quizSessionRepository.save(session);
             
