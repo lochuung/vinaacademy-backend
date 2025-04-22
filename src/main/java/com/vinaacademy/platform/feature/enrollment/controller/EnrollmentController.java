@@ -140,6 +140,31 @@ public class EnrollmentController {
                             .build());
         }
 
+        User currentUser = securityHelper.getCurrentUser();
+
+        //Kiểm tra quyền truy cập
+        if (securityHelper.hasRole(AuthConstants.ADMIN_ROLE)) {
+            // Admin có quyền xem tất cả enrollment
+        } else if (securityHelper.hasRole(AuthConstants.INSTRUCTOR_ROLE)) {
+            // Instructor chỉ có thể xem enrollment của khóa học mà họ dạy
+            if (!enrollmentService.isEnrollmentInCourseOfInstructor(enrollmentId, currentUser.getId())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(ApiResponse.<EnrollmentResponse>builder()
+                                .status("error")
+                                .message("Bạn không có quyền truy cập đăng ký này vì không phải là người dạy khóa học")
+                                .build());
+            }
+        } else {
+            // Student chỉ có thể xem enrollment của mình
+            if (!enrollmentService.isEnrollmentOwnerByUser(enrollmentId, currentUser.getId())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(ApiResponse.<EnrollmentResponse>builder()
+                                .status("error")
+                                .message("Bạn không có quyền truy cập vào đăng ký này")
+                                .build());
+            }
+        }
+
         EnrollmentResponse enrollmentResponse = enrollmentService.getEnrollment(enrollmentId);
 
         return ResponseEntity.ok(ApiResponse.<EnrollmentResponse>builder()
@@ -158,11 +183,16 @@ public class EnrollmentController {
             @PathVariable Long enrollmentId,
             @RequestParam Double progressPercentage) {
 
-        User user = securityHelper.getCurrentUser();
+        User currentUser = securityHelper.getCurrentUser();
 
         // Kiểm tra xem người dùng có quyền cập nhật tiến độ này không
-        // Logic kiểm tra quyền có thể thêm vào đây hoặc trong Service layer
-
+        if (!enrollmentService.isEnrollmentOwnerByUser(enrollmentId, currentUser.getId())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(ApiResponse.<EnrollmentResponse>builder()
+                            .status("error")
+                            .message("Người dùng không có quyền cập nhật tiến độ này")
+                            .build());
+        }
         EnrollmentResponse updatedEnrollment = enrollmentService.updateProgress(enrollmentId, progressPercentage);
 
         return ResponseEntity.ok(ApiResponse.<EnrollmentResponse>builder()
@@ -183,7 +213,16 @@ public class EnrollmentController {
             @RequestParam ProgressStatus status) {
 
 
-        User user = securityHelper.getCurrentUser();
+        User currentUser = securityHelper.getCurrentUser();
+
+        // Kiểm tra xem người dùng có quyền cập nhật trạng thái này không
+        if (!enrollmentService.isEnrollmentOwnerByUser(enrollmentId, currentUser.getId())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(ApiResponse.<EnrollmentResponse>builder()
+                            .status("error")
+                            .message("Người dùng không có quyền cập nhật tiến độ này")
+                            .build());
+        }
 
         EnrollmentResponse updatedEnrollment = enrollmentService.updateStatus(enrollmentId, status);
 
@@ -203,10 +242,16 @@ public class EnrollmentController {
     public ResponseEntity<ApiResponse<Void>> cancelEnrollment(
             @PathVariable Long enrollmentId) {
 
-        User user = securityHelper.getCurrentUser();
+        User currentUser = securityHelper.getCurrentUser();
 
-        // Có thể thêm logic kiểm tra quyền hủy đăng ký tại đây hoặc trong Service layer
-
+        // Kiểm tra xem người dùng có quyền hủy đăng ký này không
+        if (!enrollmentService.isEnrollmentOwnerByUser(enrollmentId, currentUser.getId())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(ApiResponse.<Void>builder()
+                            .status("error")
+                            .message("Người dùng không có quyền hủy đăng ký này")
+                            .build());
+        }
         enrollmentService.cancelEnrollment(enrollmentId);
 
         return ResponseEntity.ok(ApiResponse.<Void>builder()
@@ -227,10 +272,19 @@ public class EnrollmentController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) ProgressStatus status) {
 
-        User user = securityHelper.getCurrentUser();
+        User currentUser = securityHelper.getCurrentUser();
 
-        // Có thể thêm logic kiểm tra quyền truy cập khóa học tại đây
-
+        // Kiểm tra xem người dùng có quyền truy cập vào khóa học này không
+        if (!securityHelper.hasRole(AuthConstants.ADMIN_ROLE) && securityHelper.hasRole(AuthConstants.INSTRUCTOR_ROLE)) {
+            // Instructor cần được kiểm tra có phải là người dạy khóa học này không
+            if (!enrollmentService.isCourseOwnerByInstructor(courseId, currentUser.getId())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(ApiResponse.<PaginationResponse<EnrollmentResponse>>builder()
+                                .status("error")
+                                .message("Bạn không có quyền xem danh sách học viên của khóa học này")
+                                .build());
+            }
+        }
         Pageable pageable = PageRequest.of(page, size);
         Page<EnrollmentResponse> enrollmentsPage = enrollmentService.getCourseEnrollments(courseId, status, pageable);
 
