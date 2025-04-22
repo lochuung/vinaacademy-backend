@@ -16,6 +16,5 @@ import java.util.UUID;
 @AllArgsConstructor
 public class QuizSubmissionRequest {
     private UUID quizId;
-    private LocalDateTime startTime;
     private List<UserAnswerRequest> answers = new ArrayList<>();
 }

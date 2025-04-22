@@ -81,4 +81,6 @@ public interface QuizService {
      * Get all student submissions for a quiz (instructor view)
      */
     List<QuizSubmissionResultDto> getQuizSubmissions(UUID quizId);
+
+    void cacheQuizAnswer(UUID quizId, UserAnswerRequest request);
 }

@@ -1,5 +1,6 @@
-package com.vinaacademy.platform.feature.quiz.service;
+package com.vinaacademy.platform.feature.quiz.service.impl;
 
+import com.vinaacademy.platform.exception.BadRequestException;
 import com.vinaacademy.platform.exception.NotFoundException;
 import com.vinaacademy.platform.exception.ValidationException;
 import com.vinaacademy.platform.feature.quiz.dto.*;
@@ -11,6 +12,9 @@ import com.vinaacademy.platform.feature.quiz.repository.QuestionRepository;
 import com.vinaacademy.platform.feature.quiz.repository.QuizRepository;
 import com.vinaacademy.platform.feature.quiz.repository.QuizSessionRepository;
 import com.vinaacademy.platform.feature.quiz.repository.QuizSubmissionRepository;
+import com.vinaacademy.platform.feature.quiz.service.QuizCacheService;
+import com.vinaacademy.platform.feature.quiz.service.QuizService;
+import com.vinaacademy.platform.feature.quiz.service.QuizSessionService;
 import com.vinaacademy.platform.feature.section.entity.Section;
 import com.vinaacademy.platform.feature.section.repository.SectionRepository;
 import com.vinaacademy.platform.feature.user.auth.annotation.RequiresResourcePermission;
@@ -22,10 +26,14 @@ import jakarta.persistence.LockModeType;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -39,11 +47,19 @@ public class QuizServiceImpl implements QuizService {
     private final QuizSubmissionRepository quizSubmissionRepository;
     private final QuizSessionRepository quizSessionRepository;
     private final SectionRepository sectionRepository;
-    private final QuizMapper quizMapper;
-    private final SecurityHelper securityHelper;
+
+    private final QuizCacheService quizCacheService;
+    private final QuizSessionService quizSessionService;
+
+    @Autowired
+    private QuizMapper quizMapper;
+    @Autowired
+    private SecurityHelper securityHelper;
 
     @PersistenceContext
     private EntityManager entityManager;
+    @Autowired
+    private TaskScheduler taskScheduler;
 
     @Override
     @Transactional(readOnly = true)
@@ -250,10 +266,11 @@ public class QuizServiceImpl implements QuizService {
 
         if (existingSession.isPresent()) {
             QuizSession session = existingSession.get();
-            
+
             // If the session has expired but is still marked active, deactivate it
             if (session.isExpired()) {
-                deactivateSession(session);
+                this.processSubmitQuiz(quizSessionService.getQuizSubmissionBySession(session),
+                        quiz, currentUser, session.getStartTime(), LocalDateTime.now());
             } else {
                 // Return the existing active session
                 return session;
@@ -262,6 +279,11 @@ public class QuizServiceImpl implements QuizService {
 
         // Create a new session
         QuizSession session = QuizSession.createNewSession(quiz, currentUser);
+        ZoneOffset vnZoneOffset = ZoneOffset.ofHours(7);
+        taskScheduler.schedule(() -> {
+            this.processSubmitQuiz(quizSessionService.getQuizSubmissionBySession(session),
+                    quiz, currentUser, session.getStartTime(), LocalDateTime.now());
+        }, session.getExpiryTime().toInstant(vnZoneOffset));
         return quizSessionRepository.save(session);
     }
 
@@ -279,15 +301,21 @@ public class QuizServiceImpl implements QuizService {
 
         // Get current time as end time
         LocalDateTime endTime = LocalDateTime.now();
-        
+
         // Find and validate the active session
         QuizSession session = validateAndEndActiveSession(request.getQuizId(), currentUser.getId());
         LocalDateTime startTime = session.getStartTime();
-        
+
         // Validate time limit if quiz has one
         validateTimeLimit(quiz, startTime, endTime);
 
         // Create new quiz submission
+        return processSubmitQuiz(request, quiz, currentUser, startTime, endTime);
+    }
+
+    private QuizSubmissionResultDto processSubmitQuiz(QuizSubmissionRequest request, Quiz quiz,
+                                                      User currentUser, LocalDateTime startTime,
+                                                      LocalDateTime endTime) {
         QuizSubmission submission = QuizSubmission.builder()
                 .quiz(quiz)
                 .user(currentUser)
@@ -372,6 +400,23 @@ public class QuizServiceImpl implements QuizService {
         return submissions.stream()
                 .map(this::buildSubmissionResultDto)
                 .collect(Collectors.toList());
+    }
+
+    @Transactional
+    @Override
+    public void cacheQuizAnswer(UUID quizId, UserAnswerRequest request) {
+        User currentUser = securityHelper.getCurrentUser();
+
+        Optional<QuizSession> existingSession = findActiveQuizSession(quizId, currentUser.getId());
+        if (existingSession.isEmpty()) {
+            throw BadRequestException.message("Không có phiên làm bài nào đang hoạt động");
+        }
+        QuizSession session = existingSession.get();
+        if (session.isExpired()) {
+            quizSessionService.deactivateSession(session);
+        }
+        // Cache the answer using the quiz cache service
+        quizCacheService.updateCacheAnswer(currentUser.getId(), session.getId(), quizId, request);
     }
 
     /**
@@ -532,15 +577,6 @@ public class QuizServiceImpl implements QuizService {
     }
 
     /**
-     * Helper method to deactivate a quiz session
-     */
-    private void deactivateSession(QuizSession session) {
-        entityManager.lock(session, LockModeType.PESSIMISTIC_WRITE);
-        session.setActive(false);
-        quizSessionRepository.save(session);
-    }
-
-    /**
      * Helper method to validate retake policy for a quiz
      */
     private void validateRetakePolicy(Quiz quiz, UUID userId) {
@@ -567,14 +603,9 @@ public class QuizServiceImpl implements QuizService {
 
         QuizSession session = activeSession.get();
 
-        // Mark the session as inactive once submitted
-        deactivateSession(session);
 
-        // Check if the session has expired
-        if (session.isExpired()) {
-            throw new ValidationException("Quiz session has expired. Time limit is " +
-                    session.getQuiz().getTimeLimit() + " minutes.");
-        }
+        // Mark the session as inactive once submitted
+        quizSessionService.deactivateSession(session);
 
         return session;
     }
