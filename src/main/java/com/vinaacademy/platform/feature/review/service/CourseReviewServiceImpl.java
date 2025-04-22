@@ -174,6 +174,11 @@ public class CourseReviewServiceImpl implements CourseReviewService {
         return enrollmentRepository.existsByUserIdAndCourseId(userId, courseId);
     }
 
+    @Override
+    public boolean isReviewOwnedByUser(Long reviewId, UUID userId) {
+        return courseReviewRepository.existsByIdAndUserId(reviewId, userId);
+    }
+
     private void updateCourseAverageRating(UUID courseId) {
         Double averageRating = courseReviewRepository.calculateAverageRatingByCourseId(courseId);
 

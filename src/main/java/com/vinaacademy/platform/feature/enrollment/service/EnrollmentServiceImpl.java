@@ -68,6 +68,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public EnrollmentResponse getEnrollment(Long enrollmentId) {
         Enrollment enrollment = enrollmentRepository.findById(enrollmentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đăng ký khóa học"));
@@ -75,6 +76,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public boolean isEnrolled(UUID userId, UUID courseId) {
         return enrollmentRepository.existsByUserIdAndCourseId(userId, courseId);
     }
@@ -88,12 +90,14 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Page<EnrollmentResponse> getUserEnrollments(UUID userId, Pageable pageable) {
         Page<Enrollment> enrollments = enrollmentRepository.findByUserId(userId, pageable);
         return enrollments.map(enrollmentMapper::toDto);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<EnrollmentResponse> getUserEnrollmentsByStatus(UUID userId, ProgressStatus status) {
         List<Enrollment> enrollments = enrollmentRepository.findByUserIdAndStatus(userId, status);
         return enrollments.stream()
@@ -153,6 +157,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Page<EnrollmentResponse> getCourseEnrollments(UUID courseId, ProgressStatus status, Pageable pageable) {
         Page<Enrollment> enrollmentsPage;
 
@@ -164,5 +169,38 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         }
 
         return enrollmentsPage.map(enrollmentMapper::toDto);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean isEnrollmentOwnerByUser(Long enrollmentId, UUID userId) {
+        Enrollment enrollment = enrollmentRepository.findById(enrollmentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đăng ký khóa học"));
+        return enrollment.getUser().getId().equals(userId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean isCourseOwnerByInstructor(UUID courseId, UUID instructorId) {
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy khóa học"));
+
+        // Kiểm tra xem instructorId có nằm trong danh sách giảng viên của khóa học không
+        return course.getInstructors().stream()
+                .anyMatch(instructor -> instructor.getId().equals(instructorId));
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public boolean isEnrollmentInCourseOfInstructor(Long enrollmentId, UUID instructorId) {
+        // Tìm enrollment
+        Enrollment enrollment = enrollmentRepository.findById(enrollmentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đăng ký khóa học"));
+
+        // Lấy courseId từ enrollment
+        UUID courseId = enrollment.getCourse().getId();
+
+        // Kiểm tra xem instructor có phải là người dạy khóa học này không
+        return isCourseOwnerByInstructor(courseId, instructorId);
     }
 }

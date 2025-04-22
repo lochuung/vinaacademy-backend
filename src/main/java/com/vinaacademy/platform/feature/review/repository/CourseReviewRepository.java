@@ -29,4 +29,7 @@ public interface CourseReviewRepository extends JpaRepository<CourseReview, Long
     @Query("SELECT cr.rating as rating, COUNT(cr) as count FROM CourseReview cr " +
             "WHERE cr.course.id = :courseId GROUP BY cr.rating ORDER BY cr.rating")
     List<Object[]> countRatingsByCourseId(@Param("courseId") UUID courseId);
+
+    boolean existsByIdAndUserId(Long id, UUID userId);
+
 }

@@ -7,6 +7,7 @@ import com.vinaacademy.platform.feature.review.dto.CourseReviewRequestDto;
 import com.vinaacademy.platform.feature.review.service.CourseReviewService;
 import com.vinaacademy.platform.feature.user.UserRepository;
 import com.vinaacademy.platform.feature.user.auth.annotation.HasAnyRole;
+import com.vinaacademy.platform.feature.user.auth.helpers.SecurityHelper;
 import com.vinaacademy.platform.feature.user.constant.AuthConstants;
 import com.vinaacademy.platform.feature.user.entity.User;
 import io.swagger.v3.oas.annotations.Operation;
@@ -37,6 +38,7 @@ import java.util.UUID;
 public class CourseReviewController {
     private final CourseReviewService courseReviewService;
     private final UserRepository userRepository;
+    private final SecurityHelper securityHelper;
 
     @Operation(summary = "Tạo hoặc cập nhật đánh giá khóa học")
     @HasAnyRole({AuthConstants.STUDENT_ROLE})
@@ -44,7 +46,14 @@ public class CourseReviewController {
     public ResponseEntity<ApiResponse<CourseReviewDto>> createOrUpdateReview(
             @Valid @RequestBody CourseReviewRequestDto requestDto) {
 
-        UUID userId = getCurrentUserId();
+        UUID userId = securityHelper.getCurrentUser().getId();
+
+        // Kiểm tra người dùng đã đăng ký khóa học chưa
+        if (!courseReviewService.isUserEnrolledInCourse(userId, requestDto.getCourseId())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(new ApiResponse<>("error", "Bạn chưa đăng ký khóa học này nên không thể đánh giá", null));
+        }
+
         CourseReviewDto reviewDto = courseReviewService.createOrUpdateReview(userId, requestDto);
 
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -67,7 +76,7 @@ public class CourseReviewController {
     @GetMapping("/user")
     public ResponseEntity<ApiResponse<List<CourseReviewDto>>> getUserReviews() {
 
-        UUID userId = getCurrentUserId();
+        UUID userId = securityHelper.getCurrentUser().getId();
         List<CourseReviewDto> reviews = courseReviewService.getUserReviews(userId);
 
         return ResponseEntity.ok(new ApiResponse<>("success", "Lấy danh sách đánh giá của bạn thành công", reviews));
@@ -89,7 +98,7 @@ public class CourseReviewController {
     public ResponseEntity<ApiResponse<CourseReviewDto>> getUserReviewForCourse(
             @PathVariable UUID courseId) {
 
-        UUID userId = getCurrentUserId();
+        UUID userId = securityHelper.getCurrentUser().getId();
         CourseReviewDto review = courseReviewService.getUserReviewForCourse(userId, courseId);
 
         if (review == null) {
@@ -105,7 +114,14 @@ public class CourseReviewController {
     public ResponseEntity<ApiResponse<Void>> deleteReview(
             @PathVariable Long reviewId) {
 
-        UUID userId = getCurrentUserId();
+        User currentUser = securityHelper.getCurrentUser();
+        UUID userId = currentUser.getId();
+
+        //Kiểm tra quyền
+        if (!courseReviewService.isReviewOwnedByUser(reviewId, userId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(new ApiResponse<>("error", "Bạn không có quyền xóa đánh giá này", null));
+        }
         courseReviewService.deleteReview(userId, reviewId);
 
         return ResponseEntity.ok(new ApiResponse<>("success", "Xóa đánh giá thành công", null));
@@ -127,7 +143,7 @@ public class CourseReviewController {
     public ResponseEntity<ApiResponse<Boolean>> hasUserReviewedCourse(
             @PathVariable UUID courseId) {
 
-        UUID userId = getCurrentUserId();
+        UUID userId = securityHelper.getCurrentUser().getId();
         boolean hasReviewed = courseReviewService.hasUserReviewedCourse(userId, courseId);
 
         return ResponseEntity.ok(new ApiResponse<>("success",
@@ -135,23 +151,5 @@ public class CourseReviewController {
                 hasReviewed));
     }
 
-    /**
-     * Phương thức trợ giúp để lấy ID người dùng hiện tại từ Authentication
-     * @return UUID của người dùng hiện tại
-     * @throws org.springframework.security.access.AccessDeniedException nếu không có người dùng đăng nhập
-     */
-    private UUID getCurrentUserId() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        if (authentication == null) {
-            throw new org.springframework.security.access.AccessDeniedException("Người dùng chưa xác thực");
-        }
-
-        String email = authentication.getName();
-
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy người dùng"));
-
-        return user.getId();
-    }
 }
