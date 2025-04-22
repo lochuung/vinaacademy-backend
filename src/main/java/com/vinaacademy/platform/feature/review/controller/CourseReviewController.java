@@ -37,6 +37,9 @@ import java.util.UUID;
 @Tag(name = "Course Review API", description = "API đánh giá khóa học")
 public class CourseReviewController {
     private final CourseReviewService courseReviewService;
+
+    private final UserRepository userRepository;
+
     private final SecurityHelper securityHelper;
 
     @Operation(summary = "Tạo hoặc cập nhật đánh giá khóa học")
@@ -149,4 +152,5 @@ public class CourseReviewController {
                 hasReviewed ? "Bạn đã đánh giá khóa học này" : "Bạn chưa đánh giá khóa học này",
                 hasReviewed));
     }
+
 }
