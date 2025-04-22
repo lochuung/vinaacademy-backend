@@ -109,4 +109,6 @@ public interface CourseRepository extends JpaRepository<Course, UUID>, JpaSpecif
     @Query("SELECT c FROM Course c JOIN c.sections s " +
             "WHERE s.id = :sectionId")
     Optional<Course> getCourseBySectionId(UUID sectionId);
+
+
 }
