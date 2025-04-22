@@ -1,10 +1,13 @@
 package com.vinaacademy.platform.feature.course;
 
+import com.vinaacademy.platform.feature.common.exception.ResourceNotFoundException;
 import com.vinaacademy.platform.feature.common.response.ApiResponse;
 import com.vinaacademy.platform.feature.course.dto.CourseDetailsResponse;
 import com.vinaacademy.platform.feature.course.dto.CourseDto;
 import com.vinaacademy.platform.feature.course.dto.CourseRequest;
 import com.vinaacademy.platform.feature.course.dto.CourseSearchRequest;
+import com.vinaacademy.platform.feature.course.entity.Course;
+import com.vinaacademy.platform.feature.course.repository.CourseRepository;
 import com.vinaacademy.platform.feature.course.service.CourseService;
 import com.vinaacademy.platform.feature.user.auth.annotation.HasAnyRole;
 import com.vinaacademy.platform.feature.user.constant.AuthConstants;
@@ -13,6 +16,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,6 +32,7 @@ import java.util.UUID;
 @SecurityRequirement(name = "bearerAuth")
 public class CourseController {
 	private final CourseService courseService;
+    private final CourseRepository courseRepository;
 	
     @HasAnyRole({AuthConstants.ADMIN_ROLE, AuthConstants.INSTRUCTOR_ROLE})
     @PostMapping
@@ -114,5 +120,27 @@ public class CourseController {
         Map<String, String> response = new HashMap<>();
         response.put("slug", slug);
         return ApiResponse.success(response);
+    }
+
+    /**
+     * Lấy ID khóa học từ slug
+     */
+    @GetMapping("/id-by-slug/{slug}")
+    public ResponseEntity<ApiResponse<Map<String, UUID>>> getCourseIdBySlug(@PathVariable String slug) {
+        try {
+            Course course = courseRepository.findBySlug(slug)
+                    .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy khóa học với slug: " + slug));
+
+            Map<String, UUID> response = new HashMap<>();
+            response.put("id", course.getId());
+
+            return ResponseEntity.ok(new ApiResponse<>("success", "Lấy ID khóa học thành công", response));
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ApiResponse<>("error", e.getMessage(), null));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>("error", "Lỗi khi lấy ID khóa học: " + e.getMessage(), null));
+        }
     }
 }
