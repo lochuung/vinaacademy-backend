@@ -57,7 +57,7 @@ public class QuizCacheServiceImpl implements QuizCacheService {
 
         UserAnswerRequest existing = cachedAnswer.get(request.getQuestionId().toString());
         if (existing != null && existing.getSelectedAnswerIds() != null) {
-            Set<UUID> merged = new HashSet<>(existing.getSelectedAnswerIds());
+            Set<UUID> merged = Collections.synchronizedSet(new HashSet<>(existing.getSelectedAnswerIds()));
             merged.addAll(request.getSelectedAnswerIds());
             request.setSelectedAnswerIds(new ArrayList<>(merged));
         }
