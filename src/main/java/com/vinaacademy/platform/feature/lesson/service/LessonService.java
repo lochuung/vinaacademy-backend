@@ -14,4 +14,6 @@ public interface LessonService {
     LessonDto createLesson(LessonRequest request, User author); // New method with explicit author
     LessonDto updateLesson(UUID id, LessonRequest request);
     void deleteLesson(UUID id);
+
+    void completeLesson(UUID lessonId);
 }

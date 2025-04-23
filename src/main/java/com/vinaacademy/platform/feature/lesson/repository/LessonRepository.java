@@ -75,4 +75,5 @@ public interface LessonRepository extends JpaRepository<Lesson, UUID> {
             @Param("userId") UUID userId
     );
 
+    long countBySectionCourseId(UUID id);
 }
