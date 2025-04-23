@@ -29,6 +29,21 @@ public interface CourseService {
             String sortBy,
             String sortDirection);
 
+    Page<CourseDto> getCoursesByInstructor(
+            UUID instructorId,
+            int page,
+            int size,
+            String sortBy,
+            String sortDirection);
+
+    Page<CourseDto> searchInstructorCourses(
+            UUID instructorId,
+            CourseSearchRequest searchRequest,
+            int page,
+            int size,
+            String sortBy,
+            String sortDirection);
+
     CourseDetailsResponse getCourse(String slug);
 
     CourseDto createCourse(CourseRequest request);
@@ -44,4 +59,7 @@ public interface CourseService {
     String getCourseSlugById(UUID id);
     
     Boolean existByCourseSlug(String slug);
+
+//    CourseDto duplicateCourse(UUID courseId, String newName);
+
 }

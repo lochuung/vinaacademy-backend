@@ -1,5 +1,6 @@
 package com.vinaacademy.platform.feature.course;
 
+import com.vinaacademy.platform.exception.BadRequestException;
 import com.vinaacademy.platform.feature.common.exception.ResourceNotFoundException;
 import com.vinaacademy.platform.feature.common.response.ApiResponse;
 import com.vinaacademy.platform.feature.course.dto.CourseDetailsResponse;
@@ -10,7 +11,9 @@ import com.vinaacademy.platform.feature.course.entity.Course;
 import com.vinaacademy.platform.feature.course.repository.CourseRepository;
 import com.vinaacademy.platform.feature.course.service.CourseService;
 import com.vinaacademy.platform.feature.user.auth.annotation.HasAnyRole;
+import com.vinaacademy.platform.feature.user.auth.helpers.SecurityHelper;
 import com.vinaacademy.platform.feature.user.constant.AuthConstants;
+import com.vinaacademy.platform.feature.user.entity.User;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +36,7 @@ import java.util.UUID;
 public class CourseController {
 	private final CourseService courseService;
     private final CourseRepository courseRepository;
+    private final SecurityHelper securityHelper;
 	
     @HasAnyRole({AuthConstants.ADMIN_ROLE, AuthConstants.INSTRUCTOR_ROLE})
     @PostMapping
@@ -142,5 +146,39 @@ public class CourseController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse<>("error", "Lỗi khi lấy ID khóa học: " + e.getMessage(), null));
         }
+    }
+
+    @GetMapping("/instructor/courses")
+    @HasAnyRole({AuthConstants.INSTRUCTOR_ROLE})
+    public ApiResponse<Page<CourseDto>> getInstructorCourses(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdDate") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDirection) {
+
+        User currentUser = securityHelper.getCurrentUser();
+        Page<CourseDto> coursePage = courseService.getCoursesByInstructor(
+                currentUser.getId(), page, size, sortBy, sortDirection);
+
+        log.debug("Lấy danh sách khóa học của giảng viên: {}", currentUser.getId());
+        return ApiResponse.success(coursePage);
+    }
+
+    @GetMapping("/instructor/search")
+    @HasAnyRole({AuthConstants.INSTRUCTOR_ROLE})
+    public ApiResponse<Page<CourseDto>> searchInstructorCourses(
+            @ModelAttribute CourseSearchRequest searchRequest,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdDate") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDirection) {
+
+        User currentUser = securityHelper.getCurrentUser();
+
+        Page<CourseDto> coursePage = courseService.searchInstructorCourses(
+                currentUser.getId(), searchRequest, page, size, sortBy, sortDirection);
+
+        log.debug("Tìm kiếm khóa học của giảng viên: {}", currentUser.getId());
+        return ApiResponse.success(coursePage);
     }
 }
