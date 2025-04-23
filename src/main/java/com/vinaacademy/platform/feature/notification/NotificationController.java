@@ -15,6 +15,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -34,7 +35,7 @@ public class NotificationController {
         log.debug("create notification for user with id {}", dto.getUserId());
         return ApiResponse.success(notificationService.createNotification(dto));
     }
-
+    
     @HasAnyRole({AuthConstants.STUDENT_ROLE, AuthConstants.INSTRUCTOR_ROLE, AuthConstants.ADMIN_ROLE, AuthConstants.STAFF_ROLE})
     @Operation(summary = "Lấy thông báo", description = "Danh sách thông báo của student")
     @GetMapping("/paginated")
