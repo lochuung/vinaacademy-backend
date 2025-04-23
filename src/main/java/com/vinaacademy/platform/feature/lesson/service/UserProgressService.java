@@ -1,5 +1,6 @@
 package com.vinaacademy.platform.feature.lesson.service;
 
+import com.vinaacademy.platform.feature.lesson.dto.LessonProgressDto;
 import com.vinaacademy.platform.feature.lesson.dto.UserProgressDto;
 import org.springframework.data.domain.Page;
 

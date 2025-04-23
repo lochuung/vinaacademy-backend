@@ -4,10 +4,7 @@ import com.vinaacademy.platform.feature.course.entity.Course;
 import com.vinaacademy.platform.feature.enrollment.enums.ProgressStatus;
 import com.vinaacademy.platform.feature.user.entity.User;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 
@@ -36,7 +33,7 @@ public class Enrollment {
 
     @Column(name = "progress_percentage")
     @ColumnDefault("0.0")
-    private Double progressPercentage = 0.0;
+    private double progressPercentage = 0.0;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
@@ -48,4 +45,11 @@ public class Enrollment {
 
     @Column(name = "complete_at")
     private LocalDateTime completeAt;
+
+    @Override
+    public String toString() {
+        return "Enrollment{" +
+                "id=" + id +
+                '}';
+    }
 }

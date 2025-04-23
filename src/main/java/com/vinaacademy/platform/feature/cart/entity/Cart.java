@@ -9,14 +9,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Data
-@Getter
-@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
 @Table(name = "cart")
 public class Cart {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -40,5 +39,11 @@ public class Cart {
     public void removeCartItem(CartItem cartItem) {
         cartItems.remove(cartItem);
         cartItem.setCart(null);
+    }
+
+    @Override
+    public String toString() {
+        return "Cart{" +
+                ", id=" + id + '}';
     }
 }

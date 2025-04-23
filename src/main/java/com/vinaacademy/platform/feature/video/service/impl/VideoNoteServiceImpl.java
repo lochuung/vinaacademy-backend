@@ -1,4 +1,4 @@
-package com.vinaacademy.platform.feature.video.service;
+package com.vinaacademy.platform.feature.video.service.impl;
 
 import com.vinaacademy.platform.feature.common.exception.ResourceNotFoundException;
 import com.vinaacademy.platform.feature.user.UserRepository;
@@ -10,6 +10,7 @@ import com.vinaacademy.platform.feature.video.entity.VideoNote;
 import com.vinaacademy.platform.feature.video.mapper.VideoNoteMapper;
 import com.vinaacademy.platform.feature.video.repository.VideoNoteRepository;
 import com.vinaacademy.platform.feature.video.repository.VideoRepository;
+import com.vinaacademy.platform.feature.video.service.VideoNoteService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

@@ -78,8 +78,7 @@ public class VideoController {
             idParam = "videoId",
             permission = ResourceConstants.VIEW)
     public ResponseEntity<Resource> getSegment(HttpServletRequest request,
-                                               @PathVariable String videoId) throws MalformedURLException {
-        UUID videoUuid = UUID.fromString(videoId);
+                                               @PathVariable UUID videoId) throws MalformedURLException {
 
         // Extract path after videoId (e.g., 720p/playlist.m3u8)
         String fullPath = (String) request.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE);
@@ -87,7 +86,7 @@ public class VideoController {
         String subPath = new AntPathMatcher().extractPathWithinPattern(bestMatchPattern, fullPath);
 
         // Delegate to service for getting the video segment
-        return videoService.getVideoSegment(videoUuid, subPath);
+        return videoService.getVideoSegment(videoId, subPath);
     }
 
     @Operation(summary = "Get video thumbnail", description = "Get the thumbnail of a video")

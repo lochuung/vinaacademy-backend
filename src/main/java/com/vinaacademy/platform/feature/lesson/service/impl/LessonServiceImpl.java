@@ -1,14 +1,24 @@
-package com.vinaacademy.platform.feature.lesson.service;
+package com.vinaacademy.platform.feature.lesson.service.impl;
 
+import com.vinaacademy.platform.exception.BadRequestException;
 import com.vinaacademy.platform.exception.NotFoundException;
 import com.vinaacademy.platform.exception.ValidationException;
+import com.vinaacademy.platform.feature.course.enums.LessonType;
+import com.vinaacademy.platform.feature.course.repository.CourseRepository;
+import com.vinaacademy.platform.feature.course.repository.UserProgressRepository;
+import com.vinaacademy.platform.feature.enrollment.Enrollment;
+import com.vinaacademy.platform.feature.enrollment.enums.ProgressStatus;
+import com.vinaacademy.platform.feature.enrollment.repository.EnrollmentRepository;
+import com.vinaacademy.platform.feature.enrollment.service.EnrollmentService;
 import com.vinaacademy.platform.feature.lesson.dto.LessonDto;
 import com.vinaacademy.platform.feature.lesson.dto.LessonRequest;
 import com.vinaacademy.platform.feature.lesson.entity.Lesson;
+import com.vinaacademy.platform.feature.lesson.entity.UserProgress;
 import com.vinaacademy.platform.feature.lesson.factory.LessonCreator;
 import com.vinaacademy.platform.feature.lesson.factory.LessonCreatorFactory;
 import com.vinaacademy.platform.feature.lesson.mapper.LessonMapper;
 import com.vinaacademy.platform.feature.lesson.repository.LessonRepository;
+import com.vinaacademy.platform.feature.lesson.service.LessonService;
 import com.vinaacademy.platform.feature.log.service.LogService;
 import com.vinaacademy.platform.feature.section.entity.Section;
 import com.vinaacademy.platform.feature.section.repository.SectionRepository;
@@ -19,10 +29,13 @@ import com.vinaacademy.platform.feature.user.constant.ResourceConstants;
 import com.vinaacademy.platform.feature.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -33,11 +46,19 @@ public class LessonServiceImpl implements LessonService {
 
     private final LessonRepository lessonRepository;
     private final SectionRepository sectionRepository;
-    private final SecurityHelper securityHelper;
     private final AuthorizationService authorizationService;
     private final LogService logService;
-    private final LessonMapper lessonMapper;
-    private final LessonCreatorFactory lessonCreatorFactory;
+    private final UserProgressRepository userProgressRepository;
+    private final EnrollmentRepository enrollmentRepository;
+    private final CourseRepository courseRepository;
+    private final EnrollmentService enrollmentService;
+
+    @Autowired
+    private LessonMapper lessonMapper;
+    @Autowired
+    private LessonCreatorFactory lessonCreatorFactory;
+    @Autowired
+    private SecurityHelper securityHelper;
 
     @Override
     @Transactional(readOnly = true)
@@ -143,6 +164,7 @@ public class LessonServiceImpl implements LessonService {
 
         return lessonMapper.lessonToLessonDto(existingLesson);
     }
+
     @Override
     @Transactional
     @RequiresResourcePermission(
@@ -168,6 +190,59 @@ public class LessonServiceImpl implements LessonService {
                 String.format("Deleted %s lesson: %s",
                         lesson.getType(), lesson.getTitle()),
                 lessonData, null);
+    }
+
+    @Transactional
+    @Override
+    @RequiresResourcePermission(resourceType = ResourceConstants.LESSON, idParam = "lessonId")
+    public void completeLesson(UUID lessonId) {
+        User currentUser = securityHelper.getCurrentUser();
+        Lesson lesson = findLessonById(lessonId);
+
+        if (lesson.getType() == LessonType.QUIZ) {
+            throw BadRequestException.message("Bài học này là bài kiểm tra, không thể đánh dấu hoàn thành");
+        }
+
+        markLessonCompleted(lesson, currentUser);
+    }
+
+    public void markLessonCompleted(Lesson lesson, User currentUser) {
+        // 1. Mark lesson completed if not already
+        Optional<UserProgress> userProgressOpt = userProgressRepository
+                .findByLessonIdAndUserId(lesson.getId(), currentUser.getId())
+                .filter(UserProgress::isCompleted);
+        if (userProgressOpt.isPresent()) {
+            throw BadRequestException.message("Học viên đã hoàn thành bài học này");
+        }
+
+        UserProgress userProgress = userProgressOpt.orElseGet(() ->
+                userProgressRepository.save(UserProgress.builder()
+                        .lesson(lesson)
+                        .user(currentUser)
+                        .completed(true)
+                        .build())
+        );
+        userProgressRepository.save(userProgress);
+
+        // 2. Update enrollment progress
+        UUID courseId = lesson.getSection().getCourse().getId();
+        Enrollment enrollment = enrollmentRepository.findByUserIdAndCourseId(currentUser.getId(), courseId)
+                .orElseThrow(() -> BadRequestException.message("Học viên chưa đăng ký khóa học này"));
+
+        long totalLessons = lessonRepository.countBySectionCourseId(courseId);
+        long completedLessons = userProgressRepository.countCompletedByUserIdAndCourseId(currentUser.getId(), courseId);
+
+        if (totalLessons == 0) {
+            throw new ValidationException("Không thể tính tiến độ: khóa học không có bài học nào");
+        }
+
+        double progressPercentage = (completedLessons * 1.0 / totalLessons) * 100;
+
+        enrollment.setProgressPercentage(progressPercentage);
+        enrollment.setStatus(progressPercentage >= 100 ? ProgressStatus.COMPLETED : ProgressStatus.IN_PROGRESS);
+        enrollment.setCompleteAt(progressPercentage >= 100 ? LocalDateTime.now() : null);
+
+        enrollmentRepository.save(enrollment);
     }
 
     private Lesson findLessonById(UUID id) {

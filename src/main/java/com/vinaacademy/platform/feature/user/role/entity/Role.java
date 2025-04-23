@@ -28,6 +28,7 @@ public class Role extends BaseEntity {
     @Column(name = "code", unique = true, nullable = false)
     private String code;
 
+    @ToString.Exclude
     @ManyToMany
     @JoinTable(name = "role_permission", joinColumns = @JoinColumn(name = "role_id"), inverseJoinColumns = @JoinColumn(name = "permission_id"))
     private Set<Permission> permissions = new HashSet<>();

@@ -134,4 +134,27 @@ public class LessonController {
         lessonService.deleteLesson(id);
         return ApiResponse.success("Lesson deleted successfully");
     }
+
+    @HasAnyRole({AuthConstants.STUDENT_ROLE, AuthConstants.INSTRUCTOR_ROLE, AuthConstants.STAFF_ROLE})
+    @PostMapping("/{lessonId}/complete")
+    @Operation(summary = "Complete lesson")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "Successfully completed lesson"
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "403",
+                    description = "Unauthorized access"
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "404",
+                    description = "Lesson not found"
+            )
+    })
+    public ApiResponse<Void> completeLesson(@PathVariable UUID lessonId) {
+        log.info("Completing lesson with ID: {}", lessonId);
+        lessonService.completeLesson(lessonId);
+        return ApiResponse.success("Lesson completed successfully");
+    }
 }

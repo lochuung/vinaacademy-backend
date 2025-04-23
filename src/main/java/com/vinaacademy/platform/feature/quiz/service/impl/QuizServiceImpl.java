@@ -3,6 +3,9 @@ package com.vinaacademy.platform.feature.quiz.service.impl;
 import com.vinaacademy.platform.exception.BadRequestException;
 import com.vinaacademy.platform.exception.NotFoundException;
 import com.vinaacademy.platform.exception.ValidationException;
+import com.vinaacademy.platform.feature.course.repository.UserProgressRepository;
+import com.vinaacademy.platform.feature.lesson.entity.UserProgress;
+import com.vinaacademy.platform.feature.lesson.service.LessonService;
 import com.vinaacademy.platform.feature.quiz.dto.*;
 import com.vinaacademy.platform.feature.quiz.entity.*;
 import com.vinaacademy.platform.feature.quiz.enums.QuestionType;
@@ -47,9 +50,11 @@ public class QuizServiceImpl implements QuizService {
     private final QuizSubmissionRepository quizSubmissionRepository;
     private final QuizSessionRepository quizSessionRepository;
     private final SectionRepository sectionRepository;
+    private final UserProgressRepository userProgressRepository;
 
     private final QuizCacheService quizCacheService;
     private final QuizSessionService quizSessionService;
+    private final LessonService lessonService;
 
     @Autowired
     private QuizMapper quizMapper;
@@ -349,6 +354,12 @@ public class QuizServiceImpl implements QuizService {
 
         double scorePercentage = (totalPoints > 0) ? (earnedPoints / totalPoints) * 100 : 0;
         submission.setPassed(scorePercentage >= quiz.getPassingScore());
+
+        Optional<UserProgress> upOpt = userProgressRepository
+                .findByLessonIdAndUserId(quiz.getId(), currentUser.getId());
+        if (submission.isPassed() && upOpt.isEmpty()) {
+            lessonService.markLessonCompleted(quiz, currentUser);
+        }
 
         QuizSubmission savedSubmission = quizSubmissionRepository.save(submission);
 
