@@ -30,103 +30,103 @@ public class UserProgressController {
 
     private final UserProgressService userProgressService;
 
-    @Operation(summary = "Get progress by user for a course")
-    @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                    responseCode = "200",
-                    description = "Successfully retrieved user progress",
-                    content = @Content(schema = @Schema(implementation = UserProgressDto.class))
-            ),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                    responseCode = "403",
-                    description = "Unauthorized access"
-            ),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                    responseCode = "404",
-                    description = "User or course not found"
-            )
-    })
-    @GetMapping("/user/{userId}/course/{courseId}")
-    @PreAuthorize("isAuthenticated()")
-    public ApiResponse<List<UserProgressDto>> getProgressByUser(
-            @PathVariable UUID userId,
-            @PathVariable UUID courseId) {
-        return ApiResponse.success(userProgressService.getProgressByUser(userId, courseId));
-    }
-
-    @Operation(summary = "Get progress by course")
-    @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                    responseCode = "200",
-                    description = "Successfully retrieved course progress",
-                    content = @Content(schema = @Schema(implementation = UserProgressDto.class))
-            ),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                    responseCode = "403",
-                    description = "Unauthorized access"
-            ),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                    responseCode = "404",
-                    description = "Course not found"
-            )
-    })
-    @GetMapping("/course/{courseId}")
-    @HasAnyRole({AuthConstants.ADMIN_ROLE, AuthConstants.INSTRUCTOR_ROLE})
-    public ApiResponse<Page<UserProgressDto>> getProgressByCourse(
-            @PathVariable UUID courseId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
-        return ApiResponse.success(userProgressService.getProgressByCourse(courseId, page, size));
-    }
-
-    @Operation(summary = "Get progress by lesson")
-    @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                    responseCode = "200",
-                    description = "Successfully retrieved lesson progress",
-                    content = @Content(schema = @Schema(implementation = UserProgressDto.class))
-            ),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                    responseCode = "403",
-                    description = "Unauthorized access"
-            ),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                    responseCode = "404",
-                    description = "Lesson not found"
-            )
-    })
-    @GetMapping("/lesson/{lessonId}")
-    @HasAnyRole({AuthConstants.ADMIN_ROLE, AuthConstants.INSTRUCTOR_ROLE})
-    public ApiResponse<Page<UserProgressDto>> getProgressByLesson(
-            @PathVariable UUID lessonId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
-        return ApiResponse.success(userProgressService.getProgressByLesson(lessonId, page, size));
-    }
-
-    @Operation(summary = "Update user progress")
-    @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                    responseCode = "200",
-                    description = "Successfully updated user progress",
-                    content = @Content(schema = @Schema(implementation = UserProgressDto.class))
-            ),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                    responseCode = "403",
-                    description = "Unauthorized access"
-            ),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                    responseCode = "404",
-                    description = "User or lesson not found"
-            )
-    })
-    @PutMapping("/user/{userId}/lesson/{lessonId}")
-    @PreAuthorize("isAuthenticated()")
-    public ApiResponse<UserProgressDto> updateProgress(
-            @PathVariable UUID userId,
-            @PathVariable UUID lessonId,
-            @RequestParam boolean completed,
-            @RequestParam(required = false) Long lastWatchedTime) {
-        return ApiResponse.success(userProgressService.updateProgress(userId, lessonId, completed, lastWatchedTime));
-    }
+//    @Operation(summary = "Get progress by user for a course")
+//    @ApiResponses(value = {
+//            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+//                    responseCode = "200",
+//                    description = "Successfully retrieved user progress",
+//                    content = @Content(schema = @Schema(implementation = UserProgressDto.class))
+//            ),
+//            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+//                    responseCode = "403",
+//                    description = "Unauthorized access"
+//            ),
+//            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+//                    responseCode = "404",
+//                    description = "User or course not found"
+//            )
+//    })
+//    @GetMapping("/user/{userId}/course/{courseId}")
+//    @PreAuthorize("isAuthenticated()")
+//    public ApiResponse<List<UserProgressDto>> getProgressByUser(
+//            @PathVariable UUID userId,
+//            @PathVariable UUID courseId) {
+//        return ApiResponse.success(userProgressService.getProgressByUser(userId, courseId));
+//    }
+//
+//    @Operation(summary = "Get progress by course")
+//    @ApiResponses(value = {
+//            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+//                    responseCode = "200",
+//                    description = "Successfully retrieved course progress",
+//                    content = @Content(schema = @Schema(implementation = UserProgressDto.class))
+//            ),
+//            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+//                    responseCode = "403",
+//                    description = "Unauthorized access"
+//            ),
+//            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+//                    responseCode = "404",
+//                    description = "Course not found"
+//            )
+//    })
+//    @GetMapping("/course/{courseId}")
+//    @HasAnyRole({AuthConstants.ADMIN_ROLE, AuthConstants.INSTRUCTOR_ROLE})
+//    public ApiResponse<Page<UserProgressDto>> getProgressByCourse(
+//            @PathVariable UUID courseId,
+//            @RequestParam(defaultValue = "0") int page,
+//            @RequestParam(defaultValue = "20") int size) {
+//        return ApiResponse.success(userProgressService.getProgressByCourse(courseId, page, size));
+//    }
+//
+//    @Operation(summary = "Get progress by lesson")
+//    @ApiResponses(value = {
+//            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+//                    responseCode = "200",
+//                    description = "Successfully retrieved lesson progress",
+//                    content = @Content(schema = @Schema(implementation = UserProgressDto.class))
+//            ),
+//            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+//                    responseCode = "403",
+//                    description = "Unauthorized access"
+//            ),
+//            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+//                    responseCode = "404",
+//                    description = "Lesson not found"
+//            )
+//    })
+//    @GetMapping("/lesson/{lessonId}")
+//    @HasAnyRole({AuthConstants.ADMIN_ROLE, AuthConstants.INSTRUCTOR_ROLE})
+//    public ApiResponse<Page<UserProgressDto>> getProgressByLesson(
+//            @PathVariable UUID lessonId,
+//            @RequestParam(defaultValue = "0") int page,
+//            @RequestParam(defaultValue = "20") int size) {
+//        return ApiResponse.success(userProgressService.getProgressByLesson(lessonId, page, size));
+//    }
+//
+//    @Operation(summary = "Update user progress")
+//    @ApiResponses(value = {
+//            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+//                    responseCode = "200",
+//                    description = "Successfully updated user progress",
+//                    content = @Content(schema = @Schema(implementation = UserProgressDto.class))
+//            ),
+//            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+//                    responseCode = "403",
+//                    description = "Unauthorized access"
+//            ),
+//            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+//                    responseCode = "404",
+//                    description = "User or lesson not found"
+//            )
+//    })
+//    @PutMapping("/user/{userId}/lesson/{lessonId}")
+//    @PreAuthorize("isAuthenticated()")
+//    public ApiResponse<UserProgressDto> updateProgress(
+//            @PathVariable UUID userId,
+//            @PathVariable UUID lessonId,
+//            @RequestParam boolean completed,
+//            @RequestParam(required = false) Long lastWatchedTime) {
+//        return ApiResponse.success(userProgressService.updateProgress(userId, lessonId, completed, lastWatchedTime));
+//    }
 }
