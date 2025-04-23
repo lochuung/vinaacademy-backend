@@ -1,4 +1,4 @@
-package com.vinaacademy.platform.feature.lesson.service;
+package com.vinaacademy.platform.feature.lesson.service.impl;
 
 import com.vinaacademy.platform.exception.BadRequestException;
 import com.vinaacademy.platform.exception.NotFoundException;
@@ -18,6 +18,7 @@ import com.vinaacademy.platform.feature.lesson.factory.LessonCreator;
 import com.vinaacademy.platform.feature.lesson.factory.LessonCreatorFactory;
 import com.vinaacademy.platform.feature.lesson.mapper.LessonMapper;
 import com.vinaacademy.platform.feature.lesson.repository.LessonRepository;
+import com.vinaacademy.platform.feature.lesson.service.LessonService;
 import com.vinaacademy.platform.feature.log.service.LogService;
 import com.vinaacademy.platform.feature.section.entity.Section;
 import com.vinaacademy.platform.feature.section.repository.SectionRepository;
