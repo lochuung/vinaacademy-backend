@@ -9,6 +9,7 @@ import com.vinaacademy.platform.feature.course.dto.CourseDetailsResponse;
 import com.vinaacademy.platform.feature.course.dto.CourseDto;
 import com.vinaacademy.platform.feature.course.dto.CourseRequest;
 import com.vinaacademy.platform.feature.course.dto.CourseSearchRequest;
+import com.vinaacademy.platform.feature.course.dto.CourseStatusRequest;
 import com.vinaacademy.platform.feature.course.entity.Course;
 import com.vinaacademy.platform.feature.course.enums.CourseStatus;
 import com.vinaacademy.platform.feature.course.mapper.CourseMapper;
@@ -403,6 +404,17 @@ public class CourseServiceImpl implements CourseService {
                 .orElseThrow(() -> BadRequestException.message("Khóa học không tồn tại"));
         return course.getSlug();
     }
+
+	@Override
+	public Boolean updateStatusCourse(CourseStatusRequest courseStatusRequest) {
+		Course course = courseRepository.findBySlug(courseStatusRequest.getSlug())
+                .orElseThrow(() -> BadRequestException.message("Khóa học không tồn tại"));
+		if (courseStatusRequest.getStatus() == null)
+			throw BadRequestException.message("Thiếu dữ liệu cần thiết");
+		course.setStatus(courseStatusRequest.getStatus());
+		courseRepository.save(course);
+		return null;
+	}
 
 	
 }

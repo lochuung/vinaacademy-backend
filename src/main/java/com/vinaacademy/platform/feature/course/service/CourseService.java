@@ -4,6 +4,8 @@ import com.vinaacademy.platform.feature.course.dto.CourseDetailsResponse;
 import com.vinaacademy.platform.feature.course.dto.CourseDto;
 import com.vinaacademy.platform.feature.course.dto.CourseRequest;
 import com.vinaacademy.platform.feature.course.dto.CourseSearchRequest;
+import com.vinaacademy.platform.feature.course.dto.CourseStatusRequest;
+
 import org.springframework.data.domain.Page;
 
 import java.util.List;
@@ -59,7 +61,6 @@ public interface CourseService {
     String getCourseSlugById(UUID id);
     
     Boolean existByCourseSlug(String slug);
-
-//    CourseDto duplicateCourse(UUID courseId, String newName);
-
+    
+    Boolean updateStatusCourse(CourseStatusRequest courseStatusRequest);
 }

@@ -7,7 +7,9 @@ import com.vinaacademy.platform.feature.course.dto.CourseDetailsResponse;
 import com.vinaacademy.platform.feature.course.dto.CourseDto;
 import com.vinaacademy.platform.feature.course.dto.CourseRequest;
 import com.vinaacademy.platform.feature.course.dto.CourseSearchRequest;
+import com.vinaacademy.platform.feature.course.dto.CourseStatusRequest;
 import com.vinaacademy.platform.feature.course.entity.Course;
+import com.vinaacademy.platform.feature.course.enums.CourseStatus;
 import com.vinaacademy.platform.feature.course.repository.CourseRepository;
 import com.vinaacademy.platform.feature.course.service.CourseService;
 import com.vinaacademy.platform.feature.user.auth.annotation.HasAnyRole;
@@ -38,7 +40,7 @@ public class CourseController {
     private final CourseRepository courseRepository;
     private final SecurityHelper securityHelper;
 	
-    @HasAnyRole({AuthConstants.ADMIN_ROLE, AuthConstants.INSTRUCTOR_ROLE})
+    @HasAnyRole({AuthConstants.ADMIN_ROLE, AuthConstants.INSTRUCTOR_ROLE, AuthConstants.STAFF_ROLE})
     @PostMapping
     public ApiResponse<CourseDto> createCourse(@RequestBody @Valid CourseRequest request) {
         // Only ADMIN and INSTRUCTOR can create courses
@@ -53,7 +55,7 @@ public class CourseController {
     }
     
     //Kiểm tra slug đã tồn tại hay chưa
-    @HasAnyRole({AuthConstants.ADMIN_ROLE, AuthConstants.INSTRUCTOR_ROLE})
+    @HasAnyRole({AuthConstants.ADMIN_ROLE, AuthConstants.INSTRUCTOR_ROLE, AuthConstants.STAFF_ROLE})
     @GetMapping("/check/{slug}")
     public ApiResponse<Boolean> checkCourse(@PathVariable String slug) {
         log.debug("Check course with slug: {}", slug);
@@ -85,6 +87,14 @@ public class CourseController {
                 searchRequest, page, size, sortBy, sortDirection);
         log.debug("Filter courses with criteria: {}", searchRequest);
         return ApiResponse.success(coursePage);
+    }
+    
+    @PutMapping("/status/{slug}")
+    @HasAnyRole({AuthConstants.ADMIN_ROLE, AuthConstants.STAFF_ROLE})
+    public ApiResponse<Boolean> updateStatusCourse(@RequestBody @Valid CourseStatusRequest courseStatusRequest){
+    	Boolean update = courseService.updateStatusCourse(courseStatusRequest);
+    	log.debug("Update status course "+courseStatusRequest.getSlug() +" => "+ courseStatusRequest.getStatus());
+    	return ApiResponse.success(update);
     }
 
     @HasAnyRole({AuthConstants.ADMIN_ROLE, AuthConstants.INSTRUCTOR_ROLE})
