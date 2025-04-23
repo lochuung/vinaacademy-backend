@@ -3,9 +3,13 @@ package com.vinaacademy.platform.feature.course.repository.specification;
 import com.vinaacademy.platform.feature.course.entity.Course;
 import com.vinaacademy.platform.feature.course.enums.CourseLevel;
 import com.vinaacademy.platform.feature.course.enums.CourseStatus;
+import com.vinaacademy.platform.feature.instructor.CourseInstructor;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
 public class CourseSpecification {
 
@@ -90,5 +94,17 @@ public class CourseSpecification {
             return "%";
         }
         return "%" + searchTerm.toLowerCase() + "%";
+    }
+
+    // Thêm phương thức để lọc theo instructor
+    public static Specification<Course> hasInstructor(UUID instructorId) {
+        if (instructorId == null) {
+            return null;
+        }
+
+        return (root, query, cb) -> {
+            Join<Course, CourseInstructor> instructorJoin = root.join("instructors", JoinType.INNER);
+            return cb.equal(instructorJoin.get("instructor").get("id"), instructorId);
+        };
     }
 }
