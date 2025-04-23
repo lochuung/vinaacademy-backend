@@ -1,18 +1,28 @@
 package com.vinaacademy.platform.feature.course;
 
+import com.vinaacademy.platform.exception.BadRequestException;
+import com.vinaacademy.platform.feature.common.exception.ResourceNotFoundException;
 import com.vinaacademy.platform.feature.common.response.ApiResponse;
 import com.vinaacademy.platform.feature.course.dto.CourseDetailsResponse;
 import com.vinaacademy.platform.feature.course.dto.CourseDto;
 import com.vinaacademy.platform.feature.course.dto.CourseRequest;
 import com.vinaacademy.platform.feature.course.dto.CourseSearchRequest;
+import com.vinaacademy.platform.feature.course.dto.CourseStatusRequest;
+import com.vinaacademy.platform.feature.course.entity.Course;
+import com.vinaacademy.platform.feature.course.enums.CourseStatus;
+import com.vinaacademy.platform.feature.course.repository.CourseRepository;
 import com.vinaacademy.platform.feature.course.service.CourseService;
 import com.vinaacademy.platform.feature.user.auth.annotation.HasAnyRole;
+import com.vinaacademy.platform.feature.user.auth.helpers.SecurityHelper;
 import com.vinaacademy.platform.feature.user.constant.AuthConstants;
+import com.vinaacademy.platform.feature.user.entity.User;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,8 +37,10 @@ import java.util.UUID;
 @SecurityRequirement(name = "bearerAuth")
 public class CourseController {
 	private final CourseService courseService;
+    private final CourseRepository courseRepository;
+    private final SecurityHelper securityHelper;
 	
-    @HasAnyRole({AuthConstants.ADMIN_ROLE, AuthConstants.INSTRUCTOR_ROLE})
+    @HasAnyRole({AuthConstants.ADMIN_ROLE, AuthConstants.INSTRUCTOR_ROLE, AuthConstants.STAFF_ROLE})
     @PostMapping
     public ApiResponse<CourseDto> createCourse(@RequestBody @Valid CourseRequest request) {
         // Only ADMIN and INSTRUCTOR can create courses
@@ -43,7 +55,7 @@ public class CourseController {
     }
     
     //Kiểm tra slug đã tồn tại hay chưa
-    @HasAnyRole({AuthConstants.ADMIN_ROLE, AuthConstants.INSTRUCTOR_ROLE})
+    @HasAnyRole({AuthConstants.ADMIN_ROLE, AuthConstants.INSTRUCTOR_ROLE, AuthConstants.STAFF_ROLE})
     @GetMapping("/check/{slug}")
     public ApiResponse<Boolean> checkCourse(@PathVariable String slug) {
         log.debug("Check course with slug: {}", slug);
@@ -75,6 +87,14 @@ public class CourseController {
                 searchRequest, page, size, sortBy, sortDirection);
         log.debug("Filter courses with criteria: {}", searchRequest);
         return ApiResponse.success(coursePage);
+    }
+    
+    @PutMapping("/status/{slug}")
+    @HasAnyRole({AuthConstants.ADMIN_ROLE, AuthConstants.STAFF_ROLE})
+    public ApiResponse<Boolean> updateStatusCourse(@RequestBody @Valid CourseStatusRequest courseStatusRequest){
+    	Boolean update = courseService.updateStatusCourse(courseStatusRequest);
+    	log.debug("Update status course "+courseStatusRequest.getSlug() +" => "+ courseStatusRequest.getStatus());
+    	return ApiResponse.success(update);
     }
 
     @HasAnyRole({AuthConstants.ADMIN_ROLE, AuthConstants.INSTRUCTOR_ROLE})
@@ -114,5 +134,61 @@ public class CourseController {
         Map<String, String> response = new HashMap<>();
         response.put("slug", slug);
         return ApiResponse.success(response);
+    }
+
+    /**
+     * Lấy ID khóa học từ slug
+     */
+    @GetMapping("/id-by-slug/{slug}")
+    public ResponseEntity<ApiResponse<Map<String, UUID>>> getCourseIdBySlug(@PathVariable String slug) {
+        try {
+            Course course = courseRepository.findBySlug(slug)
+                    .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy khóa học với slug: " + slug));
+
+            Map<String, UUID> response = new HashMap<>();
+            response.put("id", course.getId());
+
+            return ResponseEntity.ok(new ApiResponse<>("success", "Lấy ID khóa học thành công", response));
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ApiResponse<>("error", e.getMessage(), null));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>("error", "Lỗi khi lấy ID khóa học: " + e.getMessage(), null));
+        }
+    }
+
+    @GetMapping("/instructor/courses")
+    @HasAnyRole({AuthConstants.INSTRUCTOR_ROLE})
+    public ApiResponse<Page<CourseDto>> getInstructorCourses(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdDate") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDirection) {
+
+        User currentUser = securityHelper.getCurrentUser();
+        Page<CourseDto> coursePage = courseService.getCoursesByInstructor(
+                currentUser.getId(), page, size, sortBy, sortDirection);
+
+        log.debug("Lấy danh sách khóa học của giảng viên: {}", currentUser.getId());
+        return ApiResponse.success(coursePage);
+    }
+
+    @GetMapping("/instructor/search")
+    @HasAnyRole({AuthConstants.INSTRUCTOR_ROLE})
+    public ApiResponse<Page<CourseDto>> searchInstructorCourses(
+            @ModelAttribute CourseSearchRequest searchRequest,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdDate") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDirection) {
+
+        User currentUser = securityHelper.getCurrentUser();
+
+        Page<CourseDto> coursePage = courseService.searchInstructorCourses(
+                currentUser.getId(), searchRequest, page, size, sortBy, sortDirection);
+
+        log.debug("Tìm kiếm khóa học của giảng viên: {}", currentUser.getId());
+        return ApiResponse.success(coursePage);
     }
 }

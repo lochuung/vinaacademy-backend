@@ -37,4 +37,6 @@ public interface CourseReviewService {
     //Kiểm tra người dùng đã đăng ký khóa học chưa
     boolean isUserEnrolledInCourse(UUID userId, UUID courseId);
 
+    //Kiểm tra đánh giá có thuộc về người dùng hay không
+    boolean isReviewOwnedByUser(Long reviewId, UUID userId);
 }

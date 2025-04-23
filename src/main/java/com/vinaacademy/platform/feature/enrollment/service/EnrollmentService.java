@@ -5,6 +5,7 @@ import com.vinaacademy.platform.feature.enrollment.dto.EnrollmentResponse;
 import com.vinaacademy.platform.feature.enrollment.enums.ProgressStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -87,4 +88,13 @@ public interface EnrollmentService {
      * @return Page chứa danh sách đăng ký của khóa học
      */
     Page<EnrollmentResponse> getCourseEnrollments(UUID courseId, ProgressStatus status, Pageable pageable);
+
+    @Transactional(readOnly = true)
+    boolean isEnrollmentOwnerByUser(Long enrollmentId, UUID userId);
+
+    @Transactional(readOnly = true)
+    boolean isCourseOwnerByInstructor(UUID CourseId, UUID instructorId);
+
+    @Transactional(readOnly = true)
+    boolean isEnrollmentInCourseOfInstructor(Long enrollmentId, UUID instructorId);
 }
