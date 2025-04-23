@@ -202,8 +202,13 @@ public class LessonServiceImpl implements LessonService {
             throw BadRequestException.message("Bài học này là bài kiểm tra, không thể đánh dấu hoàn thành");
         }
 
+        markLessonCompleted(lesson, currentUser);
+    }
+
+    public void markLessonCompleted(Lesson lesson, User currentUser) {
         // 1. Mark lesson completed if not already
-        Optional<UserProgress> userProgressOpt = userProgressRepository.findByLessonIdAndUserId(lessonId, currentUser.getId());
+        Optional<UserProgress> userProgressOpt = userProgressRepository
+                .findByLessonIdAndUserId(lesson.getId(), currentUser.getId());
 
         UserProgress userProgress = userProgressOpt.orElseGet(() ->
                 userProgressRepository.save(UserProgress.builder()
