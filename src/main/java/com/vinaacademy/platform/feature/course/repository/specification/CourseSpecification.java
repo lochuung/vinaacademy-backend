@@ -34,6 +34,15 @@ public class CourseSpecification {
             return criteriaBuilder.equal(root.get("status"), status);
         };
     }
+    
+    public static Specification<Course> dontHasStatus(CourseStatus status) {
+        return (root, query, criteriaBuilder) -> {
+            if (status == null) {
+                return criteriaBuilder.conjunction();
+            }
+            return criteriaBuilder.notEqual(root.get("status"), status);
+        };
+    }
 
     public static Specification<Course> hasCategory(String categorySlug) {
         return (root, query, criteriaBuilder) -> {

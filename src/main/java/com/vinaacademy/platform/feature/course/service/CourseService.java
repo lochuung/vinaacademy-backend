@@ -1,5 +1,6 @@
 package com.vinaacademy.platform.feature.course.service;
 
+import com.vinaacademy.platform.feature.course.dto.CourseCountStatusDto;
 import com.vinaacademy.platform.feature.course.dto.CourseDetailsResponse;
 import com.vinaacademy.platform.feature.course.dto.CourseDto;
 import com.vinaacademy.platform.feature.course.dto.CourseRequest;
@@ -63,4 +64,9 @@ public interface CourseService {
     Boolean existByCourseSlug(String slug);
     
     Boolean updateStatusCourse(CourseStatusRequest courseStatusRequest);
+    
+    Page<CourseDetailsResponse> searchCourseDetails(CourseSearchRequest searchRequest, int page, int size,
+            String sortBy, String sortDirection);
+    
+    CourseCountStatusDto getCountCourses();
 }
