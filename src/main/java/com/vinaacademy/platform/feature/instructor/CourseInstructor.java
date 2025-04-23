@@ -30,5 +30,5 @@ public class CourseInstructor extends BaseEntity {
     private Course course;
 
     @Column(name = "is_owner", nullable = false)
-    private boolean isOwner;
+    private Boolean isOwner;
 }
