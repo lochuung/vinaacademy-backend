@@ -9,6 +9,7 @@ import com.vinaacademy.platform.feature.course.dto.CourseDetailsResponse;
 import com.vinaacademy.platform.feature.course.dto.CourseDto;
 import com.vinaacademy.platform.feature.course.dto.CourseRequest;
 import com.vinaacademy.platform.feature.course.dto.CourseSearchRequest;
+import com.vinaacademy.platform.feature.course.dto.CourseStatusRequest;
 import com.vinaacademy.platform.feature.course.entity.Course;
 import com.vinaacademy.platform.feature.course.enums.CourseStatus;
 import com.vinaacademy.platform.feature.course.mapper.CourseMapper;
@@ -22,20 +23,27 @@ import com.vinaacademy.platform.feature.enrollment.repository.EnrollmentReposito
 import com.vinaacademy.platform.feature.instructor.CourseInstructor;
 import com.vinaacademy.platform.feature.instructor.repository.CourseInstructorRepository;
 import com.vinaacademy.platform.feature.lesson.dto.LessonDto;
+import com.vinaacademy.platform.feature.lesson.dto.LessonRequest;
 import com.vinaacademy.platform.feature.lesson.entity.Lesson;
 import com.vinaacademy.platform.feature.lesson.entity.UserProgress;
 import com.vinaacademy.platform.feature.lesson.mapper.LessonMapper;
+import com.vinaacademy.platform.feature.quiz.entity.Quiz;
+import com.vinaacademy.platform.feature.reading.Reading;
 import com.vinaacademy.platform.feature.review.dto.CourseReviewDto;
 import com.vinaacademy.platform.feature.review.mapper.CourseReviewMapper;
 import com.vinaacademy.platform.feature.section.dto.SectionDto;
 import com.vinaacademy.platform.feature.section.entity.Section;
 import com.vinaacademy.platform.feature.section.mapper.SectionMapper;
+import com.vinaacademy.platform.feature.section.repository.SectionRepository;
 import com.vinaacademy.platform.feature.user.UserMapper;
+import com.vinaacademy.platform.feature.user.UserRepository;
 import com.vinaacademy.platform.feature.user.auth.helpers.SecurityHelper;
 import com.vinaacademy.platform.feature.user.constant.AuthConstants;
 import com.vinaacademy.platform.feature.user.entity.User;
+import com.vinaacademy.platform.feature.video.entity.Video;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -45,27 +53,40 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
+
 public class CourseServiceImpl implements CourseService {
 
-    private final CourseRepository courseRepository;
-    private final CategoryRepository categoryRepository;
-    private final EnrollmentRepository enrollmentRepository;
-
-    private final CourseMapper courseMapper;
-    private final CategoryService categoryService;
-    private final CourseInstructorRepository courseInstructorRepository;
-    private final UserProgressRepository lessonProgressRepository;
-    private final SectionMapper sectionMapper;
-    private final LessonMapper lessonMapper;
-
-    private final SecurityHelper securityHelper;
+    @Autowired
+    private CourseRepository courseRepository;
+    @Autowired
+    private CategoryRepository categoryRepository;
+    @Autowired
+    private SectionRepository sectionRepository;
+    @Autowired
+    private EnrollmentRepository enrollmentRepository;
+    @Autowired
+    private CourseMapper courseMapper;
+    @Autowired
+    private CategoryService categoryService;
+    @Autowired
+    private CourseInstructorRepository courseInstructorRepository;
+    @Autowired
+    private UserProgressRepository lessonProgressRepository;
+    @Autowired
+    private SectionMapper sectionMapper;
+    @Autowired
+    private LessonMapper lessonMapper;
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private SecurityHelper securityHelper;
 
     @Override
     public List<CourseDto> getCourses() {
@@ -81,6 +102,8 @@ public class CourseServiceImpl implements CourseService {
     	}
     	return true;
 	}
+
+
 
     @Override
     @Transactional(readOnly = true)
@@ -228,6 +251,45 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
+    public Page<CourseDto> getCoursesByInstructor(UUID instructorId, int page, int size,
+                                                  String sortBy, String sortDirection) {
+        Pageable pageable = createPageable(page, size, sortBy, sortDirection);
+
+        User instructor = userRepository.findById(instructorId)
+                .orElseThrow(() -> BadRequestException.message("Không tìm thấy giảng viên"));
+
+        Page<Course> coursePage = courseRepository.findByInstructorId(instructorId, pageable);
+        return coursePage.map(courseMapper::toDTO);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<CourseDto> searchInstructorCourses(
+            UUID instructorId,
+            CourseSearchRequest searchRequest,
+            int page,
+            int size,
+            String sortBy,
+            String sortDirection) {
+
+        Pageable pageable = createPageable(page, size, sortBy, sortDirection);
+
+        // Tạo specification cho việc tìm kiếm
+        Specification<Course> spec = Specification.where(CourseSpecification.hasInstructor(instructorId))
+                .and(CourseSpecification.hasKeyword(searchRequest.getKeyword()))
+                .and(CourseSpecification.hasStatus(searchRequest.getStatus()))
+                .and(CourseSpecification.hasCategory(searchRequest.getCategorySlug()))
+                .and(CourseSpecification.hasLevel(searchRequest.getLevel()))
+                .and(CourseSpecification.hasLanguage(searchRequest.getLanguage()))
+                .and(CourseSpecification.hasMinPrice(searchRequest.getMinPrice()))
+                .and(CourseSpecification.hasMaxPrice(searchRequest.getMaxPrice()))
+                .and(CourseSpecification.hasMinRating(searchRequest.getMinRating()));
+
+        Page<Course> coursePage = courseRepository.findAll(spec, pageable);
+        return coursePage.map(courseMapper::toDTO);
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public CourseDto getCourseLearning(String slug) {
         Course course = courseRepository.findBySlug(slug)
@@ -342,6 +404,17 @@ public class CourseServiceImpl implements CourseService {
                 .orElseThrow(() -> BadRequestException.message("Khóa học không tồn tại"));
         return course.getSlug();
     }
+
+	@Override
+	public Boolean updateStatusCourse(CourseStatusRequest courseStatusRequest) {
+		Course course = courseRepository.findBySlug(courseStatusRequest.getSlug())
+                .orElseThrow(() -> BadRequestException.message("Khóa học không tồn tại"));
+		if (courseStatusRequest.getStatus() == null)
+			throw BadRequestException.message("Thiếu dữ liệu cần thiết");
+		course.setStatus(courseStatusRequest.getStatus());
+		courseRepository.save(course);
+		return null;
+	}
 
 	
 }
