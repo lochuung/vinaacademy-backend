@@ -208,7 +208,11 @@ public class LessonServiceImpl implements LessonService {
     public void markLessonCompleted(Lesson lesson, User currentUser) {
         // 1. Mark lesson completed if not already
         Optional<UserProgress> userProgressOpt = userProgressRepository
-                .findByLessonIdAndUserId(lesson.getId(), currentUser.getId());
+                .findByLessonIdAndUserId(lesson.getId(), currentUser.getId())
+                .filter(userProgress -> !userProgress.isCompleted());
+        if (userProgressOpt.isPresent()) {
+            throw BadRequestException.message("Học viên đã hoàn thành bài học này");
+        }
 
         UserProgress userProgress = userProgressOpt.orElseGet(() ->
                 userProgressRepository.save(UserProgress.builder()
@@ -217,12 +221,6 @@ public class LessonServiceImpl implements LessonService {
                         .completed(true)
                         .build())
         );
-
-        if (userProgress.isCompleted()) {
-            throw BadRequestException.message("Học viên đã hoàn thành bài học này");
-        }
-
-        userProgress.setCompleted(true);
         userProgressRepository.save(userProgress);
 
         // 2. Update enrollment progress

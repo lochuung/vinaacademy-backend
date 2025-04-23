@@ -83,8 +83,8 @@ public class AuthorizationCheckerAspect {
 
                 } else if (paramName.equals(idParam)) {
                     Object arg = args[i];
-                    if (arg instanceof UUID) {
-                        return (UUID) arg;
+                    if (arg instanceof UUID uuid) {
+                        return uuid;
                     }
                 }
             }
