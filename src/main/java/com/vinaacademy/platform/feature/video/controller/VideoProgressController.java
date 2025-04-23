@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/video-progress")
+@RequestMapping("/api/v1/video-progress")
 @RequiredArgsConstructor
 public class VideoProgressController {
 

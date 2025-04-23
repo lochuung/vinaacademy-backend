@@ -30,8 +30,8 @@ public class VideoProgressCacheServiceImpl implements VideoProgressCacheService 
     public Long getProgress(UUID userId, UUID videoId) {
         String key = getCacheKey(userId, videoId);
         Object value = redisTemplate.opsForValue().get(key);
-        if (value instanceof Long) {
-            return (Long) value;
+        if (value instanceof Number) {
+            return Long.valueOf(value.toString());
         }
         return 0L;
     }
