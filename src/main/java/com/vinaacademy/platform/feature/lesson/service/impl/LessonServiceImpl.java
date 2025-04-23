@@ -210,7 +210,7 @@ public class LessonServiceImpl implements LessonService {
         // 1. Mark lesson completed if not already
         Optional<UserProgress> userProgressOpt = userProgressRepository
                 .findByLessonIdAndUserId(lesson.getId(), currentUser.getId())
-                .filter(userProgress -> !userProgress.isCompleted());
+                .filter(UserProgress::isCompleted);
         if (userProgressOpt.isPresent()) {
             throw BadRequestException.message("Học viên đã hoàn thành bài học này");
         }

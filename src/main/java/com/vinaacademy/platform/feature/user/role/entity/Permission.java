@@ -1,5 +1,6 @@
 package com.vinaacademy.platform.feature.user.role.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.vinaacademy.platform.feature.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -27,5 +28,6 @@ public class Permission extends BaseEntity {
     private String code;
 
     @ManyToMany(mappedBy = "permissions")
+    @JsonIgnore
     private Set<Role> roles;
 }

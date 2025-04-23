@@ -3,7 +3,7 @@ package com.vinaacademy.platform.feature.lesson.service.impl;
 import com.vinaacademy.platform.feature.course.repository.UserProgressRepository;
 import com.vinaacademy.platform.feature.lesson.dto.LessonProgressDto;
 import com.vinaacademy.platform.feature.lesson.mapper.LessonProgressMapper;
-import com.vinaacademy.platform.feature.lesson.service.UserProgressService;
+import com.vinaacademy.platform.feature.lesson.service.LessonProgressService;
 import com.vinaacademy.platform.feature.user.auth.helpers.SecurityHelper;
 import com.vinaacademy.platform.feature.user.entity.User;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +15,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class UserProgressServiceImpl implements UserProgressService {
+public class LessonProgressServiceImpl implements LessonProgressService {
     private final UserProgressRepository userProgressRepository;
 
     @Autowired private SecurityHelper securityHelper;

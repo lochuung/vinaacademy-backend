@@ -153,4 +153,10 @@ public class User extends BaseEntity {
     @BatchSize(size = 20)
     private List<UserProgress> progressList;
 
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                '}';
+    }
 }

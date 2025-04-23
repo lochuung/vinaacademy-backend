@@ -57,4 +57,11 @@ public class Coupon extends BaseEntity {
     @OneToMany(mappedBy = "coupon")
     private List<Cart> carts;
     // private Order orders;
+
+    @Override
+    public String toString() {
+        return "Coupon{" +
+                "id=" + id +
+                '}';
+    }
 }

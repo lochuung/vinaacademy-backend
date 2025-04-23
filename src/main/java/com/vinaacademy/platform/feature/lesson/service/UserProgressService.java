@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.UUID;
 
 public interface UserProgressService {
-    List<LessonProgressDto> getAllLessonProgressByCourse(UUID courseId);
     List<UserProgressDto> getProgressByUser(UUID userId, UUID courseId);
     Page<UserProgressDto> getProgressByCourse(UUID courseId, int page, int size);
     Page<UserProgressDto> getProgressByLesson(UUID lessonId, int page, int size);
