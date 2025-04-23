@@ -3,6 +3,7 @@ package com.vinaacademy.platform.feature.course;
 import com.vinaacademy.platform.exception.BadRequestException;
 import com.vinaacademy.platform.feature.common.exception.ResourceNotFoundException;
 import com.vinaacademy.platform.feature.common.response.ApiResponse;
+import com.vinaacademy.platform.feature.course.dto.CourseCountStatusDto;
 import com.vinaacademy.platform.feature.course.dto.CourseDetailsResponse;
 import com.vinaacademy.platform.feature.course.dto.CourseDto;
 import com.vinaacademy.platform.feature.course.dto.CourseRequest;
@@ -89,12 +90,32 @@ public class CourseController {
         return ApiResponse.success(coursePage);
     }
     
-    @PutMapping("/status/{slug}")
+    @GetMapping("/searchdetails")
+    @HasAnyRole({AuthConstants.ADMIN_ROLE, AuthConstants.STAFF_ROLE})
+    public ApiResponse<Page<CourseDetailsResponse>> searchCoursesDetail(
+            @Valid @ModelAttribute CourseSearchRequest searchRequest,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "name") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDirection) {
+        Page<CourseDetailsResponse> coursePage = courseService.searchCourseDetails(
+                searchRequest, page, size, sortBy, sortDirection);
+        log.debug("Filter courses with criteria: {}", searchRequest);
+        return ApiResponse.success(coursePage);
+    }
+    
+    @PutMapping("/statuschange")
     @HasAnyRole({AuthConstants.ADMIN_ROLE, AuthConstants.STAFF_ROLE})
     public ApiResponse<Boolean> updateStatusCourse(@RequestBody @Valid CourseStatusRequest courseStatusRequest){
     	Boolean update = courseService.updateStatusCourse(courseStatusRequest);
-    	log.debug("Update status course "+courseStatusRequest.getSlug() +" => "+ courseStatusRequest.getStatus());
+    	log.debug("Update status course "+courseStatusRequest.getSlug() +" => "+ courseStatusRequest.getStatus() +" - "+update);
     	return ApiResponse.success(update);
+    }
+    
+    @HasAnyRole({AuthConstants.STAFF_ROLE, AuthConstants.ADMIN_ROLE})
+    @GetMapping("/statuscount")
+    public ApiResponse<CourseCountStatusDto> getCourseCountByStatus() {
+        return ApiResponse.success(courseService.getCountCourses());
     }
 
     @HasAnyRole({AuthConstants.ADMIN_ROLE, AuthConstants.INSTRUCTOR_ROLE})
@@ -191,4 +212,6 @@ public class CourseController {
         log.debug("Tìm kiếm khóa học của giảng viên: {}", currentUser.getId());
         return ApiResponse.success(coursePage);
     }
+    
+    
 }

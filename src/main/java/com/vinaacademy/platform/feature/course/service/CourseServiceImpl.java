@@ -5,6 +5,7 @@ import com.vinaacademy.platform.feature.category.Category;
 import com.vinaacademy.platform.feature.category.repository.CategoryRepository;
 import com.vinaacademy.platform.feature.category.service.CategoryService;
 import com.vinaacademy.platform.feature.common.utils.SlugUtils;
+import com.vinaacademy.platform.feature.course.dto.CourseCountStatusDto;
 import com.vinaacademy.platform.feature.course.dto.CourseDetailsResponse;
 import com.vinaacademy.platform.feature.course.dto.CourseDto;
 import com.vinaacademy.platform.feature.course.dto.CourseRequest;
@@ -138,6 +139,55 @@ public class CourseServiceImpl implements CourseService {
 
         return response;
     }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public Page<CourseDetailsResponse> searchCourseDetails(CourseSearchRequest searchRequest, int page, int size,
+                                                           String sortBy, String sortDirection) {
+        Pageable pageable = createPageable(page, size, sortBy, sortDirection);
+
+        Specification<Course> spec = Specification.where(CourseSpecification.hasKeyword(searchRequest.getKeyword()))
+                .and(CourseSpecification.hasStatus(
+                        searchRequest.getStatus() != null ? searchRequest.getStatus() : null))
+                .and(CourseSpecification.dontHasStatus(CourseStatus.DRAFT))
+                .and(CourseSpecification.hasCategory(searchRequest.getCategorySlug()))
+                .and(CourseSpecification.hasLevel(searchRequest.getLevel()))
+                .and(CourseSpecification.hasLanguage(searchRequest.getLanguage()))
+                .and(CourseSpecification.hasMinPrice(searchRequest.getMinPrice()))
+                .and(CourseSpecification.hasMaxPrice(searchRequest.getMaxPrice()))
+                .and(CourseSpecification.hasMinRating(searchRequest.getMinRating()));
+
+        Page<Course> coursePage = courseRepository.findAll(spec, pageable);
+
+        return coursePage.map(course -> {
+            CourseDetailsResponse response = courseMapper.toCourseDetailsResponse(course);
+
+            // Set instructors
+            List<CourseInstructor> courseInstructors = courseInstructorRepository.findByCourse(course);
+            response.setInstructors(courseInstructors.stream()
+                    .map(ci -> UserMapper.INSTANCE.toDto(ci.getInstructor()))
+                    .toList());
+
+            // Set owner instructor
+            courseInstructorRepository.findByCourseAndIsOwnerTrue(course)
+                    .ifPresent(owner -> response.setOwnerInstructor(UserMapper.INSTANCE.toDto(owner.getInstructor())));
+
+            // Set sections and lessons
+            List<SectionDto> sectionDtos = processSectionsAndLessons(course.getSections());
+            response.setSections(sectionDtos);
+
+            // Set reviews
+            if (course.getCourseReviews() != null && !course.getCourseReviews().isEmpty()) {
+                List<CourseReviewDto> reviewDtos = course.getCourseReviews().stream()
+                        .map(CourseReviewMapper.INSTANCE::toDto)
+                        .toList();
+                response.setReviews(reviewDtos);
+            }
+
+            return response;
+        });
+    }
+
 
     @Override
     public CourseDto createCourse(CourseRequest request) {
@@ -413,8 +463,36 @@ public class CourseServiceImpl implements CourseService {
 			throw BadRequestException.message("Thiếu dữ liệu cần thiết");
 		course.setStatus(courseStatusRequest.getStatus());
 		courseRepository.save(course);
-		return null;
+		return true;
 	}
+	
+	@Override
+	public CourseCountStatusDto getCountCourses() {
+        List<Object[]> statusCounts = courseRepository.countCoursesByStatus();
+
+        long totalPublished = 0;
+        long totalRejected = 0;
+        long totalPending = 0;
+
+        for (Object[] result : statusCounts) {
+            CourseStatus status = (CourseStatus) result[0];
+            long count = (long) result[1];
+
+            if (status == CourseStatus.PUBLISHED) {
+                totalPublished = count;
+            } else if (status == CourseStatus.REJECTED) {
+                totalRejected = count;
+            } else if (status == CourseStatus.PENDING) {
+                totalPending = count;
+            }
+        }
+        CourseCountStatusDto countStatusDto = CourseCountStatusDto.builder()
+        		.totalPending(totalPending)
+        		.totalPublished(totalPublished)
+        		.totalRejected(totalRejected)
+        		.build();
+        return countStatusDto;
+    }
 
 	
 }
