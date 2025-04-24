@@ -3,6 +3,7 @@ package com.vinaacademy.platform.feature.lesson;
 import com.vinaacademy.platform.feature.common.response.ApiResponse;
 import com.vinaacademy.platform.feature.lesson.dto.LessonDto;
 import com.vinaacademy.platform.feature.lesson.dto.LessonRequest;
+import com.vinaacademy.platform.feature.lesson.service.LessonReorderService;
 import com.vinaacademy.platform.feature.lesson.service.LessonService;
 import com.vinaacademy.platform.feature.user.auth.annotation.HasAnyRole;
 import com.vinaacademy.platform.feature.user.constant.AuthConstants;
@@ -15,6 +16,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,12 +25,14 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/lessons")
-@RequiredArgsConstructor
 @Slf4j
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Lessons", description = "Lesson management APIs")
 public class LessonController {
-    private final LessonService lessonService;
+    @Autowired
+    private LessonService lessonService;
+    @Autowired
+    private LessonReorderService lessonReorderService;
 
     @Operation(summary = "Get lesson by ID")
     @ApiResponses(value = {
@@ -156,5 +160,31 @@ public class LessonController {
         log.info("Completing lesson with ID: {}", lessonId);
         lessonService.completeLesson(lessonId);
         return ApiResponse.success("Lesson completed successfully");
+    }
+
+    @Operation(summary = "Reorder lessons in a section")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "Successfully reordered lessons"
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid lesson IDs"
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "403",
+                    description = "Unauthorized access"
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "404",
+                    description = "Section not found"
+            )
+    })
+    @HasAnyRole({AuthConstants.ADMIN_ROLE, AuthConstants.INSTRUCTOR_ROLE})
+    @PutMapping("/reorder/{sectionId}")
+    public ApiResponse<Void> reorderLessons(@PathVariable UUID sectionId, @RequestBody List<UUID> lessonIds) {
+        lessonReorderService.reorderLessons(sectionId, lessonIds);
+        return ApiResponse.success("Lessons reordered successfully");
     }
 }

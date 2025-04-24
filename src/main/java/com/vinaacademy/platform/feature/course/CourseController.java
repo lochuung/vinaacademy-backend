@@ -212,6 +212,40 @@ public class CourseController {
         log.debug("Tìm kiếm khóa học của giảng viên: {}", currentUser.getId());
         return ApiResponse.success(coursePage);
     }
-    
-    
+    /**
+     * API để chuyển trạng thái khóa học sang PENDING khi thêm bài giảng mới
+     */
+    @PutMapping("/submit-for-review/{courseId}")
+    @HasAnyRole({AuthConstants.INSTRUCTOR_ROLE})
+    public ApiResponse<Boolean> submitCourseForReview(@PathVariable UUID courseId) {
+        try {
+            // Lấy thông tin người dùng hiện tại
+            User currentUser = securityHelper.getCurrentUser();
+
+            // Kiểm tra sự tồn tại của khóa học
+            Course course = courseRepository.findById(courseId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy khóa học với ID: " + courseId));
+
+            // Kiểm tra quyền của người dùng (giảng viên của khóa học)
+            boolean isInstructor = courseService.isInstructorOfCourse(currentUser.getId(), course.getId());
+            if (!isInstructor) {
+                throw BadRequestException.message("Bạn không có quyền cập nhật khóa học này");
+            }
+
+            // Chuyển trạng thái khóa học sang PENDING
+            course.setStatus(CourseStatus.PENDING);
+            courseRepository.save(course);
+
+            log.info("Khóa học với ID {} đã được chuyển sang trạng thái PENDING", courseId);
+            return ApiResponse.success(true);
+        } catch (ResourceNotFoundException | BadRequestException e) {
+            log.error("Lỗi khi chuyển trạng thái khóa học: {}", e.getMessage(), e);
+            return ApiResponse.error(e.getMessage());
+        } catch (Exception e) {
+            log.error("Lỗi không xác định khi chuyển trạng thái khóa học: {}", e.getMessage(), e);
+            return ApiResponse.error("Không thể gửi khóa học đi duyệt: " + e.getMessage());
+        }
+    }
+
+
 }

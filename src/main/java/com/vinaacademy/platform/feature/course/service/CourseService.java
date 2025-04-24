@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.UUID;
 
 public interface CourseService {
+
+    Boolean isInstructorOfCourse(UUID courseId, UUID instructorId);
     List<CourseDto> getCourses();
     
     List<CourseDto> getCoursesByCategory(String slug);
