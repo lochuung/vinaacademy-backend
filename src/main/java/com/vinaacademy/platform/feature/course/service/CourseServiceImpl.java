@@ -299,7 +299,7 @@ public class CourseServiceImpl implements CourseService {
 
         // Build specification dynamically using the utility class
         Specification<Course> spec = Specification.where(CourseSpecification.hasKeyword(searchRequest.getKeyword()))
-                .and(CourseSpecification.hasStatus(searchRequest.getStatus() != null ? searchRequest.getStatus() : CourseStatus.PUBLISHED))
+                .and(CourseSpecification.hasStatus(CourseStatus.PUBLISHED))
                 .and(CourseSpecification.hasCategory(searchRequest.getCategorySlug()))
                 .and(CourseSpecification.hasLevel(searchRequest.getLevel()))
                 .and(CourseSpecification.hasLanguage(searchRequest.getLanguage()))
