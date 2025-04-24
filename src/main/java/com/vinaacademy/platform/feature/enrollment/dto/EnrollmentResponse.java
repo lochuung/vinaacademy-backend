@@ -23,4 +23,7 @@ public class EnrollmentResponse {
     private ProgressStatus status;
     private LocalDateTime startAt;
     private LocalDateTime completeAt;
+    private long completedLessons;
+    private long totalLessons;
+    private String category;
 }
