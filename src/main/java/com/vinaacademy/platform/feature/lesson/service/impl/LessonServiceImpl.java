@@ -3,6 +3,8 @@ package com.vinaacademy.platform.feature.lesson.service.impl;
 import com.vinaacademy.platform.exception.BadRequestException;
 import com.vinaacademy.platform.exception.NotFoundException;
 import com.vinaacademy.platform.exception.ValidationException;
+import com.vinaacademy.platform.feature.course.entity.Course;
+import com.vinaacademy.platform.feature.course.enums.CourseStatus;
 import com.vinaacademy.platform.feature.course.enums.LessonType;
 import com.vinaacademy.platform.feature.course.repository.CourseRepository;
 import com.vinaacademy.platform.feature.course.repository.UserProgressRepository;
@@ -94,7 +96,34 @@ public class LessonServiceImpl implements LessonService {
         List<Lesson> existingLessons = lessonRepository.findBySectionOrderByOrderIndex(section);
         request.setOrderIndex(existingLessons.size()); // Đặt ở vị trí cuối cùng
 
-        return createLesson(request, currentUser);
+        // Tạo lesson mới
+        LessonDto newLesson = createLesson(request, currentUser);
+
+        // Cập nhật trạng thái khóa học nếu cần
+        updateCourseStatusAfterAddingLesson(section.getCourse());
+
+        return newLesson;
+    }
+
+    /**
+     * Cập nhật trạng thái khóa học sau khi thêm bài học mới
+     * - Nếu trạng thái hiện tại là DRAFT hoặc PENDING, giữ nguyên
+     * - Nếu trạng thái hiện tại là REJECTED hoặc PUBLISHED, chuyển thành PENDING
+     *
+     * @param course Khóa học cần cập nhật trạng thái
+     */
+    private void updateCourseStatusAfterAddingLesson(Course course) {
+        CourseStatus currentStatus = course.getStatus();
+
+        // Chỉ thay đổi trạng thái nếu là REJECTED hoặc PUBLISHED
+        if (currentStatus == CourseStatus.REJECTED || currentStatus == CourseStatus.PUBLISHED) {
+            course.setStatus(CourseStatus.PENDING);
+            courseRepository.save(course);
+
+            // Ghi log việc thay đổi trạng thái
+            log.info("Course status changed from {} to PENDING due to new lesson addition. Course ID: {}",
+                    currentStatus, course.getId());
+        }
     }
 
     @Override
@@ -137,6 +166,7 @@ public class LessonServiceImpl implements LessonService {
         log.info("Updating lesson with id: {}", id);
         Lesson existingLesson = findLessonById(id);
         Section section = findSectionById(request.getSectionId());
+        Course course = section.getCourse();
 
         LessonDto oldLessonData = lessonMapper.lessonToLessonDto(existingLesson);
 
@@ -162,6 +192,9 @@ public class LessonServiceImpl implements LessonService {
 
         updateLessonByType(existingLesson, request);
 
+        // Cập nhật trạng thái khóa học sau khi cập nhật bài học
+        updateCourseStatusAfterModifyingLessons(course);
+
         // Log the update
         logService.log("Lesson", "UPDATE",
                 String.format("Updated %s lesson in section: %s",
@@ -181,6 +214,9 @@ public class LessonServiceImpl implements LessonService {
     public void deleteLesson(UUID id) {
         log.info("Deleting lesson with id: {}", id);
         Lesson lesson = findLessonById(id);
+        Section section = lesson.getSection();
+        Course course = section.getCourse();
+        int deletedOrderIndex = lesson.getOrderIndex();
 
         // Check if user has permission using AuthorizationService
         if (!authorizationService.canModifyResource(lesson.getAuthor().getId())) {
@@ -191,11 +227,45 @@ public class LessonServiceImpl implements LessonService {
 
         lessonRepository.delete(lesson);
 
+        // Cập nhật lại orderIndex cho các lesson sau lesson bị xóa
+        List<Lesson> lessonsToUpdate = lessonRepository.findBySectionOrderByOrderIndex(section).stream()
+                .filter(l -> l.getOrderIndex() > deletedOrderIndex)
+                .collect(Collectors.toList());
+
+        for (Lesson lessonToUpdate : lessonsToUpdate) {
+            lessonToUpdate.setOrderIndex(lessonToUpdate.getOrderIndex() - 1);
+            lessonRepository.save(lessonToUpdate);
+        }
+
+        // Cập nhật trạng thái khóa học sau khi xóa bài học
+        updateCourseStatusAfterModifyingLessons(course);
+
         // Log the deletion
         logService.log("Lesson", "DELETE",
                 String.format("Deleted %s lesson: %s",
                         lesson.getType(), lesson.getTitle()),
                 lessonData, null);
+    }
+
+    /**
+     * Cập nhật trạng thái khóa học sau khi thay đổi bài học (thêm, xóa, sắp xếp lại)
+     * - Nếu trạng thái hiện tại là DRAFT hoặc PENDING, giữ nguyên
+     * - Nếu trạng thái hiện tại là REJECTED hoặc PUBLISHED, chuyển thành PENDING
+     *
+     * @param course Khóa học cần cập nhật trạng thái
+     */
+    private void updateCourseStatusAfterModifyingLessons(Course course) {
+        CourseStatus currentStatus = course.getStatus();
+
+        // Chỉ thay đổi trạng thái nếu là REJECTED hoặc PUBLISHED
+        if (currentStatus == CourseStatus.REJECTED || currentStatus == CourseStatus.PUBLISHED) {
+            course.setStatus(CourseStatus.PENDING);
+            courseRepository.save(course);
+
+            // Ghi log việc thay đổi trạng thái
+            log.info("Course status changed from {} to PENDING due to lesson modification. Course ID: {}",
+                    currentStatus, course.getId());
+        }
     }
 
     @Transactional
