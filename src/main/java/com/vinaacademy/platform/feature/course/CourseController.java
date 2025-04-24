@@ -188,8 +188,15 @@ public class CourseController {
             @RequestParam(defaultValue = "desc") String sortDirection) {
 
         User currentUser = securityHelper.getCurrentUser();
+
+        log.debug("Lấy danh sách khóa học của giảng viên với params: page={}, size={}, sortBy={}, sortDirection={}",
+                page, size, sortBy, sortDirection);
+
         Page<CourseDto> coursePage = courseService.getCoursesByInstructor(
                 currentUser.getId(), page, size, sortBy, sortDirection);
+
+        log.debug("Tìm thấy {} khóa học của giảng viên {}",
+                coursePage.getTotalElements(), currentUser.getId());
 
         log.debug("Lấy danh sách khóa học của giảng viên: {}", currentUser.getId());
         return ApiResponse.success(coursePage);

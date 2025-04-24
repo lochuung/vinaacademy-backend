@@ -114,4 +114,5 @@ public interface CourseRepository extends JpaRepository<Course, UUID>, JpaSpecif
     List<Object[]> countCoursesByStatus();
 
 
+
 }
