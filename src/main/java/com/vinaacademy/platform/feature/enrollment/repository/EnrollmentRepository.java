@@ -11,6 +11,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -18,7 +19,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
+public interface EnrollmentRepository extends JpaRepository<Enrollment, Long>, JpaSpecificationExecutor<Enrollment>  {
     //Tìm đăng ký khóa học theo người dùng và khóa học
     Optional<Enrollment> findByUserIdAndCourseId(UUID userId, UUID courseId);
 

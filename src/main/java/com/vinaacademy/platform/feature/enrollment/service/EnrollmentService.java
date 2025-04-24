@@ -6,6 +6,8 @@ import com.vinaacademy.platform.feature.enrollment.enums.ProgressStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
+import com.vinaacademy.platform.feature.common.response.PaginationResponse;
+import com.vinaacademy.platform.feature.enrollment.dto.StudentProgressDto;
 
 import java.util.List;
 import java.util.UUID;
@@ -97,4 +99,37 @@ public interface EnrollmentService {
 
     @Transactional(readOnly = true)
     boolean isEnrollmentInCourseOfInstructor(Long enrollmentId, UUID instructorId);
+
+    /**
+     * Lấy danh sách học viên của các khóa học mà instructor giảng dạy
+     *
+     * @param instructorId ID của giảng viên
+     * @param courseId ID của khóa học (nullable)
+     * @param search Từ khóa tìm kiếm theo tên hoặc email học viên (nullable)
+     * @param status Trạng thái tiến độ học tập (nullable)
+     * @param pageable Thông tin phân trang
+     * @return Trang danh sách học viên và tiến độ học tập
+     */
+    PaginationResponse<StudentProgressDto> getStudentsProgressForInstructor(
+            UUID instructorId,
+            UUID courseId,
+            String search,
+            ProgressStatus status,
+            Pageable pageable);
+
+    /**
+     * Kiểm tra người dùng có phải là giảng viên của bất kỳ khóa học nào không
+     *
+     * @param instructorId ID của giảng viên
+     * @return true nếu là giảng viên của ít nhất một khóa học
+     */
+    boolean isInstructor(UUID instructorId);
+
+    /**
+     * Lấy danh sách các khóa học mà instructor giảng dạy
+     *
+     * @param instructorId ID của giảng viên
+     * @return Danh sách ID của các khóa học
+     */
+    List<UUID> getCourseIdsByInstructor(UUID instructorId);
 }
