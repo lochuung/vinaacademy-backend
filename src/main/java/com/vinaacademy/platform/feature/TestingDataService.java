@@ -297,7 +297,7 @@ public class TestingDataService {
                         .totalRating(0)
                         .totalStudent(0)
                         .totalSection(2)
-                        .totalLesson(0)
+                        .totalLesson(2)
                         .sections(new ArrayList<>())
                         .instructors(new ArrayList<>())
                         .build();

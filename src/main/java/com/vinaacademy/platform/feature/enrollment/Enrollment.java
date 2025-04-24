@@ -46,6 +46,10 @@ public class Enrollment {
     @Column(name = "complete_at")
     private LocalDateTime completeAt;
 
+    @Column(name = "completed_lessons", nullable = false)
+    @ColumnDefault("0")
+    private long completedLessons = 0;
+
     @Override
     public String toString() {
         return "Enrollment{" +
