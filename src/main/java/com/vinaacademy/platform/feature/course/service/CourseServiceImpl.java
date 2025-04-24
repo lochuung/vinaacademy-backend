@@ -90,6 +90,17 @@ public class CourseServiceImpl implements CourseService {
     private SecurityHelper securityHelper;
 
     @Override
+    public Boolean isInstructorOfCourse(UUID courseId, UUID instructorId) {
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> BadRequestException.message("Khóa học không tồn tại"));
+        User instructor = userRepository.findById(instructorId)
+                .orElseThrow(() -> BadRequestException.message("Giảng viên không tồn tại"));
+
+        return course.getInstructors().stream()
+                .anyMatch(courseInstructor -> courseInstructor.getInstructor().equals(instructor));
+    }
+
+    @Override
     public List<CourseDto> getCourses() {
         return courseRepository.findAll().stream().map(courseMapper::toDTO).toList();
     }

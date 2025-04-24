@@ -38,7 +38,7 @@ public class LessonRequest {
     private boolean free;
     
     @Min(value = 0, message = "Order index cannot be negative")
-    private int orderIndex;
+    private Integer orderIndex;
     
     // Fields specific to lesson types
 

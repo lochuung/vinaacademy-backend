@@ -88,6 +88,12 @@ public class LessonServiceImpl implements LessonService {
     public LessonDto createLesson(LessonRequest request) {
         log.info("Creating new lesson with title: {}, type: {}", request.getTitle(), request.getType());
         User currentUser = securityHelper.getCurrentUser();
+        Section section = findSectionById(request.getSectionId());
+
+        // Luôn tạo lesson mới ở cuối danh sách
+        List<Lesson> existingLessons = lessonRepository.findBySectionOrderByOrderIndex(section);
+        request.setOrderIndex(existingLessons.size()); // Đặt ở vị trí cuối cùng
+
         return createLesson(request, currentUser);
     }
 
@@ -310,6 +316,7 @@ public class LessonServiceImpl implements LessonService {
      * @param section    the section where the lesson belongs
      * @param lessonId   the ID of the lesson being updated (null for creation)
      */
+    // For LessonServiceImpl.java
     private void validateOrderIndex(int orderIndex, Section section, UUID lessonId) {
         List<Lesson> existingLessons = lessonRepository.findBySectionOrderByOrderIndex(section);
 
@@ -320,16 +327,6 @@ public class LessonServiceImpl implements LessonService {
                     .toList();
         }
 
-        // Check for duplicate order index
-        boolean orderIndexExists = existingLessons.stream()
-                .anyMatch(lesson -> lesson.getOrderIndex() == orderIndex);
-
-        if (orderIndexExists) {
-            throw new ValidationException(
-                    String.format("A lesson with order index %d already exists in section '%s'",
-                            orderIndex, section.getTitle()));
-        }
-
         // Calculate the expected maximum order index
         int maxAllowedIndex = existingLessons.size();
         if (lessonId != null) {
@@ -338,10 +335,26 @@ public class LessonServiceImpl implements LessonService {
         }
 
         // Ensure the order index is within valid range
-        if (orderIndex > maxAllowedIndex) {
+        if (orderIndex < 0 || orderIndex > maxAllowedIndex) {
             throw new ValidationException(
-                    String.format("Order index %d is too large. Maximum allowed is %d for section '%s'",
+                    String.format("Order index %d is invalid. Maximum allowed is %d for section '%s'",
                             orderIndex, maxAllowedIndex, section.getTitle()));
+        }
+
+        // If the orderIndex is already used, shift the existing ones
+        boolean isOrderIndexUsed = existingLessons.stream()
+                .anyMatch(lesson -> lesson.getOrderIndex() == orderIndex);
+
+        if (isOrderIndexUsed) {
+            // Shift existing lessons from the insertion point onwards
+            List<Lesson> lessonsToUpdate = existingLessons.stream()
+                    .filter(lesson -> lesson.getOrderIndex() >= orderIndex)
+                    .collect(Collectors.toList());
+
+            for (Lesson lesson : lessonsToUpdate) {
+                lesson.setOrderIndex(lesson.getOrderIndex() + 1);
+                lessonRepository.save(lesson);
+            }
         }
     }
 

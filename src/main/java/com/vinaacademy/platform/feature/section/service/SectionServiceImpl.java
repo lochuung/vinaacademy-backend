@@ -38,7 +38,7 @@ public class SectionServiceImpl implements SectionService {
         List<Section> sections = sectionRepository.findByCourseOrderByOrderIndex(course);
         return sectionMapper.toDtoList(sections);
     }
-    
+
     @Override
     @Transactional(readOnly = true)
     public List<SectionDto> getSectionsByCourseSlug(String courseSlug) {
@@ -61,29 +61,30 @@ public class SectionServiceImpl implements SectionService {
     public SectionDto createSection(SectionRequest request) {
         log.debug("Creating section: {}", request);
         Course course = findCourseById(request.getCourseId());
-        
+
         // Check if user has permission to modify this course
         checkCoursePermission(course);
-        
-        // Validate section order index
-        validateOrderIndex(request.getOrderIndex(), course, null);
-        
+
+        // Luôn đặt section mới ở cuối danh sách, bỏ qua orderIndex được cung cấp
+        List<Section> existingSections = sectionRepository.findByCourseOrderByOrderIndex(course);
+        int newOrderIndex = existingSections.size(); // Đặt ở vị trí cuối cùng
+
         // Check for duplicate title in the same course
         if (sectionRepository.existsByTitleAndCourse(request.getTitle(), course)) {
             throw BadRequestException.message("Tiêu đề mục đã tồn tại trong khóa học này");
         }
-        
+
         Section section = Section.createSection(
                 null,
                 course,
                 request.getTitle(),
-                request.getOrderIndex(),
+                newOrderIndex, // Luôn sử dụng index cuối cùng
                 null
         );
-        
+
         section = sectionRepository.save(section);
         log.info("Section created with id: {}", section.getId());
-        
+
         return sectionMapper.toDto(section);
     }
 
@@ -93,30 +94,32 @@ public class SectionServiceImpl implements SectionService {
         log.debug("Updating section with id: {}", id);
         Section section = findSectionById(id);
         Course course = findCourseById(request.getCourseId());
-        
+
         // Check if user has permission to modify this course
         checkCoursePermission(course);
-        
-        // Validate section order index
-        validateOrderIndex(request.getOrderIndex(), course, id);
-        
+
+        // Check if the order index is changing
+        if (section.getOrderIndex() != request.getOrderIndex()) {
+            handleOrderIndexChange(section, request.getOrderIndex(), course);
+        }
+
         // Check for duplicate title in the same course (excluding this section)
-        if (!section.getTitle().equals(request.getTitle()) && 
+        if (!section.getTitle().equals(request.getTitle()) &&
                 sectionRepository.existsByTitleAndCourse(request.getTitle(), course)) {
             throw BadRequestException.message("Tiêu đề mục đã tồn tại trong khóa học này");
         }
-        
+
         section.setTitle(request.getTitle());
         section.setOrderIndex(request.getOrderIndex());
-        
+
         // Only change course if different from current course
         if (!section.getCourse().getId().equals(course.getId())) {
             section.setCourse(course);
         }
-        
+
         section = sectionRepository.save(section);
         log.info("Section updated with id: {}", section.getId());
-        
+
         return sectionMapper.toDto(section);
     }
 
@@ -125,16 +128,29 @@ public class SectionServiceImpl implements SectionService {
     public void deleteSection(UUID id) {
         log.debug("Deleting section with id: {}", id);
         Section section = findSectionById(id);
-        
+        Course course = section.getCourse();
+        int deletedOrderIndex = section.getOrderIndex();
+
         // Check if user has permission to modify this course
-        checkCoursePermission(section.getCourse());
-        
+        checkCoursePermission(course);
+
         // Check if section has lessons
         if (!section.getLessons().isEmpty()) {
             throw BadRequestException.message("Không thể xóa mục có bài học. Xóa tất cả bài học trước");
         }
-        
+
         sectionRepository.delete(section);
+
+        // Update order index for sections after the deleted one
+        List<Section> sectionsToUpdate = sectionRepository.findByCourseOrderByOrderIndex(course).stream()
+                .filter(s -> s.getOrderIndex() > deletedOrderIndex)
+                .collect(Collectors.toList());
+
+        for (Section sectionToUpdate : sectionsToUpdate) {
+            sectionToUpdate.setOrderIndex(sectionToUpdate.getOrderIndex() - 1);
+            sectionRepository.save(sectionToUpdate);
+        }
+
         log.info("Section deleted with id: {}", id);
     }
 
@@ -145,7 +161,7 @@ public class SectionServiceImpl implements SectionService {
         Course course = findCourseById(courseId);
         reorderSectionsForCourse(course, sectionIds);
     }
-    
+
     @Override
     @Transactional
     public void reorderSectionsBySlug(String courseSlug, List<UUID> sectionIds) {
@@ -153,38 +169,76 @@ public class SectionServiceImpl implements SectionService {
         Course course = findCourseBySlug(courseSlug);
         reorderSectionsForCourse(course, sectionIds);
     }
-    
+
     private void reorderSectionsForCourse(Course course, List<UUID> sectionIds) {
         // Check if user has permission to modify this course
         checkCoursePermission(course);
-        
+
         // Get all sections for the course
         List<Section> sections = sectionRepository.findByCourseOrderByOrderIndex(course);
-        
+
         // Validate that all section IDs belong to the course
         Set<UUID> courseSectionIds = sections.stream().map(Section::getId).collect(Collectors.toSet());
         if (!courseSectionIds.containsAll(sectionIds)) {
             throw BadRequestException.message("Danh sách ID không hợp lệ");
         }
-        
+
         // Validate that all sections are included
         if (sections.size() != sectionIds.size()) {
             throw BadRequestException.message("Danh sách không đầy đủ các mục");
         }
-        
+
         // Create a map for quick lookup
         Map<UUID, Section> sectionMap = new HashMap<>();
         sections.forEach(section -> sectionMap.put(section.getId(), section));
-        
-        // Update order index for each section
+
+        // Batch update all sections with their new order indices
+        List<Section> updatedSections = new ArrayList<>();
         for (int i = 0; i < sectionIds.size(); i++) {
             UUID sectionId = sectionIds.get(i);
             Section section = sectionMap.get(sectionId);
             section.setOrderIndex(i);
-            sectionRepository.save(section);
+            updatedSections.add(section);
         }
-        
+
+        // Save all sections in a batch operation
+        sectionRepository.saveAll(updatedSections);
+
         log.info("Sections reordered for course: {}", course.getName());
+    }
+
+    private void handleOrderIndexChange(Section section, int newOrderIndex, Course course) {
+        int oldOrderIndex = section.getOrderIndex();
+        List<Section> sections = sectionRepository.findByCourseOrderByOrderIndex(course);
+
+        // Di chuyển lên (giảm orderIndex)
+        if (newOrderIndex < oldOrderIndex) {
+            for (Section s : sections) {
+                if (s.getId().equals(section.getId())) {
+                    continue; // Bỏ qua section hiện tại
+                }
+                if (s.getOrderIndex() >= newOrderIndex && s.getOrderIndex() < oldOrderIndex) {
+                    s.setOrderIndex(s.getOrderIndex() + 1);
+                    sectionRepository.save(s);
+                }
+            }
+        }
+        // Di chuyển xuống (tăng orderIndex)
+        else if (newOrderIndex > oldOrderIndex) {
+            for (Section s : sections) {
+                if (s.getId().equals(section.getId())) {
+                    continue; // Bỏ qua section hiện tại
+                }
+                if (s.getOrderIndex() <= newOrderIndex && s.getOrderIndex() > oldOrderIndex) {
+                    s.setOrderIndex(s.getOrderIndex() - 1);
+                    sectionRepository.save(s);
+                }
+            }
+        }
+
+        // Cập nhật section hiện tại
+        section.setOrderIndex(newOrderIndex);
+        sectionRepository.save(section);
     }
 
     private Section findSectionById(UUID id) {
@@ -211,24 +265,6 @@ public class SectionServiceImpl implements SectionService {
         
         if (!isInstructor) {
             throw BadRequestException.message("Bạn không có quyền chỉnh sửa khóa học này");
-        }
-    }
-    
-    private void validateOrderIndex(int orderIndex, Course course, UUID sectionId) {
-        List<Section> existingSections = sectionRepository.findByCourseOrderByOrderIndex(course);
-        
-        // For updates, exclude the current section from duplicate check
-        if (sectionId != null) {
-            existingSections = existingSections.stream()
-                    .filter(section -> !section.getId().equals(sectionId))
-                    .collect(Collectors.toList());
-        }
-        
-        // Check if order index is in valid range
-        int maxOrderIndex = existingSections.size();
-        if (orderIndex < 0 || orderIndex > maxOrderIndex) {
-            throw BadRequestException.message(
-                    "Chỉ số thứ tự không hợp lệ. Giá trị phải từ 0 đến " + maxOrderIndex);
         }
     }
 }
