@@ -13,6 +13,7 @@ import com.vinaacademy.platform.feature.user.auth.dto.*;
 import com.vinaacademy.platform.feature.user.auth.entity.ActionToken;
 import com.vinaacademy.platform.feature.user.auth.entity.RefreshToken;
 import com.vinaacademy.platform.feature.user.auth.enums.ActionTokenType;
+import com.vinaacademy.platform.feature.user.auth.helpers.SecurityHelper;
 import com.vinaacademy.platform.feature.user.auth.repository.ActionTokenRepository;
 import com.vinaacademy.platform.feature.user.auth.repository.RefreshTokenRepository;
 import com.vinaacademy.platform.feature.user.auth.utils.JwtUtils;
@@ -53,6 +54,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final LogService logService;
     private final HttpServletRequest httpServletRequest;
     private final RoleRepository roleRepository;
+    private final SecurityHelper securityHelper;
 
 
     /**
@@ -90,7 +92,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         actionTokenRepository.save(actionToken);
 
         logService.log(LogConstants.AUTH_KEY, LogConstants.REGISTER_ACTION, null, user);
-
         emailService.sendVerificationEmail(user.getEmail(), actionToken.getToken());
     }
 
@@ -131,7 +132,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         String accessToken = jwtService.generateAccessToken(userDetails);
         String refreshToken = jwtService.generateRefreshToken(userDetails);
-
+        
+        
         RefreshToken token = RefreshToken.builder()
                 .token(refreshToken)
                 .username(userDetails.getUsername())
@@ -337,5 +339,30 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         actionTokenRepository.delete(actionToken);
 
         logService.log(LogConstants.AUTH_KEY, LogConstants.RESET_PASSWORD_ACTION, null, Map.of("email", user.getEmail()));
+    }
+    
+    @Override
+    @Transactional
+    public boolean changePassword(ChangePasswordRequest request) {
+        if (!StringUtils.equals(request.getNewPassword(), request.getRetypedPassword())) {
+            throw BadRequestException.message("Mật khẩu mới không khớp");
+        }
+        User user = securityHelper.getCurrentUser();
+        if (user==null) {
+        	throw BadRequestException.message("Xác thực thất bại!");
+        }
+
+        // Validate current password
+        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+            throw BadRequestException.message("Mật khẩu hiện tại không chính xác");
+        }
+
+        // Update password
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+
+        logService.log(LogConstants.USER_KEY, LogConstants.CHANGE_PASSWORD_ACTION, null, 
+                Map.of("userId", user.getId().toString()));
+        return true;
     }
 }
