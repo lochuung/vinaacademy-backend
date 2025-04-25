@@ -1,11 +1,13 @@
 package com.vinaacademy.platform.feature.enrollment.service;
 
 import com.vinaacademy.platform.feature.common.exception.ResourceNotFoundException;
+import com.vinaacademy.platform.feature.common.response.PaginationResponse;
 import com.vinaacademy.platform.feature.course.entity.Course;
 import com.vinaacademy.platform.feature.course.repository.CourseRepository;
 import com.vinaacademy.platform.feature.enrollment.Enrollment;
 import com.vinaacademy.platform.feature.enrollment.dto.EnrollmentRequest;
 import com.vinaacademy.platform.feature.enrollment.dto.EnrollmentResponse;
+import com.vinaacademy.platform.feature.enrollment.dto.StudentProgressDto;
 import com.vinaacademy.platform.feature.enrollment.enums.ProgressStatus;
 import com.vinaacademy.platform.feature.enrollment.mapper.EnrollmentMapper;
 import com.vinaacademy.platform.feature.enrollment.repository.EnrollmentRepository;
@@ -16,6 +18,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.data.jpa.domain.Specification;
+import java.util.stream.Collectors;
+import com.vinaacademy.platform.feature.common.response.PaginationResponse;
+import com.vinaacademy.platform.feature.enrollment.dto.StudentProgressDto;
+import com.vinaacademy.platform.feature.enrollment.mapper.StudentProgressMapper;
+import com.vinaacademy.platform.feature.instructor.repository.CourseInstructorRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -30,6 +39,9 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     private final CourseRepository courseRepository;
     private final UserRepository userRepository;
     private final EnrollmentMapper enrollmentMapper;
+    private final CourseInstructorRepository courseInstructorRepository;
+    private final StudentProgressMapper studentProgressMapper;
+
 
     @Override
     @Transactional
@@ -202,5 +214,88 @@ public class EnrollmentServiceImpl implements EnrollmentService {
 
         // Kiểm tra xem instructor có phải là người dạy khóa học này không
         return isCourseOwnerByInstructor(courseId, instructorId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PaginationResponse<StudentProgressDto> getStudentsProgressForInstructor(
+            UUID instructorId,
+            UUID courseId,
+            String search,
+            ProgressStatus status,
+            Pageable pageable) {
+
+        // Nếu không có courseId, lấy tất cả khóa học của instructor
+        List<UUID> courseIds;
+        if (courseId != null) {
+            // Kiểm tra xem instructor có phải là người dạy khóa học này không
+            if (!isCourseOwnerByInstructor(courseId, instructorId)) {
+                throw new AccessDeniedException("Bạn không có quyền xem danh sách học viên của khóa học này");
+            }
+            courseIds = List.of(courseId);
+        } else {
+            courseIds = getCourseIdsByInstructor(instructorId);
+            if (courseIds.isEmpty()) {
+                return PaginationResponse.<StudentProgressDto>builder()
+                        .content(List.of())
+                        .totalElements(0L)
+                        .totalPages(0)
+                        .currentPage(pageable.getPageNumber())
+                        .size(pageable.getPageSize())
+                        .build();
+            }
+        }
+
+        // Tạo specification để lọc theo các điều kiện
+        Specification<Enrollment> spec = Specification.where((root, query, cb) -> {
+            // Lọc theo danh sách courseIds
+            return root.get("course").get("id").in(courseIds);
+        });
+
+        // Thêm điều kiện lọc theo trạng thái nếu có
+        if (status != null) {
+            spec = spec.and((root, query, cb) ->
+                    cb.equal(root.get("status"), status));
+        }
+
+        // Thêm điều kiện tìm kiếm theo tên hoặc email học viên nếu có
+        if (search != null && !search.trim().isEmpty()) {
+            String searchLike = "%" + search.trim().toLowerCase() + "%";
+            spec = spec.and((root, query, cb) ->
+                    cb.or(
+                            cb.like(cb.lower(root.get("user").get("fullName")), searchLike),
+                            cb.like(cb.lower(root.get("user").get("email")), searchLike)
+                    ));
+        }
+
+        // Thực hiện truy vấn với specification và phân trang
+        Page<Enrollment> enrollmentsPage = enrollmentRepository.findAll(spec, pageable);
+
+        // Chuyển đổi kết quả sang DTO
+        List<StudentProgressDto> progressDtos = enrollmentsPage.getContent().stream()
+                .map(studentProgressMapper::toDto)
+                .collect(Collectors.toList());
+
+        // Tạo và trả về đối tượng PaginationResponse
+        return PaginationResponse.<StudentProgressDto>builder()
+                .content(progressDtos)
+                .totalElements(enrollmentsPage.getTotalElements())
+                .totalPages(enrollmentsPage.getTotalPages())
+                .currentPage(enrollmentsPage.getNumber())
+                .size(enrollmentsPage.getSize())
+                .build();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean isInstructor(UUID instructorId) {
+        return courseInstructorRepository.existsByInstructorId(instructorId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<UUID> getCourseIdsByInstructor(UUID instructorId) {
+        // Lấy danh sách khóa học mà instructor giảng dạy
+        return courseInstructorRepository.findCourseIdsByInstructorId(instructorId);
     }
 }
