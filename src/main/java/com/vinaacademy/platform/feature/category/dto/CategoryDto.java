@@ -19,6 +19,7 @@ public class CategoryDto extends BaseDto {
     private String name;
     private String slug;
     private String parentSlug;
+    private long coursesCount;
 
     List<CategoryDto> children;
 }
