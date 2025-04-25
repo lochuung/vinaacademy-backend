@@ -17,9 +17,15 @@ public class CategoryUtils {
                     .map(v -> CategoryUtils.buildCategoryHierarchy(v, mapper))
                     .toList();
 
+            long coursesCount = childrenDto.stream()
+                    .mapToLong(CategoryDto::getCoursesCount)
+                    .sum();
+            coursesCount += category.getCourses().size();
             categoryDto.setChildren(childrenDto);
+            categoryDto.setCoursesCount(coursesCount);
         } else {
             categoryDto.setChildren(List.of());
+            categoryDto.setCoursesCount(category.getCourses().size());
         }
 
         return categoryDto;
