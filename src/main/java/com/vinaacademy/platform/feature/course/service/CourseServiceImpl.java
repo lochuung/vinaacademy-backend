@@ -104,18 +104,16 @@ public class CourseServiceImpl implements CourseService {
     public List<CourseDto> getCourses() {
         return courseRepository.findAll().stream().map(courseMapper::toDTO).toList();
     }
-    
+
     @Override
-	public Boolean existByCourseSlug(String slug) {
-    	Course course = courseRepository.findBySlug(slug)
+    public Boolean existByCourseSlug(String slug) {
+        Course course = courseRepository.findBySlug(slug)
                 .orElse(null);
-    	if (course==null) {
-    		return false;
-    	}
-    	return true;
-	}
-
-
+        if (course == null) {
+            return false;
+        }
+        return true;
+    }
 
     @Override
     @Transactional(readOnly = true)
@@ -150,11 +148,11 @@ public class CourseServiceImpl implements CourseService {
 
         return response;
     }
-    
+
     @Override
     @Transactional(readOnly = true)
     public Page<CourseDetailsResponse> searchCourseDetails(CourseSearchRequest searchRequest, int page, int size,
-                                                           String sortBy, String sortDirection) {
+            String sortBy, String sortDirection) {
         Pageable pageable = createPageable(page, size, sortBy, sortDirection);
 
         Specification<Course> spec = Specification.where(CourseSpecification.hasKeyword(searchRequest.getKeyword()))
@@ -199,7 +197,6 @@ public class CourseServiceImpl implements CourseService {
         });
     }
 
-
     @Override
     public CourseDto createCourse(CourseRequest request) {
         String slug = StringUtils.isBlank(request.getSlug()) ? request.getSlug() : SlugUtils.toSlug(request.getName());
@@ -218,10 +215,10 @@ public class CourseServiceImpl implements CourseService {
                 .level(request.getLevel())
                 .price(request.getPrice())
                 .rating(0)
-//                .totalLesson(0)
-//                .totalRating(0)
-//                .totalSection(0)
-//                .totalLesson(0)
+                // .totalLesson(0)
+                // .totalRating(0)
+                // .totalSection(0)
+                // .totalLesson(0)
                 .slug(slug)
                 .status(CourseStatus.DRAFT)
                 .build();
@@ -275,7 +272,7 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     public Page<CourseDto> getCoursesPaginated(int page, int size, String sortBy, String sortDirection,
-                                               String categorySlug, double minRating) {
+            String categorySlug, double minRating) {
         Pageable pageable = createPageable(page, size, sortBy, sortDirection);
         Page<Course> coursePage;
 
@@ -294,7 +291,7 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     public Page<CourseDto> searchCourses(CourseSearchRequest searchRequest, int page, int size,
-                                         String sortBy, String sortDirection) {
+            String sortBy, String sortDirection) {
         Pageable pageable = createPageable(page, size, sortBy, sortDirection);
 
         // Build specification dynamically using the utility class
@@ -313,7 +310,7 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     public Page<CourseDto> getCoursesByInstructor(UUID instructorId, int page, int size,
-                                                  String sortBy, String sortDirection) {
+            String sortBy, String sortDirection) {
         Pageable pageable = createPageable(page, size, sortBy, sortDirection);
 
         User instructor = userRepository.findById(instructorId)
@@ -389,8 +386,7 @@ public class CourseServiceImpl implements CourseService {
         Map<UUID, UserProgress> progressMap = allUserProgress.stream()
                 .collect(Collectors.toMap(
                         progress -> progress.getLesson().getId(),
-                        progress -> progress
-                ));
+                        progress -> progress));
 
         // 4. Get sorted sections and lessons using the common method
         List<SectionDto> sectionDtos = processSectionsAndLessons(sections);
@@ -401,8 +397,7 @@ public class CourseServiceImpl implements CourseService {
                 // Use the map to look up user progress instead of making individual queries
                 UserProgress userProgress = progressMap.getOrDefault(
                         lesson.getId(),
-                        new UserProgress()
-                );
+                        new UserProgress());
                 lesson.setCurrentUserProgress(userProgress);
             }
         }
@@ -466,19 +461,19 @@ public class CourseServiceImpl implements CourseService {
         return course.getSlug();
     }
 
-	@Override
-	public Boolean updateStatusCourse(CourseStatusRequest courseStatusRequest) {
-		Course course = courseRepository.findBySlug(courseStatusRequest.getSlug())
+    @Override
+    public Boolean updateStatusCourse(CourseStatusRequest courseStatusRequest) {
+        Course course = courseRepository.findBySlug(courseStatusRequest.getSlug())
                 .orElseThrow(() -> BadRequestException.message("Khóa học không tồn tại"));
-		if (courseStatusRequest.getStatus() == null)
-			throw BadRequestException.message("Thiếu dữ liệu cần thiết");
-		course.setStatus(courseStatusRequest.getStatus());
-		courseRepository.save(course);
-		return true;
-	}
-	
-	@Override
-	public CourseCountStatusDto getCountCourses() {
+        if (courseStatusRequest.getStatus() == null)
+            throw BadRequestException.message("Thiếu dữ liệu cần thiết");
+        course.setStatus(courseStatusRequest.getStatus());
+        courseRepository.save(course);
+        return true;
+    }
+
+    @Override
+    public CourseCountStatusDto getCountCourses() {
         List<Object[]> statusCounts = courseRepository.countCoursesByStatus();
 
         long totalPublished = 0;
@@ -498,12 +493,41 @@ public class CourseServiceImpl implements CourseService {
             }
         }
         CourseCountStatusDto countStatusDto = CourseCountStatusDto.builder()
-        		.totalPending(totalPending)
-        		.totalPublished(totalPublished)
-        		.totalRejected(totalRejected)
-        		.build();
+                .totalPending(totalPending)
+                .totalPublished(totalPublished)
+                .totalRejected(totalRejected)
+                .build();
         return countStatusDto;
     }
 
-	
+    @Override
+    @Transactional(readOnly = true)
+    public Page<CourseDto> getPublishedCoursesByInstructor(
+            UUID instructorId,
+            int page,
+            int size,
+            String sortBy,
+            String sortDirection) {
+        Pageable pageable = createPageable(page, size, sortBy, sortDirection);
+
+        // Kiểm tra user có phải là instructor không
+        User instructor = userRepository.findById(instructorId)
+                .orElseThrow(() -> BadRequestException.message("Không tìm thấy giảng viên"));
+
+        // Kiểm tra xem user có role INSTRUCTOR không
+        boolean isInstructor = instructor.getRoles().stream()
+                .anyMatch(role -> role.getCode().equalsIgnoreCase(AuthConstants.INSTRUCTOR_ROLE));
+
+        if (!isInstructor) {
+            throw BadRequestException.message("Người dùng không phải là giảng viên");
+        }
+
+        // Lọc theo instructor và status = PUBLISHED
+        Specification<Course> spec = Specification.where(CourseSpecification.hasInstructor(instructorId))
+                .and(CourseSpecification.hasStatus(CourseStatus.PUBLISHED));
+
+        Page<Course> coursePage = courseRepository.findAll(spec, pageable);
+        return coursePage.map(courseMapper::toDTO);
+    }
+
 }

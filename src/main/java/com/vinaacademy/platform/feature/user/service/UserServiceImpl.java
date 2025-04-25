@@ -1,19 +1,24 @@
 package com.vinaacademy.platform.feature.user.service;
 
+import com.vinaacademy.platform.feature.log.constant.LogConstants;
 import com.vinaacademy.platform.feature.user.UserMapper;
 import com.vinaacademy.platform.feature.user.UserRepository;
 import com.vinaacademy.platform.feature.user.auth.helpers.SecurityHelper;
 import com.vinaacademy.platform.feature.user.constant.AuthConstants;
+import com.vinaacademy.platform.feature.user.dto.UpdateUserInfoRequest;
 import com.vinaacademy.platform.feature.user.dto.UserDto;
 import com.vinaacademy.platform.feature.user.entity.User;
 import com.vinaacademy.platform.feature.user.role.entity.Role;
 import com.vinaacademy.platform.feature.user.role.repository.RoleRepository;
+
+import io.micrometer.common.util.StringUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Set;
+import java.util.function.Consumer;
 
 @Service
 @RequiredArgsConstructor
@@ -88,5 +93,25 @@ public class UserServiceImpl implements UserService {
             throw new IllegalArgumentException("User not found");
         }
         return UserMapper.INSTANCE.toDto(user);
+    }
+
+    @Override
+    @Transactional
+    public UserDto updateUserInfo(UpdateUserInfoRequest request) {
+    	User user = securityHelper.getCurrentUser();
+        updateIfPresent(user::setFullName, request.getFullName());
+        updateIfPresent(user::setDescription, request.getDescription());
+        updateIfPresent(user::setAvatarUrl, request.getAvatarUrl());
+        updateIfPresent(user::setBirthday, request.getBirthday());
+        updateIfPresent(user::setPhone, request.getPhone());
+
+        User savedUser = userRepository.save(user);
+        return UserMapper.INSTANCE.toDto(savedUser);
+    }
+    
+    private <T> void updateIfPresent(Consumer<T> setter, T value) {
+        if (value != null) {
+            setter.accept(value);
+        }
     }
 }

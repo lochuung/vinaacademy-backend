@@ -21,4 +21,6 @@ public interface AuthenticationService {
     boolean checkResetPasswordToken(ResetPasswordRequest request);
 
     void resetPassword(ResetPasswordRequest request);
+    
+    boolean changePassword(ChangePasswordRequest request);
 }

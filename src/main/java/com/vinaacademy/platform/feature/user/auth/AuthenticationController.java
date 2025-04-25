@@ -84,5 +84,12 @@ public class AuthenticationController {
         authenticationService.resetPassword(resetPasswordRequest);
         return ApiResponse.success("Đặt lại mật khẩu thành công");
     }
+    
+    @Operation(summary = "Change password")
+    @PutMapping("/change-password")
+    public ApiResponse<Boolean> changePassword(@RequestBody @Valid ChangePasswordRequest request) {
+    	Boolean ok = authenticationService.changePassword(request);
+        return ApiResponse.success("Đổi mật khẩu thành công", ok);
+    }
 
 }

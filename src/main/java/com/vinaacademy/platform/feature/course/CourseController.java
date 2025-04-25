@@ -37,35 +37,35 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @SecurityRequirement(name = "bearerAuth")
 public class CourseController {
-	private final CourseService courseService;
+    private final CourseService courseService;
     private final CourseRepository courseRepository;
     private final SecurityHelper securityHelper;
-	
-    @HasAnyRole({AuthConstants.ADMIN_ROLE, AuthConstants.INSTRUCTOR_ROLE, AuthConstants.STAFF_ROLE})
+
+    @HasAnyRole({ AuthConstants.ADMIN_ROLE, AuthConstants.INSTRUCTOR_ROLE, AuthConstants.STAFF_ROLE })
     @PostMapping
     public ApiResponse<CourseDto> createCourse(@RequestBody @Valid CourseRequest request) {
         // Only ADMIN and INSTRUCTOR can create courses
-        log.debug("Course creating "+request.getName());
+        log.debug("Course creating " + request.getName());
         return ApiResponse.success(courseService.createCourse(request));
     }
-    
+
     @GetMapping("/{slug}")
     public ApiResponse<CourseDetailsResponse> getCourseDetails(@PathVariable String slug) {
         log.debug("Getting detailed course information for slug: {}", slug);
         return ApiResponse.success(courseService.getCourse(slug));
     }
-    
-    //Kiểm tra slug đã tồn tại hay chưa
-    @HasAnyRole({AuthConstants.ADMIN_ROLE, AuthConstants.INSTRUCTOR_ROLE, AuthConstants.STAFF_ROLE})
+
+    // Kiểm tra slug đã tồn tại hay chưa
+    @HasAnyRole({ AuthConstants.ADMIN_ROLE, AuthConstants.INSTRUCTOR_ROLE, AuthConstants.STAFF_ROLE })
     @GetMapping("/check/{slug}")
     public ApiResponse<Boolean> checkCourse(@PathVariable String slug) {
         log.debug("Check course with slug: {}", slug);
         return ApiResponse.success(courseService.existByCourseSlug(slug));
     }
-    
+
     @GetMapping("/pagination")
     public ApiResponse<Page<CourseDto>> getCoursesPaginated(
-    		@RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size,
             @RequestParam(defaultValue = "name") String sortBy,
             @RequestParam(defaultValue = "asc") String sortDirection,
@@ -73,10 +73,10 @@ public class CourseController {
             @RequestParam(defaultValue = "0") double minRating) {
         Page<CourseDto> coursePage = courseService.getCoursesPaginated(
                 page, size, sortBy, sortDirection, categorySlug, minRating);
-    	log.debug("get list course by sort");
+        log.debug("get list course by sort");
         return ApiResponse.success(coursePage);
     }
-    
+
     @GetMapping("/search")
     public ApiResponse<Page<CourseDto>> searchCourses(
             @Valid @ModelAttribute CourseSearchRequest searchRequest,
@@ -89,9 +89,9 @@ public class CourseController {
         log.debug("Filter courses with criteria: {}", searchRequest);
         return ApiResponse.success(coursePage);
     }
-    
+
     @GetMapping("/searchdetails")
-    @HasAnyRole({AuthConstants.ADMIN_ROLE, AuthConstants.STAFF_ROLE})
+    @HasAnyRole({ AuthConstants.ADMIN_ROLE, AuthConstants.STAFF_ROLE })
     public ApiResponse<Page<CourseDetailsResponse>> searchCoursesDetail(
             @Valid @ModelAttribute CourseSearchRequest searchRequest,
             @RequestParam(defaultValue = "0") int page,
@@ -103,22 +103,23 @@ public class CourseController {
         log.debug("Filter courses with criteria: {}", searchRequest);
         return ApiResponse.success(coursePage);
     }
-    
+
     @PutMapping("/statuschange")
-    @HasAnyRole({AuthConstants.ADMIN_ROLE, AuthConstants.STAFF_ROLE})
-    public ApiResponse<Boolean> updateStatusCourse(@RequestBody @Valid CourseStatusRequest courseStatusRequest){
-    	Boolean update = courseService.updateStatusCourse(courseStatusRequest);
-    	log.debug("Update status course "+courseStatusRequest.getSlug() +" => "+ courseStatusRequest.getStatus() +" - "+update);
-    	return ApiResponse.success(update);
+    @HasAnyRole({ AuthConstants.ADMIN_ROLE, AuthConstants.STAFF_ROLE })
+    public ApiResponse<Boolean> updateStatusCourse(@RequestBody @Valid CourseStatusRequest courseStatusRequest) {
+        Boolean update = courseService.updateStatusCourse(courseStatusRequest);
+        log.debug("Update status course " + courseStatusRequest.getSlug() + " => " + courseStatusRequest.getStatus()
+                + " - " + update);
+        return ApiResponse.success(update);
     }
-    
-    @HasAnyRole({AuthConstants.STAFF_ROLE, AuthConstants.ADMIN_ROLE})
+
+    @HasAnyRole({ AuthConstants.STAFF_ROLE, AuthConstants.ADMIN_ROLE })
     @GetMapping("/statuscount")
     public ApiResponse<CourseCountStatusDto> getCourseCountByStatus() {
         return ApiResponse.success(courseService.getCountCourses());
     }
 
-    @HasAnyRole({AuthConstants.ADMIN_ROLE, AuthConstants.INSTRUCTOR_ROLE})
+    @HasAnyRole({ AuthConstants.ADMIN_ROLE, AuthConstants.INSTRUCTOR_ROLE })
     @DeleteMapping("/crud/{slug}")
     public ApiResponse<Void> deleteCourse(@PathVariable String slug) {
         // Only ADMIN can delete courses
@@ -127,7 +128,7 @@ public class CourseController {
         return ApiResponse.success("Xóa khóa học thành công");
     }
 
-    @HasAnyRole({AuthConstants.INSTRUCTOR_ROLE})
+    @HasAnyRole({ AuthConstants.INSTRUCTOR_ROLE })
     @PutMapping("/crud/{slug}")
     public ApiResponse<CourseDto> updateCourse(@PathVariable String slug, @RequestBody @Valid CourseRequest request) {
         // Only INSTRUCTOR can update their courses
@@ -180,7 +181,7 @@ public class CourseController {
     }
 
     @GetMapping("/instructor/courses")
-    @HasAnyRole({AuthConstants.INSTRUCTOR_ROLE})
+    @HasAnyRole({ AuthConstants.INSTRUCTOR_ROLE })
     public ApiResponse<Page<CourseDto>> getInstructorCourses(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -203,7 +204,7 @@ public class CourseController {
     }
 
     @GetMapping("/instructor/search")
-    @HasAnyRole({AuthConstants.INSTRUCTOR_ROLE})
+    @HasAnyRole({ AuthConstants.INSTRUCTOR_ROLE })
     public ApiResponse<Page<CourseDto>> searchInstructorCourses(
             @ModelAttribute CourseSearchRequest searchRequest,
             @RequestParam(defaultValue = "0") int page,
@@ -219,11 +220,12 @@ public class CourseController {
         log.debug("Tìm kiếm khóa học của giảng viên: {}", currentUser.getId());
         return ApiResponse.success(coursePage);
     }
+
     /**
      * API để chuyển trạng thái khóa học sang PENDING khi thêm bài giảng mới
      */
     @PutMapping("/submit-for-review/{courseId}")
-    @HasAnyRole({AuthConstants.INSTRUCTOR_ROLE})
+    @HasAnyRole({ AuthConstants.INSTRUCTOR_ROLE })
     public ApiResponse<Boolean> submitCourseForReview(@PathVariable UUID courseId) {
         try {
             // Lấy thông tin người dùng hiện tại
@@ -254,5 +256,24 @@ public class CourseController {
         }
     }
 
+    // Lấy danh sách khóa học đã published của một giảng viên bất kỳ
+    @GetMapping("/instructor/{instructorId}/published")
+    public ApiResponse<Page<CourseDto>> getPublishedCoursesByInstructor(
+            @PathVariable UUID instructorId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdDate") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDirection) {
+        Page<CourseDto> coursePage = courseService.getPublishedCoursesByInstructor(
+                instructorId, page, size, sortBy, sortDirection);
+        return ApiResponse.success(coursePage);
+    }
 
+    // Lấy số lượng khóa học published của một giảng viên bất kỳ
+    @GetMapping("/instructor/{instructorId}/published/count")
+    public ApiResponse<Long> countPublishedCoursesByInstructor(@PathVariable UUID instructorId) {
+        long count = courseRepository.countByStatusAndInstructors_Instructor_Id(
+                CourseStatus.PUBLISHED, instructorId);
+        return ApiResponse.success(count);
+    }
 }

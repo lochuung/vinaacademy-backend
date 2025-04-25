@@ -14,61 +14,69 @@ import java.util.UUID;
 
 public interface CourseService {
 
-    Boolean isInstructorOfCourse(UUID courseId, UUID instructorId);
-    List<CourseDto> getCourses();
-    
-    List<CourseDto> getCoursesByCategory(String slug);
-    
-    Page<CourseDto> getCoursesPaginated(
-            int page,
-            int size,
-            String sortBy,
-            String sortDirection,
-            String categorySlug,
-            double minRating);
+        Boolean isInstructorOfCourse(UUID courseId, UUID instructorId);
 
-    Page<CourseDto> searchCourses(
-            CourseSearchRequest searchRequest,
-            int page,
-            int size,
-            String sortBy,
-            String sortDirection);
+        List<CourseDto> getCourses();
 
-    Page<CourseDto> getCoursesByInstructor(
-            UUID instructorId,
-            int page,
-            int size,
-            String sortBy,
-            String sortDirection);
+        List<CourseDto> getCoursesByCategory(String slug);
 
-    Page<CourseDto> searchInstructorCourses(
-            UUID instructorId,
-            CourseSearchRequest searchRequest,
-            int page,
-            int size,
-            String sortBy,
-            String sortDirection);
+        Page<CourseDto> getCoursesPaginated(
+                        int page,
+                        int size,
+                        String sortBy,
+                        String sortDirection,
+                        String categorySlug,
+                        double minRating);
 
-    CourseDetailsResponse getCourse(String slug);
+        Page<CourseDto> searchCourses(
+                        CourseSearchRequest searchRequest,
+                        int page,
+                        int size,
+                        String sortBy,
+                        String sortDirection);
 
-    CourseDto createCourse(CourseRequest request);
+        Page<CourseDto> getCoursesByInstructor(
+                        UUID instructorId,
+                        int page,
+                        int size,
+                        String sortBy,
+                        String sortDirection);
 
-    CourseDto updateCourse(String slug, CourseRequest request);
-    
-    void deleteCourse(String slug);
+        Page<CourseDto> searchInstructorCourses(
+                        UUID instructorId,
+                        CourseSearchRequest searchRequest,
+                        int page,
+                        int size,
+                        String sortBy,
+                        String sortDirection);
 
-    CourseDto getCourseLearning(String slug);
+        Page<CourseDto> getPublishedCoursesByInstructor(
+                        UUID instructorId,
+                        int page,
+                        int size,
+                        String sortBy,
+                        String sortDirection);
 
-    CourseDto getCourseById(UUID id);
+        CourseDetailsResponse getCourse(String slug);
 
-    String getCourseSlugById(UUID id);
-    
-    Boolean existByCourseSlug(String slug);
-    
-    Boolean updateStatusCourse(CourseStatusRequest courseStatusRequest);
-    
-    Page<CourseDetailsResponse> searchCourseDetails(CourseSearchRequest searchRequest, int page, int size,
-            String sortBy, String sortDirection);
-    
-    CourseCountStatusDto getCountCourses();
+        CourseDto createCourse(CourseRequest request);
+
+        CourseDto updateCourse(String slug, CourseRequest request);
+
+        void deleteCourse(String slug);
+
+        CourseDto getCourseLearning(String slug);
+
+        CourseDto getCourseById(UUID id);
+
+        String getCourseSlugById(UUID id);
+
+        Boolean existByCourseSlug(String slug);
+
+        Boolean updateStatusCourse(CourseStatusRequest courseStatusRequest);
+
+        Page<CourseDetailsResponse> searchCourseDetails(CourseSearchRequest searchRequest, int page, int size,
+                        String sortBy, String sortDirection);
+
+        CourseCountStatusDto getCountCourses();
 }
