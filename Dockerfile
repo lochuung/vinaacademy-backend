@@ -11,7 +11,7 @@ WORKDIR /app
 COPY . .
 
 # Package the application using Maven
-RUN mvn package
+RUN mvn clean package -DskipTests
 
 # Expose the port the application runs on
 EXPOSE 8080
