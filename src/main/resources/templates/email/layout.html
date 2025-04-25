@@ -13,7 +13,7 @@
             font-family: 'Roboto', 'Helvetica Neue', Arial, sans-serif;
             -webkit-font-smoothing: antialiased;
         }
-        
+
         body {
             background-color: #f5f5f5;
             margin: 0;
@@ -23,7 +23,7 @@
             line-height: 1.6;
             color: #444444;
         }
-        
+
         /* Container */
         .container {
             max-width: 600px;
@@ -31,7 +31,7 @@
             padding: 20px;
             background-color: #f5f5f5;
         }
-        
+
         /* Card layout */
         .card {
             background-color: #ffffff;
@@ -39,14 +39,14 @@
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
             overflow: hidden;
         }
-        
+
         /* Header */
         .header {
             padding: 25px 0;
             text-align: center;
             background: linear-gradient(135deg, #3498db, #2c3e50);
         }
-        
+
         .logo {
             color: #ffffff;
             font-size: 28px;
@@ -54,18 +54,18 @@
             text-decoration: none;
             letter-spacing: 1px;
         }
-        
+
         .logo-img {
             max-height: 50px;
             width: auto;
         }
-        
+
         /* Content */
         .content {
             padding: 30px;
             background: #ffffff;
         }
-        
+
         /* Button */
         .button {
             display: inline-block;
@@ -79,11 +79,11 @@
             transition: background 0.3s;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
-        
+
         .button:hover {
             background: #2980b9;
         }
-        
+
         /* Footer */
         .footer {
             text-align: center;
@@ -93,48 +93,48 @@
             background-color: #f9f9f9;
             border-top: 1px solid #eeeeee;
         }
-        
+
         .social {
             margin: 15px 0;
         }
-        
+
         .social a {
             display: inline-block;
             margin: 0 8px;
         }
-        
+
         .social img {
             width: 24px;
             height: 24px;
         }
-        
+
         .footer-links {
             margin-top: 12px;
         }
-        
+
         .footer-links a {
             color: #3498db;
             text-decoration: none;
             margin: 0 8px;
         }
-        
+
         /* Typography */
         h1, h2, h3, h4 {
             color: #2c3e50;
             margin-bottom: 20px;
             line-height: 1.4;
         }
-        
+
         h2 {
             font-size: 22px;
             font-weight: 600;
         }
-        
+
         p {
             margin-bottom: 15px;
             line-height: 1.6;
         }
-        
+
         /* Info box */
         .info-box {
             background-color: #f0f7ff;
@@ -143,7 +143,7 @@
             border-radius: 4px;
             margin: 20px 0;
         }
-        
+
         /* Alert box */
         .alert {
             background-color: #fff5f5;
@@ -152,45 +152,45 @@
             border-radius: 4px;
             margin: 20px 0;
         }
-        
+
         /* Responsive */
         @media only screen and (max-width: 600px) {
             .container {
                 width: 100% !important;
                 padding: 10px !important;
             }
-            
+
             .content {
                 padding: 20px !important;
             }
-            
+
             .footer {
                 padding: 20px 15px !important;
             }
         }
-        
+
         /* Dark mode support */
         @media (prefers-color-scheme: dark) {
             .card {
                 background-color: #2c3e50 !important;
                 color: #f5f5f5 !important;
             }
-            
+
             .content {
                 background-color: #2c3e50 !important;
                 color: #f5f5f5 !important;
             }
-            
+
             h1, h2, h3, h4 {
                 color: #ffffff !important;
             }
-            
+
             .footer {
                 background-color: #273444 !important;
                 color: #aaaaaa !important;
                 border-top-color: #334455 !important;
             }
-            
+
             .info-box {
                 background-color: #273444 !important;
             }
@@ -198,52 +198,40 @@
     </style>
 </head>
 <body>
-    <div class="container" th:fragment="layout(content)">
-        <div class="card">
-            <!-- Header with logo -->
-            <div class="header">
-                <a th:href="${frontEndUrl}" class="logo">
-                    <img src="https://i.ibb.co/SQG2mJV/vinaacademy-logo.png" alt="VinaAcademy" class="logo-img" />
-                    <!-- Fallback if image doesn't load -->
-                    <span style="display:none;">VinaAcademy</span>
-                </a>
+<div class="container" th:fragment="layout(content)">
+    <div class="card">
+        <!-- Header with logo -->
+        <div class="header">
+            <a th:href="${frontEndUrl}" class="logo">
+                <img th:src="${frontEndUrl} + '/vina-academy-logo.png'" alt="VinaAcademy" class="logo-img"/>
+                <!-- Fallback if image doesn't load -->
+                <span style="display:none;">VinaAcademy</span>
+            </a>
+        </div>
+
+        <!-- Main content -->
+        <div class="content">
+            <th:block th:replace="${content}"/>
+        </div>
+
+        <!-- Footer with social links and info -->
+        <div class="footer">
+            <p>© 2024 VinaAcademy. Tất cả quyền được bảo lưu.</p>
+            <p>Nền tảng học trực tuyến hàng đầu Việt Nam</p>
+
+            <div class="footer-links">
+                <a th:href="${frontEndUrl + '/help'}">Trung tâm trợ giúp</a>
+                <a th:href="${frontEndUrl + '/terms'}">Điều khoản dịch vụ</a>
+                <a th:href="${frontEndUrl + '/privacy'}">Chính sách bảo mật</a>
             </div>
-            
-            <!-- Main content -->
-            <div class="content">
-                <th:block th:replace="${content}"/>
-            </div>
-            
-            <!-- Footer with social links and info -->
-            <div class="footer">
-                <div class="social">
-                    <a href="https://facebook.com/" target="_blank">
-                        <img src="https://i.ibb.co/DrhKbGp/facebook-icon.png" alt="Facebook" />
-                    </a>
-                    <a href="https://youtube.com/" target="_blank">
-                        <img src="https://i.ibb.co/Qjy1Vqf/youtube-icon.png" alt="YouTube" />
-                    </a>
-                    <a href="https://linkedin.com/" target="_blank">
-                        <img src="https://i.ibb.co/3kH1Zyr/linkedin-icon.png" alt="LinkedIn" />
-                    </a>
-                </div>
-                
-                <p>© 2024 VinaAcademy. Tất cả quyền được bảo lưu.</p>
-                <p>Nền tảng học trực tuyến hàng đầu Việt Nam</p>
-                
-                <div class="footer-links">
-                    <a th:href="${frontEndUrl + '/help'}">Trung tâm trợ giúp</a>
-                    <a th:href="${frontEndUrl + '/terms'}">Điều khoản dịch vụ</a>
-                    <a th:href="${frontEndUrl + '/privacy'}">Chính sách bảo mật</a>
-                </div>
-                
-                <p style="font-size: 12px; margin-top: 15px;">
-                    Email này được gửi tới bạn vì bạn đã đăng ký tài khoản tại VinaAcademy.<br/>
-                    Nếu bạn không muốn nhận email từ chúng tôi, vui lòng 
-                    <a th:href="${frontEndUrl + '/unsubscribe'}" style="color: #3498db;">hủy đăng ký</a>.
-                </p>
-            </div>
+
+            <p style="font-size: 12px; margin-top: 15px;">
+                Email này được gửi tới bạn vì bạn đã đăng ký tài khoản tại VinaAcademy.<br/>
+                Nếu bạn không muốn nhận email từ chúng tôi, vui lòng
+                <a th:href="${frontEndUrl + '/unsubscribe'}" style="color: #3498db;">hủy đăng ký</a>.
+            </p>
         </div>
     </div>
+</div>
 </body>
 </html>

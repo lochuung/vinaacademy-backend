@@ -1,10 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" th:replace="~{email/layout :: layout(~{::content})}">
 <th:block th:fragment="content">
-    <div style="text-align: center; margin-bottom: 20px;">
-        <img src="https://i.ibb.co/xXnvqfJ/notification.png" alt="Thông báo" style="max-width: 100px; width: 100%;">
-    </div>
-
     <h2 style="color: #2c3e50; margin-bottom: 20px;" th:text="${title}">Thông báo</h2>
     
     <p style="margin-bottom: 15px;">Xin chào <span th:text="${userName}">bạn</span>,</p>
