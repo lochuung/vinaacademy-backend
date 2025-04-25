@@ -51,6 +51,22 @@ server:
     mime-types: application/x-mpegURL, text/plain
     min-response-size: 1024
 
+mail:
+  dailyLimit: 450
+  useRandom: false
+  onlyGmail: true
+  activeProviders:
+    - gmail
+  accounts:
+    - provider: gmail
+      host: smtp.gmail.com
+      port: 587
+      username: ${GMAIL_USERNAME}
+      password: ${GMAIL_PASSWORD}
+      properties:
+        mail.smtp.auth: true
+        mail.smtp.starttls.enable: true
+
 springdoc:
   swagger-ui:
     enabled: false
