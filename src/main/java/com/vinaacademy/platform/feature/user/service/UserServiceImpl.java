@@ -1,13 +1,17 @@
 package com.vinaacademy.platform.feature.user.service;
 
+import com.vinaacademy.platform.feature.log.constant.LogConstants;
 import com.vinaacademy.platform.feature.user.UserMapper;
 import com.vinaacademy.platform.feature.user.UserRepository;
 import com.vinaacademy.platform.feature.user.auth.helpers.SecurityHelper;
 import com.vinaacademy.platform.feature.user.constant.AuthConstants;
+import com.vinaacademy.platform.feature.user.dto.UpdateUserInfoRequest;
 import com.vinaacademy.platform.feature.user.dto.UserDto;
 import com.vinaacademy.platform.feature.user.entity.User;
 import com.vinaacademy.platform.feature.user.role.entity.Role;
 import com.vinaacademy.platform.feature.user.role.repository.RoleRepository;
+
+import io.micrometer.common.util.StringUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -88,5 +92,31 @@ public class UserServiceImpl implements UserService {
             throw new IllegalArgumentException("User not found");
         }
         return UserMapper.INSTANCE.toDto(user);
+    }
+
+    @Override
+    @Transactional
+    public UserDto updateUserInfo(UpdateUserInfoRequest request) {
+        User user = securityHelper.getCurrentUser();
+
+        if (request.getFullName() != null) {
+            user.setFullName(request.getFullName());
+        }
+        if (request.getDescription() != null) {
+            user.setDescription(request.getDescription());
+        }
+        if (request.getAvatarUrl() != null) {
+            user.setAvatarUrl(request.getAvatarUrl());
+        }
+        if (request.getBirthday() != null) {
+            user.setBirthday(request.getBirthday());
+        }
+        if (request.getPhone() != null) {
+            user.setPhone(request.getPhone());
+        }
+
+        User savedUser = userRepository.save(user);
+        
+        return UserMapper.INSTANCE.toDto(savedUser);
     }
 }
