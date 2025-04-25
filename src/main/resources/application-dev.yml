@@ -1,0 +1,77 @@
+spring:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    password: postgres
+    username: postgres
+    url: jdbc:postgresql://localhost:5432/vinaacademy
+    hikari:
+      auto-commit: true
+      minimum-idle: 5
+      maximum-pool-size: 20
+  data:
+    redis:
+      enabled: true
+      host: localhost
+      port: 6379
+  jpa:
+    properties:
+      hibernate:
+        default_batch_fetch_size: 20
+        jdbc:
+          batch_size: 20
+          lob:
+            non_contextual_creation: true
+        format_sql: true
+        order_updates: true
+        use_sql_comments: true
+        order_inserts: true
+        show_sql: true
+    generate-ddl: true
+    hibernate:
+      ddl-auto: update
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+  servlet:
+    multipart:
+      maxRequestSize: 1GB
+      enabled: true
+      maxFileSize: 1GB
+springdoc:
+  swagger-ui:
+    path: /
+    operations-sorter: method
+application:
+  jwt:
+    refreshToken:
+      expiration: 2592000
+    accessToken:
+      expiration: 86400
+  hmac:
+    secret: super-secret-key-for-hmac
+  storage:
+    uploadDir: ${UPLOAD_DIR:/vinaacademy/uploads}
+    hlsOutputDir: ${HLS_OUTPUT_DIR:/vinaacademy/hls}
+  video:
+    maxSize: 1073741824
+  url:
+    frontend: http://localhost:3000
+    backend: http://localhost:8080
+logging:
+  level:
+    root: INFO
+    com:
+      vinaacademy:
+        platform: TRACE
+    org:
+      hibernate:
+        type:
+          descriptor:
+            sql:
+              BasicBinder: TRACE
+          nodeValue: TRACE
+        SQL: DEBUG
+server:
+  port: 8080
+  compression:
+    enabled: true
+    mime-types: application/x-mpegURL, text/plain
+    min-response-size: 1024
