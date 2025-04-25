@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Set;
+import java.util.function.Consumer;
 
 @Service
 @RequiredArgsConstructor
@@ -97,26 +98,20 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public UserDto updateUserInfo(UpdateUserInfoRequest request) {
-        User user = securityHelper.getCurrentUser();
-
-        if (request.getFullName() != null) {
-            user.setFullName(request.getFullName());
-        }
-        if (request.getDescription() != null) {
-            user.setDescription(request.getDescription());
-        }
-        if (request.getAvatarUrl() != null) {
-            user.setAvatarUrl(request.getAvatarUrl());
-        }
-        if (request.getBirthday() != null) {
-            user.setBirthday(request.getBirthday());
-        }
-        if (request.getPhone() != null) {
-            user.setPhone(request.getPhone());
-        }
+    	User user = securityHelper.getCurrentUser();
+        updateIfPresent(user::setFullName, request.getFullName());
+        updateIfPresent(user::setDescription, request.getDescription());
+        updateIfPresent(user::setAvatarUrl, request.getAvatarUrl());
+        updateIfPresent(user::setBirthday, request.getBirthday());
+        updateIfPresent(user::setPhone, request.getPhone());
 
         User savedUser = userRepository.save(user);
-        
         return UserMapper.INSTANCE.toDto(savedUser);
+    }
+    
+    private <T> void updateIfPresent(Consumer<T> setter, T value) {
+        if (value != null) {
+            setter.accept(value);
+        }
     }
 }

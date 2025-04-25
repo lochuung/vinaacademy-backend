@@ -344,12 +344,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     @Transactional
     public boolean changePassword(ChangePasswordRequest request) {
+    	 User user = securityHelper.getCurrentUser();
         if (!StringUtils.equals(request.getNewPassword(), request.getRetypedPassword())) {
             throw BadRequestException.message("Mật khẩu mới không khớp");
-        }
-        User user = securityHelper.getCurrentUser();
-        if (user==null) {
-        	throw BadRequestException.message("Xác thực thất bại!");
         }
 
         // Validate current password
