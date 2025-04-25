@@ -118,12 +118,13 @@ public class LessonServiceImpl implements LessonService {
         // Chỉ thay đổi trạng thái nếu là REJECTED hoặc PUBLISHED
         if (currentStatus == CourseStatus.REJECTED || currentStatus == CourseStatus.PUBLISHED) {
             course.setStatus(CourseStatus.PENDING);
-            courseRepository.save(course);
 
             // Ghi log việc thay đổi trạng thái
             log.info("Course status changed from {} to PENDING due to new lesson addition. Course ID: {}",
                     currentStatus, course.getId());
         }
+        course.setTotalLesson(course.getTotalLesson() + 1);
+        courseRepository.save(course);
     }
 
     @Override
@@ -317,6 +318,7 @@ public class LessonServiceImpl implements LessonService {
         enrollment.setProgressPercentage(progressPercentage);
         enrollment.setStatus(progressPercentage >= 100 ? ProgressStatus.COMPLETED : ProgressStatus.IN_PROGRESS);
         enrollment.setCompleteAt(progressPercentage >= 100 ? LocalDateTime.now() : null);
+        enrollment.setCompletedLessons(completedLessons);
 
         enrollmentRepository.save(enrollment);
     }
