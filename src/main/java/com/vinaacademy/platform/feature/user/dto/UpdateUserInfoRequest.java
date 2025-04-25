@@ -16,7 +16,7 @@ public class UpdateUserInfoRequest {
     @Size(min = 2, max = 100, message = "Họ tên phải có độ dài từ 2 đến 100 ký tự")
     private String fullName;
     
-    @Size(max = 1000, message = "Mô tả không được vượt quá 1000 ký tự")
+    @Size(max = 1500, message = "Mô tả không được vượt quá 1500 ký tự")
     private String description;
     
     @Size(max = 255, message = "URL ảnh đại diện không được vượt quá 255 ký tự")
