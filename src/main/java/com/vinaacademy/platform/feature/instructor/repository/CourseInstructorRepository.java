@@ -15,6 +15,22 @@ import java.util.UUID;
 @Repository
 public interface CourseInstructorRepository extends JpaRepository<CourseInstructor, Long> {
     /**
+     * Kiểm tra xem người dùng có phải là giảng viên của bất kỳ khóa học nào không
+     *
+     * @param instructorId ID của giảng viên
+     * @return true nếu là giảng viên của ít nhất một khóa học
+     */
+    boolean existsByInstructorId(UUID instructorId);
+
+    /**
+     * Lấy danh sách ID của các khóa học mà giảng viên dạy
+     *
+     * @param instructorId ID của giảng viên
+     * @return Danh sách ID của các khóa học
+     */
+    @Query("SELECT ci.course.id FROM CourseInstructor ci WHERE ci.instructor.id = :instructorId")
+    List<UUID> findCourseIdsByInstructorId(@Param("instructorId") UUID instructorId);
+    /**
      * Find a course instructor by instructor and course
      *
      * @param instructor the instructor
