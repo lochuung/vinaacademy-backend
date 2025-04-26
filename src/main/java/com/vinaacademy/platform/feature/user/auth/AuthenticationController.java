@@ -85,6 +85,7 @@ public class AuthenticationController {
         return ApiResponse.success("Đặt lại mật khẩu thành công");
     }
     
+    @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Change password")
     @PutMapping("/change-password")
     public ApiResponse<Boolean> changePassword(@RequestBody @Valid ChangePasswordRequest request) {
