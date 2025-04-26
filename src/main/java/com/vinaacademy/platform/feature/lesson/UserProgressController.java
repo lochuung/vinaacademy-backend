@@ -92,7 +92,7 @@ public class UserProgressController {
 //            ),
 //            @io.swagger.v3.oas.annotations.responses.ApiResponse(
 //                    responseCode = "404",
-//                    description = "Lesson not found"
+//                    description = "Không tìm thấy bài học"
 //            )
 //    })
 //    @GetMapping("/lesson/{lessonId}")

@@ -60,7 +60,7 @@ public class VideoServiceImpl implements VideoService {
     @Override
     public VideoDto uploadVideo(MultipartFile file, VideoRequest videoRequest) throws IOException {
         Video video = videoRepository.findById(videoRequest.getLessonId())
-                .orElseThrow(() -> BadRequestException.message("Lesson not found"));
+                .orElseThrow(() -> BadRequestException.message("Không tìm thấy bài học"));
         videoValidator.validate(file);
 
         User currentUser = securityHelper.getCurrentUser();
@@ -68,9 +68,12 @@ public class VideoServiceImpl implements VideoService {
         LessonAccessInfoDto lessonAccessInfo = lessonRepository
                 .getLessonAccessInfo(videoRequest.getLessonId(),
                         currentUser.getId())
-                .orElseThrow(() -> BadRequestException.message("Lesson not found"));
+                .orElseThrow(() -> BadRequestException.message("Không tìm thấy bài học"));
         if (!lessonAccessInfo.isInstructor() && !securityHelper.hasRole(AuthConstants.ADMIN_ROLE)) {
-            throw BadRequestException.message("You are not allowed to upload video to this lesson");
+            throw BadRequestException.message("Bạn không có quyền truy cập vào video này");
+        }
+        if (VideoStatus.PROCESSING.equals(video.getStatus())) {
+            throw BadRequestException.message("Video đang đang được xử lý");
         }
         video.setThumbnailUrl(videoRequest.getThumbnailUrl());
         video.setStatus(VideoStatus.PROCESSING);
@@ -94,7 +97,7 @@ public class VideoServiceImpl implements VideoService {
         log.debug("Getting video segment: {}/{}", videoId, subPath);
 
         Video video = videoRepository.findById(videoId)
-                .orElseThrow(() -> BadRequestException.message("Video not found"));
+                .orElseThrow(() -> BadRequestException.message("Không tìm thấy video"));
 
         Path segmentPath = Paths.get(video.getHlsPath(), subPath);
 
@@ -126,7 +129,7 @@ public class VideoServiceImpl implements VideoService {
         log.debug("Getting thumbnail for video: {}", videoId);
 
         Video video = videoRepository.findById(videoId)
-                .orElseThrow(() -> BadRequestException.message("Video not found"));
+                .orElseThrow(() -> BadRequestException.message("Không tìm thấy video"));
 
         if (video.getThumbnailUrl() == null || video.getThumbnailUrl().isEmpty()) {
             log.warn("Thumbnail URL not set for video: {}", videoId);
