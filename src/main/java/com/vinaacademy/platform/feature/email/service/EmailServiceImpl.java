@@ -16,6 +16,7 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -198,12 +199,18 @@ public class EmailServiceImpl implements EmailService {
 
     private static MimeMessage getMimeMessage(String toEmail, String subject, String body, String sender, boolean enableHtml, JavaMailSenderImpl mailSender) {
         MimeMessage message = mailSender.createMimeMessage();
-        MimeMessageHelper helper = new MimeMessageHelper(message, "utf-8");
         try {
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "utf-8");
             helper.setTo(toEmail);
             helper.setSubject(subject);
             helper.setText(body, enableHtml);
             helper.setFrom(sender);
+
+            // image add
+            helper.addInline("logoImage", new ClassPathResource("static/images/logo.png"));
+//            helper.addInline("facebookImage", new ClassPathResource("static/images/facebook.png"));
+//            helper.addInline("youtubeImage", new ClassPathResource("static/images/youtube.png"));
+//            helper.addInline("linkedinImage", new ClassPathResource("static/images/linkedin.png"));
         } catch (Exception e) {
             log.error("Error creating mime message", e);
         }
