@@ -27,7 +27,7 @@ public class VideoProcessorService {
     private final EmailService emailService;
     private final StorageProperties storageProperties;
 
-    @Value("${app.url.frontend}")
+    @Value("${application.url.frontend}")
     private String frontendUrl;
 
     @Async("videoTaskExecutor")
