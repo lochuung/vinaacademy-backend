@@ -9,6 +9,7 @@ import com.vinaacademy.platform.feature.video.repository.VideoRepository;
 import com.vinaacademy.platform.feature.video.utils.FFmpegUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -25,6 +26,9 @@ public class VideoProcessorService {
     private final VideoRepository videoRepository;
     private final EmailService emailService;
     private final StorageProperties storageProperties;
+
+    @Value("${app.url.frontend}")
+    private String frontendUrl;
 
     @Async("videoTaskExecutor")
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -51,12 +55,18 @@ public class VideoProcessorService {
                 throw new RuntimeException("FFmpeg failed for videoId: " + videoId);
             }
 
+            String courseId = video.getSection().getCourse().getId().toString();
+
             // Gửi email thông báo
-            emailService.sendEmail(video.getAuthor().getEmail(),
-                    "Video " + video.getTitle() + " đã được xử lý",
-                    "Video " + video.getTitle() + " đã được xử lý xong. Bạn có thể xem video tại đường dẫn: "
-                            + video.getId(),
-                    true);
+            emailService.sendNotificationEmail(
+                    video.getAuthor(),
+                    "Video " + video.getTitle() + " đã được xử lý thành công",
+                    "Video " + video.getTitle() + " đã được xử lý thành công",
+                    // url
+                    frontendUrl + "/instructor/courses/" + courseId + "/lectures/" + videoId,
+                    // button text
+                    "Xem video"
+            );
         } catch (Exception e) {
             log.error(e.getMessage());
             video.setStatus(VideoStatus.ERROR);
