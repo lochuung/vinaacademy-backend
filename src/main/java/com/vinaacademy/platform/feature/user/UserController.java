@@ -31,6 +31,7 @@ public class UserController {
                 userService.getCurrentUser());
     }
     
+    @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Cập nhập thông tin user")
     @PutMapping("/update-info")
     public ApiResponse<UserDto> updateUserInfo(@RequestBody @Valid  UpdateUserInfoRequest request) {
