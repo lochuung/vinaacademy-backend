@@ -34,7 +34,7 @@ public class VideoProcessorService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void processVideo(UUID videoId, Path inputFile) {
         Video video = videoRepository.findById(videoId)
-                .orElseThrow(() -> BadRequestException.message("Video not found"));
+                .orElseThrow(() -> BadRequestException.message("Không tìm thấy video"));
 
         try {
             Path outputDir = Paths.get(storageProperties.getHlsDir(), String.valueOf(videoId));
