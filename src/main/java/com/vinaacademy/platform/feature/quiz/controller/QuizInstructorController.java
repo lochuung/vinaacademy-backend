@@ -117,7 +117,7 @@ public class QuizInstructorController {
                     description = "Quiz not found"
             )
     })
-    @HasAnyRole({AuthConstants.ADMIN_ROLE, AuthConstants.INSTRUCTOR_ROLE})
+    @HasAnyRole({AuthConstants.ADMIN_ROLE, AuthConstants.INSTRUCTOR_ROLE, AuthConstants.STAFF_ROLE})
     @GetMapping("/{id}")
     public ApiResponse<QuizDto> getQuiz(@PathVariable UUID id) {
         return ApiResponse.success(quizService.getQuizByIdForInstructor(id));
