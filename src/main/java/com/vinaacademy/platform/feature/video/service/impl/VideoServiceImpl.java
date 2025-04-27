@@ -73,7 +73,7 @@ public class VideoServiceImpl implements VideoService {
             throw BadRequestException.message("Bạn không có quyền truy cập vào video này");
         }
         if (VideoStatus.PROCESSING.equals(video.getStatus())) {
-            throw BadRequestException.message("Video đang đang được xử lý");
+            throw BadRequestException.message("Video đang được xử lý");
         }
         video.setThumbnailUrl(videoRequest.getThumbnailUrl());
         video.setStatus(VideoStatus.PROCESSING);
