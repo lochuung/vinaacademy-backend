@@ -199,7 +199,7 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     public CourseDto createCourse(CourseRequest request) {
-        String slug = StringUtils.isBlank(request.getSlug()) ? request.getSlug() : SlugUtils.toSlug(request.getName());
+        String slug = StringUtils.isBlank(request.getSlug()) ? null : SlugUtils.toSlug(request.getName());
 
         if (courseRepository.existsBySlug(slug)) {
             throw BadRequestException.message("Slug url đã tồn tại");
