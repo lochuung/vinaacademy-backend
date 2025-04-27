@@ -19,7 +19,7 @@ import org.springframework.stereotype.Component;
 public class VideoLessonCreator extends LessonCreator {
 
     private final VideoRepository videoRepository;
-    
+
     @Override
     public Lesson createLesson(String title, Section section, User author, boolean isFree, int orderIndex) {
         Video video = Video.builder()
@@ -28,9 +28,9 @@ public class VideoLessonCreator extends LessonCreator {
                 .free(isFree)
                 .orderIndex(orderIndex)
                 .author(author)
-                .status(VideoStatus.PROCESSING)
+                .status(VideoStatus.NO_VIDEO)
                 .build();
-        
+
         return videoRepository.save(video);
     }
     
@@ -46,7 +46,7 @@ public class VideoLessonCreator extends LessonCreator {
                 .orderIndex(request.getOrderIndex())
                 .author(author)
                 .thumbnailUrl(request.getThumbnailUrl())
-                .status(VideoStatus.PROCESSING)
+                .status(VideoStatus.NO_VIDEO)
                 .build();
         
         return videoRepository.save(video);
