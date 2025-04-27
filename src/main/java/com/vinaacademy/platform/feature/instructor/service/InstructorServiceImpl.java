@@ -3,18 +3,26 @@ package com.vinaacademy.platform.feature.instructor.service;
 import com.vinaacademy.platform.exception.BadRequestException;
 import com.vinaacademy.platform.feature.instructor.dto.InstructorInfoDto;
 import com.vinaacademy.platform.feature.user.UserRepository;
+import com.vinaacademy.platform.feature.user.auth.helpers.SecurityHelper;
 import com.vinaacademy.platform.feature.user.constant.AuthConstants;
 import com.vinaacademy.platform.feature.user.entity.User;
+import com.vinaacademy.platform.feature.user.role.entity.Role;
+import com.vinaacademy.platform.feature.user.role.repository.RoleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Set;
 import java.util.UUID;
 
 @Service
 public class InstructorServiceImpl implements InstructorService {
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private RoleRepository roleRepository;
+    @Autowired
+    private SecurityHelper securityHelper;
 
     @Override
     @Transactional(readOnly = true)
@@ -38,4 +46,62 @@ public class InstructorServiceImpl implements InstructorService {
         dto.setAvatarUrl(instructor.getAvatarUrl());
         return dto;
     }
+
+    @Override
+    @Transactional
+    public InstructorInfoDto registerAsInstructor() {
+        // Lấy thông tin người dùng hiện tại
+        User currentUser = securityHelper.getCurrentUser();
+        if (currentUser == null) {
+            throw BadRequestException.message("Bạn cần đăng nhập để thực hiện thao tác này");
+        }
+
+        // Kiểm tra xem người dùng hiện tại có đúng một role là STUDENT không
+        Set<Role> userRoles = currentUser.getRoles();
+        if (userRoles.size() != 1 || !userRoles.stream()
+                .anyMatch(role -> role.getCode().equalsIgnoreCase(AuthConstants.STUDENT_ROLE))) {
+            throw BadRequestException.message("Chỉ học viên mới có thể đăng ký làm giảng viên");
+        }
+
+        // Kiểm tra xem người dùng đã có role INSTRUCTOR chưa
+        boolean alreadyInstructor = userRoles.stream()
+                .anyMatch(role -> role.getCode().equalsIgnoreCase(AuthConstants.INSTRUCTOR_ROLE));
+        if (alreadyInstructor) {
+            throw BadRequestException.message("Bạn đã là giảng viên rồi");
+        }
+
+        // Lấy role INSTRUCTOR từ cơ sở dữ liệu
+        Role instructorRole = roleRepository.findByCode(AuthConstants.INSTRUCTOR_ROLE);
+        if (instructorRole == null) {
+            throw BadRequestException.message("Không tìm thấy vai trò giảng viên trong hệ thống");
+        }
+
+        // Thêm role INSTRUCTOR cho người dùng
+        userRoles.add(instructorRole);
+        currentUser.setRoles(userRoles);
+
+        // Lưu vào cơ sở dữ liệu
+        User updatedUser = userRepository.save(currentUser);
+
+        // Tạo và trả về thông tin giảng viên
+        InstructorInfoDto dto = new InstructorInfoDto();
+        dto.setFullName(updatedUser.getFullName());
+        dto.setUsername(updatedUser.getUsername());
+        dto.setEmail(updatedUser.getEmail());
+        dto.setDescription(updatedUser.getDescription());
+        dto.setAvatarUrl(updatedUser.getAvatarUrl());
+        return dto;
+    }
+
+//    @Override
+//    @Transactional(readOnly = true)
+//    public boolean isInstructor(UUID userId) {
+//        // Tìm người dùng trong hệ thống
+//        User user = userRepository.findById(userId)
+//                .orElseThrow(() -> BadRequestException.message("Không tìm thấy người dùng"));
+//
+//        // Kiểm tra xem người dùng có role INSTRUCTOR không
+//        return user.getRoles().stream()
+//                .anyMatch(role -> role.getCode().equalsIgnoreCase(AuthConstants.INSTRUCTOR_ROLE));
+//    }
 }

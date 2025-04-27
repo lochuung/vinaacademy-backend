@@ -43,7 +43,7 @@ public class LessonController {
             ),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
                     responseCode = "404",
-                    description = "Lesson not found"
+                    description = "Không tìm thấy bài học"
             )
     })
     @GetMapping("/{id}")
@@ -108,7 +108,7 @@ public class LessonController {
             ),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
                     responseCode = "404",
-                    description = "Lesson not found"
+                    description = "Không tìm thấy bài học"
             )
     })
     @HasAnyRole({AuthConstants.ADMIN_ROLE, AuthConstants.INSTRUCTOR_ROLE})
@@ -129,7 +129,7 @@ public class LessonController {
             ),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
                     responseCode = "404",
-                    description = "Lesson not found"
+                    description = "Không tìm thấy bài học"
             )
     })
     @HasAnyRole({AuthConstants.ADMIN_ROLE, AuthConstants.INSTRUCTOR_ROLE})
@@ -153,7 +153,7 @@ public class LessonController {
             ),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
                     responseCode = "404",
-                    description = "Lesson not found"
+                    description = "Không tìm thấy bài học"
             )
     })
     public ApiResponse<Void> completeLesson(@PathVariable UUID lessonId) {

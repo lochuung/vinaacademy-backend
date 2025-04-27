@@ -58,7 +58,7 @@ public class LessonRequest {
     @Min(value = 0, message = "Total point cannot be negative")
     private Double totalPoint;
     
-    @Min(value = 1, message = "Duration must be positive")
+    @Min(value = 0, message = "Duration must be positive")
     private Integer duration;
     
     // Quiz settings - map stores settings like randomizeQuestions, showCorrectAnswers, etc.

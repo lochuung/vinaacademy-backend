@@ -619,7 +619,7 @@ public class TestingDataService {
                     .questionText("Giải thích cách bạn dự định áp dụng kiến thức từ khóa học " + categoryName + " này vào các dự án cá nhân hoặc công việc của bạn.")
                     .explanation("Điều này giúp chúng tôi hiểu mục tiêu học tập và kỳ vọng của bạn.")
                     .point(25.0)
-                    .questionType(QuestionType.ESSAY)
+                    .questionType(QuestionType.TEXT)
                     .build();
 
             questionRepository.save(essayQuestion);

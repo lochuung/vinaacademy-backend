@@ -325,7 +325,7 @@ public class LessonServiceImpl implements LessonService {
 
     private Lesson findLessonById(UUID id) {
         return lessonRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Lesson not found with id: " + id));
+                .orElseThrow(() -> new NotFoundException("Không tìm thấy bài học with id: " + id));
     }
 
     private Section findSectionById(UUID id) {
