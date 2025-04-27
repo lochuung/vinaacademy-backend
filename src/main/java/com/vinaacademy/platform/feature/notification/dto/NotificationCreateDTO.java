@@ -18,4 +18,6 @@ public class NotificationCreateDTO {
     private String targetUrl;
     private NotificationType type;
     private UUID userId;
+    
+//    private String hash;  sau update len de hash value valid neu k se bi fake noti
 }

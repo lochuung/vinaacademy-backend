@@ -83,4 +83,6 @@ public interface CourseInstructorRepository extends JpaRepository<CourseInstruct
     boolean existsByInstructorIdAndCourseId(@Param("instructorId") UUID instructorId, @Param("courseId") UUID courseId);
 
     boolean existsByCourseIdAndInstructorId(UUID courseId, UUID id);
+    
+    Long countByInstructorAndIsOwnerTrue(User instructor);
 }

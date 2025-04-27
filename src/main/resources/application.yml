@@ -3,3 +3,4 @@ spring:
     name: VinaAcademy
   profiles:
     active: dev, mail
+
