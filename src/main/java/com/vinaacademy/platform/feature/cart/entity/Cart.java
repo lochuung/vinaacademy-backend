@@ -14,10 +14,12 @@ import java.util.List;
 @AllArgsConstructor
 @Entity
 @Table(name = "cart")
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Cart {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
