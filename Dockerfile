@@ -2,7 +2,7 @@
 FROM openjdk:17-jdk-alpine
 
 # Install Maven
-RUN apk add --no-cache maven
+RUN apk add --no-cache maven ffmpeg ffmpeg-libs
 
 # Set the working directory in the container
 WORKDIR /app
