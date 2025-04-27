@@ -22,8 +22,6 @@ import java.util.Set;
 import java.util.UUID;
 
 @Data
-@Getter
-@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -32,9 +30,11 @@ import java.util.UUID;
         @UniqueConstraint(columnNames = "email"),
         @UniqueConstraint(columnNames = "username")
 })
+@EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
 public class User extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
+    @EqualsAndHashCode.Include
     private UUID id;
 
     @Column(name = "email", nullable = false, unique = true)
