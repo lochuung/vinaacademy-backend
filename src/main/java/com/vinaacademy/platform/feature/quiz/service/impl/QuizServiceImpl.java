@@ -465,8 +465,7 @@ public class QuizServiceImpl implements QuizService {
                 .build();
 
         // Process selected answers differently based on question type
-        if (question.getQuestionType() == QuestionType.SHORT_ANSWER ||
-                question.getQuestionType() == QuestionType.ESSAY) {
+        if (question.getQuestionType() == QuestionType.TEXT) {
 
             // For text-based answers, we just store the text
             // These will need manual grading by instructors
