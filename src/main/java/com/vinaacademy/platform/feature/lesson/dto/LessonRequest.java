@@ -23,21 +23,21 @@ import java.util.UUID;
 @AllArgsConstructor
 public class LessonRequest {
     
-    @NotBlank(message = "Title is required")
-    @Size(max = 255, message = "Title cannot exceed 255 characters")
+    @NotBlank(message = "Tiêu đề không được để trống")
+    @Size(max = 255, message = "Tiêu đề không được quá 255 ký tự")
     private String title;
     
-    @NotNull(message = "Section ID is required")
+    @NotNull(message = "Chương học không được để trống")
     private UUID sectionId;
     
-    @NotNull(message = "Lesson type is required")
+    @NotNull(message = "Loại bài học không được để trống")
     private LessonType type;
 
     private String description;
     
     private boolean free;
     
-    @Min(value = 0, message = "Order index cannot be negative")
+    @Min(value = 0, message = "Thứ tự không được âm")
     private Integer orderIndex;
     
     // Fields specific to lesson types
@@ -52,13 +52,13 @@ public class LessonRequest {
     private String content;
     
     // For Quiz lessons
-    @Min(value = 0, message = "Pass point cannot be negative")
+    @Min(value = 0, message = "Điểm đạt không được âm")
     private Double passPoint;
     
-    @Min(value = 0, message = "Total point cannot be negative")
+    @Min(value = 0, message = "Tổng điểm không được âm")
     private Double totalPoint;
     
-    @Min(value = 0, message = "Duration must be positive")
+    @Min(value = 0, message = "Thời gian làm bài không được âm")
     private Integer duration;
     
     // Quiz settings - map stores settings like randomizeQuestions, showCorrectAnswers, etc.
