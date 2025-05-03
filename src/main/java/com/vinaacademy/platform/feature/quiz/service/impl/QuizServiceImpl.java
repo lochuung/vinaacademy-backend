@@ -99,9 +99,16 @@ public class QuizServiceImpl implements QuizService {
             quiz.setQuestions(questions);
         }
 
+        List<UUID> questionIds = quiz.getQuestions().stream()
+                .map(Question::getId)
+                .collect(Collectors.toList());
+        List<Answer> allAnswers = answerRepository.findByQuestionIdIn(questionIds);
+
+        Map<UUID, List<Answer>> answersByQuestionId = allAnswers.stream()
+                .collect(Collectors.groupingBy(a -> a.getQuestion().getId()));
         for (Question question : quiz.getQuestions()) {
-            // Randomize answers for each question
-            List<Answer> answers = answerRepository.findByQuestionId(question.getId());
+            List<Answer> answers = answersByQuestionId.getOrDefault(question.getId(),
+                    new ArrayList<>());
             Collections.shuffle(answers);
             question.setAnswers(answers);
         }
