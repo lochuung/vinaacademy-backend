@@ -24,4 +24,6 @@ public interface AnswerRepository extends JpaRepository<Answer, UUID> {
      * Find correct answers by question ID
      */
     List<Answer> findByQuestionIdAndIsCorrect(UUID questionId, boolean isCorrect);
+
+    List<Answer> findByQuestionIdIn(List<UUID> questionIds);
 }
