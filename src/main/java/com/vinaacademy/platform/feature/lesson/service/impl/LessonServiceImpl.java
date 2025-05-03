@@ -194,7 +194,13 @@ public class LessonServiceImpl implements LessonService {
         updateLessonByType(existingLesson, request);
 
         // Cập nhật trạng thái khóa học sau khi cập nhật bài học
-        updateCourseStatusAfterModifyingLessons(course);
+        boolean isQuizWithSettings = LessonType.QUIZ.equals(request.getType())
+                && request.getSettings() != null
+                && !request.getSettings().isEmpty();
+        if (!isQuizWithSettings) {
+            updateCourseStatusAfterModifyingLessons(course);
+        }
+
 
         // Log the update
         logService.log("Lesson", "UPDATE",

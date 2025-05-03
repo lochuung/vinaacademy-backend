@@ -341,7 +341,10 @@ public class QuizServiceImpl implements QuizService {
                 .build();
 
         // Track points and scoring
-        double totalPoints = 0;
+        Quiz quiz = quizSession.getQuiz();
+        User currentUser = quizSession.getUser();
+
+        double totalPoints = quiz.getTotalPoints();
         double earnedPoints = 0;
 
         // Process each user answer
@@ -352,7 +355,6 @@ public class QuizServiceImpl implements QuizService {
             UserAnswer userAnswer = createUserAnswer(submission, question, userAnswerRequest);
             submission.addUserAnswer(userAnswer);
 
-            totalPoints += question.getPoint();
             if (userAnswer.isCorrect()) {
                 earnedPoints += userAnswer.getEarnedPoints();
             }
@@ -362,8 +364,6 @@ public class QuizServiceImpl implements QuizService {
         submission.setTotalPoints(totalPoints);
         submission.setScore(earnedPoints);
 
-        Quiz quiz = quizSession.getQuiz();
-        User currentUser = quizSession.getUser();
         double scorePercentage = (totalPoints > 0) ? (earnedPoints / totalPoints) * 100 : 0;
         submission.setPassed(scorePercentage >= quiz.getPassingScore());
 
@@ -393,11 +393,8 @@ public class QuizServiceImpl implements QuizService {
         Optional<QuizSubmission> latestSubmission = quizSubmissionRepository
                 .findFirstByQuizIdAndUserIdOrderByCreatedDateDesc(quizId, currentUser.getId());
 
-        if (latestSubmission.isEmpty()) {
-            throw new NotFoundException("No submission found for quiz: " + quizId);
-        }
+        return latestSubmission.map(this::buildSubmissionResultDto).orElse(null);
 
-        return buildSubmissionResultDto(latestSubmission.get());
     }
 
     @Override

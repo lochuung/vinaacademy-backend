@@ -26,6 +26,7 @@ public interface QuizSubmissionRepository extends JpaRepository<QuizSubmission, 
     @Query("SELECT submission FROM QuizSubmission submission " +
             "JOIN submission.quizSession session " +
             "WHERE session.quiz.id = :quizId AND session.user.id = :userId " +
-            "ORDER BY submission.createdDate DESC")
+            "ORDER BY submission.createdDate DESC " +
+            "LIMIT 1")
     Optional<QuizSubmission> findFirstByQuizIdAndUserIdOrderByCreatedDateDesc(UUID quizId, UUID userId);
 }
