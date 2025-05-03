@@ -38,8 +38,8 @@ public interface LessonMapper {
         } else if (lesson instanceof Reading reading) {
             builder.content(reading.getContent());
         } else if (lesson instanceof Quiz quiz) {
-            builder.passPoint(quiz.getPassPoint());
-            builder.totalPoint(quiz.getTotalPoint());
+            builder.passPoint(quiz.getPassingScore());
+            builder.totalPoint(quiz.getTotalPoints());
             builder.duration(quiz.getDuration());
         }
     }
@@ -117,8 +117,8 @@ public interface LessonMapper {
                 .title(dto.getTitle())
                 .free(dto.isFree())
                 .orderIndex(dto.getOrderIndex())
-                .passPoint(dto.getPassPoint())
-                .totalPoint(dto.getTotalPoint())
+                .passingScore(dto.getPassPoint())
+                .totalPoints(dto.getTotalPoint())
                 .duration(dto.getDuration())
                 .build();
         

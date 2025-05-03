@@ -20,8 +20,7 @@ public class QuizDto extends BaseDto {
     private UUID id;
     private String title;
     private String description;
-    private double totalPoint;
-    private double passPoint;
+    private double totalPoints;
     private int duration;
     private UUID sectionId;
     private String sectionTitle;

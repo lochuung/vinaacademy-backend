@@ -18,14 +18,9 @@ import java.util.List;
 @Entity
 @DiscriminatorValue("QUIZ")
 public class Quiz extends Lesson {
-    @Column(name = "description")
-    private String description;
 
     @Column(name = "totalPoint")
-    private double totalPoint = 0;
-
-    @Column(name = "passPoint")
-    private double passPoint = 0;
+    private double totalPoints = 0;
 
     @Column(name = "duration")
     private int duration = 0;

@@ -42,6 +42,11 @@ public class QuizSession extends BaseEntity {
     @Column(name = "expiry_time")
     private LocalDateTime expiryTime;
 
+    @JsonIgnore
+    @OneToOne
+    @JoinColumn(name = "quiz_submission_id")
+    private QuizSubmission quizSubmission;
+
     public static QuizSession createNewSession(Quiz quiz, User user) {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime expiry = null;
