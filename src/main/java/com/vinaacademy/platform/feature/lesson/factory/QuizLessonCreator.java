@@ -29,8 +29,8 @@ public class QuizLessonCreator extends LessonCreator {
                 .free(isFree)
                 .orderIndex(orderIndex)
                 .author(author)
-                .passPoint(0.0)
-                .totalPoint(0.0)
+                .passingScore(0.0)
+                .totalPoints(0.0)
                 .duration(30)
                 .build();
         
@@ -48,8 +48,8 @@ public class QuizLessonCreator extends LessonCreator {
                 .free(request.isFree())
                 .orderIndex(request.getOrderIndex())
                 .author(author)
-                .passPoint(request.getPassPoint())
-                .totalPoint(request.getTotalPoint())
+                .passingScore(request.getPassPoint())
+                .totalPoints(request.getTotalPoint())
                 .duration(request.getDuration())
                 .build();
         
@@ -67,8 +67,8 @@ public class QuizLessonCreator extends LessonCreator {
             throw new ValidationException("Cannot update a non-Quiz lesson with Quiz data");
         }
         
-        quiz.setPassPoint(request.getPassPoint());
-        quiz.setTotalPoint(request.getTotalPoint());
+        quiz.setPassingScore(request.getPassPoint());
+        quiz.setTotalPoints(request.getTotalPoint());
         quiz.setDuration(request.getDuration());
         
         // Apply quiz settings if provided

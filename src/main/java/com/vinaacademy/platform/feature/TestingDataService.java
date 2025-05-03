@@ -370,8 +370,8 @@ public class TestingDataService {
                         .orderIndex(1)
                         .author(instructor)
                         .description("Đánh giá sự hiểu biết của bạn về nội dung khóa học")
-                        .passPoint(70.0)
-                        .totalPoint(100.0)
+                        .passingScore(70.0)
+                        .totalPoints(100.0)
                         .duration(15)
                         .randomizeQuestions(true)
                         .showCorrectAnswers(true)
@@ -627,7 +627,7 @@ public class TestingDataService {
 
         // Update quiz total points based on questions
         double totalPoints = 100.0; // All questions add up to 100 points
-        quiz.setTotalPoint(totalPoints);
+        quiz.setTotalPoints(totalPoints);
         quizRepository.save(quiz);
     }
 
