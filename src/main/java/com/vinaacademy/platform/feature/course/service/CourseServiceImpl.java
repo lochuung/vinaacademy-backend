@@ -41,8 +41,10 @@ import com.vinaacademy.platform.feature.section.mapper.SectionMapper;
 import com.vinaacademy.platform.feature.section.repository.SectionRepository;
 import com.vinaacademy.platform.feature.user.UserMapper;
 import com.vinaacademy.platform.feature.user.UserRepository;
+import com.vinaacademy.platform.feature.user.auth.annotation.RequiresResourcePermission;
 import com.vinaacademy.platform.feature.user.auth.helpers.SecurityHelper;
 import com.vinaacademy.platform.feature.user.constant.AuthConstants;
+import com.vinaacademy.platform.feature.user.constant.ResourceConstants;
 import com.vinaacademy.platform.feature.user.entity.User;
 import com.vinaacademy.platform.feature.video.entity.Video;
 import lombok.RequiredArgsConstructor;
@@ -210,7 +212,7 @@ public class CourseServiceImpl implements CourseService {
                 request.getSlug();
         String slug = slugGeneratorHelper.generateSlug(baseSlug, s -> !courseRepository.existsBySlug(s));
 
-        Category category = categoryRepository.findById(request.getCategoryId())
+        Category category = categoryRepository.findBySlug(request.getCategorySlug())
                 .orElseThrow(() -> BadRequestException.message("Không tìm thấy danh mục"));
         Course course = Course.builder()
                 .name(request.getName())
@@ -238,15 +240,22 @@ public class CourseServiceImpl implements CourseService {
     public CourseDto updateCourse(String slug, CourseRequest request) {
         Course course = courseRepository.findBySlug(slug)
                 .orElseThrow(() -> BadRequestException.message("Khóa học không tồn tại"));
+        User currentUser = securityHelper.getCurrentUser();
+        if (!securityHelper.hasAnyRole(AuthConstants.ADMIN_ROLE, AuthConstants.STAFF_ROLE)
+                && course.getInstructors().stream()
+                .noneMatch(courseInstructor -> courseInstructor.getInstructor().equals(currentUser))) {
+            throw BadRequestException.message("Người dùng không có quyền sửa khóa học này");
+        }
 
-        String newSlug = StringUtils.isBlank(request.getSlug()) ? request.getSlug()
+        String oldSlug = course.getSlug();
+        String newSlug = StringUtils.isBlank(request.getSlug()) ? oldSlug
                 : SlugUtils.toSlug(request.getName());
 
-        if (!slug.equals(newSlug) && courseRepository.existsBySlug(newSlug)) {
+        if (!oldSlug.equals(newSlug) && courseRepository.existsBySlug(newSlug)) {
             throw BadRequestException.message("Slug đã tồn tại");
         }
 
-        Category category = categoryRepository.findById(request.getCategoryId())
+        Category category = categoryRepository.findBySlug(request.getCategorySlug())
                 .orElseThrow(() -> BadRequestException.message("Không tìm thấy danh mục"));
         course.setName(request.getName());
         course.setSlug(newSlug);
@@ -256,7 +265,7 @@ public class CourseServiceImpl implements CourseService {
         course.setLanguage(request.getLanguage());
         course.setLevel(request.getLevel());
         course.setPrice(request.getPrice());
-        course.setStatus(request.getStatus());
+//        course.setStatus(request.getStatus());
         courseRepository.save(course);
         return courseMapper.toDTO(course);
     }
@@ -265,6 +274,10 @@ public class CourseServiceImpl implements CourseService {
     public void deleteCourse(String slug) {
         Course course = courseRepository.findBySlug(slug)
                 .orElseThrow(() -> BadRequestException.message("Khóa học không tồn tại"));
+
+        if (course.getTotalStudent() > 0) {
+            throw BadRequestException.message("Khóa học đã có người đăng ký không thể xóa");
+        }
 
         courseRepository.delete(course);
     }
