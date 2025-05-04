@@ -152,7 +152,7 @@ public class CourseServiceImpl implements CourseService {
     @Override
     @Transactional(readOnly = true)
     public Page<CourseDetailsResponse> searchCourseDetails(CourseSearchRequest searchRequest, int page, int size,
-            String sortBy, String sortDirection) {
+                                                           String sortBy, String sortDirection) {
         Pageable pageable = createPageable(page, size, sortBy, sortDirection);
 
         Specification<Course> spec = Specification.where(CourseSpecification.hasKeyword(searchRequest.getKeyword()))
@@ -199,7 +199,8 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     public CourseDto createCourse(CourseRequest request) {
-        String slug = StringUtils.isBlank(request.getSlug()) ? null : SlugUtils.toSlug(request.getName());
+        String slug = StringUtils.isBlank(request.getSlug()) ? SlugUtils.toSlug(request.getName())
+                : SlugUtils.toSlug(request.getSlug());
 
         if (courseRepository.existsBySlug(slug)) {
             throw BadRequestException.message("Slug url đã tồn tại");
@@ -272,7 +273,7 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     public Page<CourseDto> getCoursesPaginated(int page, int size, String sortBy, String sortDirection,
-            String categorySlug, double minRating) {
+                                               String categorySlug, double minRating) {
         Pageable pageable = createPageable(page, size, sortBy, sortDirection);
         Page<Course> coursePage;
 
@@ -291,7 +292,7 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     public Page<CourseDto> searchCourses(CourseSearchRequest searchRequest, int page, int size,
-            String sortBy, String sortDirection) {
+                                         String sortBy, String sortDirection) {
         Pageable pageable = createPageable(page, size, sortBy, sortDirection);
 
         // Build specification dynamically using the utility class
@@ -310,7 +311,7 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     public Page<CourseDto> getCoursesByInstructor(UUID instructorId, int page, int size,
-            String sortBy, String sortDirection) {
+                                                  String sortBy, String sortDirection) {
         Pageable pageable = createPageable(page, size, sortBy, sortDirection);
 
         User instructor = userRepository.findById(instructorId)
