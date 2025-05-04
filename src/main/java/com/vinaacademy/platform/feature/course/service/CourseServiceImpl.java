@@ -1,9 +1,12 @@
 package com.vinaacademy.platform.feature.course.service;
 
 import com.vinaacademy.platform.exception.BadRequestException;
+import com.vinaacademy.platform.exception.RetryableException;
 import com.vinaacademy.platform.feature.category.Category;
 import com.vinaacademy.platform.feature.category.repository.CategoryRepository;
 import com.vinaacademy.platform.feature.category.service.CategoryService;
+import com.vinaacademy.platform.feature.common.helpers.SlugGeneratorHelper;
+import com.vinaacademy.platform.feature.common.utils.RandomUtils;
 import com.vinaacademy.platform.feature.common.utils.SlugUtils;
 import com.vinaacademy.platform.feature.course.dto.CourseCountStatusDto;
 import com.vinaacademy.platform.feature.course.dto.CourseDetailsResponse;
@@ -51,6 +54,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -88,6 +92,8 @@ public class CourseServiceImpl implements CourseService {
     private UserRepository userRepository;
     @Autowired
     private SecurityHelper securityHelper;
+    @Autowired
+    private SlugGeneratorHelper slugGeneratorHelper;
 
     @Override
     public Boolean isInstructorOfCourse(UUID courseId, UUID instructorId) {
@@ -199,12 +205,11 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     public CourseDto createCourse(CourseRequest request) {
-        String slug = StringUtils.isBlank(request.getSlug()) ? SlugUtils.toSlug(request.getName())
-                : SlugUtils.toSlug(request.getSlug());
+        String baseSlug = StringUtils.isBlank(request.getSlug()) ?
+                SlugUtils.toSlug(request.getName()) :
+                request.getSlug();
+        String slug = slugGeneratorHelper.generateSlug(baseSlug, s -> !courseRepository.existsBySlug(s));
 
-        if (courseRepository.existsBySlug(slug)) {
-            throw BadRequestException.message("Slug url đã tồn tại");
-        }
         Category category = categoryRepository.findById(request.getCategoryId())
                 .orElseThrow(() -> BadRequestException.message("Không tìm thấy danh mục"));
         Course course = Course.builder()
