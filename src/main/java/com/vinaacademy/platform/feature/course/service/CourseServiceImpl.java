@@ -1,9 +1,12 @@
 package com.vinaacademy.platform.feature.course.service;
 
 import com.vinaacademy.platform.exception.BadRequestException;
+import com.vinaacademy.platform.exception.RetryableException;
 import com.vinaacademy.platform.feature.category.Category;
 import com.vinaacademy.platform.feature.category.repository.CategoryRepository;
 import com.vinaacademy.platform.feature.category.service.CategoryService;
+import com.vinaacademy.platform.feature.common.helpers.SlugGeneratorHelper;
+import com.vinaacademy.platform.feature.common.utils.RandomUtils;
 import com.vinaacademy.platform.feature.common.utils.SlugUtils;
 import com.vinaacademy.platform.feature.course.dto.CourseCountStatusDto;
 import com.vinaacademy.platform.feature.course.dto.CourseDetailsResponse;
@@ -38,8 +41,10 @@ import com.vinaacademy.platform.feature.section.mapper.SectionMapper;
 import com.vinaacademy.platform.feature.section.repository.SectionRepository;
 import com.vinaacademy.platform.feature.user.UserMapper;
 import com.vinaacademy.platform.feature.user.UserRepository;
+import com.vinaacademy.platform.feature.user.auth.annotation.RequiresResourcePermission;
 import com.vinaacademy.platform.feature.user.auth.helpers.SecurityHelper;
 import com.vinaacademy.platform.feature.user.constant.AuthConstants;
+import com.vinaacademy.platform.feature.user.constant.ResourceConstants;
 import com.vinaacademy.platform.feature.user.entity.User;
 import com.vinaacademy.platform.feature.video.entity.Video;
 import lombok.RequiredArgsConstructor;
@@ -51,6 +56,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -88,6 +94,8 @@ public class CourseServiceImpl implements CourseService {
     private UserRepository userRepository;
     @Autowired
     private SecurityHelper securityHelper;
+    @Autowired
+    private SlugGeneratorHelper slugGeneratorHelper;
 
     @Override
     public Boolean isInstructorOfCourse(UUID courseId, UUID instructorId) {
@@ -152,7 +160,7 @@ public class CourseServiceImpl implements CourseService {
     @Override
     @Transactional(readOnly = true)
     public Page<CourseDetailsResponse> searchCourseDetails(CourseSearchRequest searchRequest, int page, int size,
-            String sortBy, String sortDirection) {
+                                                           String sortBy, String sortDirection) {
         Pageable pageable = createPageable(page, size, sortBy, sortDirection);
 
         Specification<Course> spec = Specification.where(CourseSpecification.hasKeyword(searchRequest.getKeyword()))
@@ -199,12 +207,12 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     public CourseDto createCourse(CourseRequest request) {
-        String slug = StringUtils.isBlank(request.getSlug()) ? null : SlugUtils.toSlug(request.getName());
+        String baseSlug = StringUtils.isBlank(request.getSlug()) ?
+                SlugUtils.toSlug(request.getName()) :
+                request.getSlug();
+        String slug = slugGeneratorHelper.generateSlug(baseSlug, s -> !courseRepository.existsBySlug(s));
 
-        if (courseRepository.existsBySlug(slug)) {
-            throw BadRequestException.message("Slug url đã tồn tại");
-        }
-        Category category = categoryRepository.findById(request.getCategoryId())
+        Category category = categoryRepository.findBySlug(request.getCategorySlug())
                 .orElseThrow(() -> BadRequestException.message("Không tìm thấy danh mục"));
         Course course = Course.builder()
                 .name(request.getName())
@@ -232,15 +240,22 @@ public class CourseServiceImpl implements CourseService {
     public CourseDto updateCourse(String slug, CourseRequest request) {
         Course course = courseRepository.findBySlug(slug)
                 .orElseThrow(() -> BadRequestException.message("Khóa học không tồn tại"));
+        User currentUser = securityHelper.getCurrentUser();
+        if (!securityHelper.hasAnyRole(AuthConstants.ADMIN_ROLE, AuthConstants.STAFF_ROLE)
+                && course.getInstructors().stream()
+                .noneMatch(courseInstructor -> courseInstructor.getInstructor().equals(currentUser))) {
+            throw BadRequestException.message("Người dùng không có quyền sửa khóa học này");
+        }
 
-        String newSlug = StringUtils.isBlank(request.getSlug()) ? request.getSlug()
+        String oldSlug = course.getSlug();
+        String newSlug = StringUtils.isBlank(request.getSlug()) ? oldSlug
                 : SlugUtils.toSlug(request.getName());
 
-        if (!slug.equals(newSlug) && courseRepository.existsBySlug(newSlug)) {
+        if (!oldSlug.equals(newSlug) && courseRepository.existsBySlug(newSlug)) {
             throw BadRequestException.message("Slug đã tồn tại");
         }
 
-        Category category = categoryRepository.findById(request.getCategoryId())
+        Category category = categoryRepository.findBySlug(request.getCategorySlug())
                 .orElseThrow(() -> BadRequestException.message("Không tìm thấy danh mục"));
         course.setName(request.getName());
         course.setSlug(newSlug);
@@ -250,7 +265,7 @@ public class CourseServiceImpl implements CourseService {
         course.setLanguage(request.getLanguage());
         course.setLevel(request.getLevel());
         course.setPrice(request.getPrice());
-        course.setStatus(request.getStatus());
+//        course.setStatus(request.getStatus());
         courseRepository.save(course);
         return courseMapper.toDTO(course);
     }
@@ -259,6 +274,10 @@ public class CourseServiceImpl implements CourseService {
     public void deleteCourse(String slug) {
         Course course = courseRepository.findBySlug(slug)
                 .orElseThrow(() -> BadRequestException.message("Khóa học không tồn tại"));
+
+        if (course.getTotalStudent() > 0) {
+            throw BadRequestException.message("Khóa học đã có người đăng ký không thể xóa");
+        }
 
         courseRepository.delete(course);
     }
@@ -272,7 +291,7 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     public Page<CourseDto> getCoursesPaginated(int page, int size, String sortBy, String sortDirection,
-            String categorySlug, double minRating) {
+                                               String categorySlug, double minRating) {
         Pageable pageable = createPageable(page, size, sortBy, sortDirection);
         Page<Course> coursePage;
 
@@ -291,7 +310,7 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     public Page<CourseDto> searchCourses(CourseSearchRequest searchRequest, int page, int size,
-            String sortBy, String sortDirection) {
+                                         String sortBy, String sortDirection) {
         Pageable pageable = createPageable(page, size, sortBy, sortDirection);
 
         // Build specification dynamically using the utility class
@@ -310,7 +329,7 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     public Page<CourseDto> getCoursesByInstructor(UUID instructorId, int page, int size,
-            String sortBy, String sortDirection) {
+                                                  String sortBy, String sortDirection) {
         Pageable pageable = createPageable(page, size, sortBy, sortDirection);
 
         User instructor = userRepository.findById(instructorId)

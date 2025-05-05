@@ -236,7 +236,7 @@ public class CourseController {
                     .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy khóa học với ID: " + courseId));
 
             // Kiểm tra quyền của người dùng (giảng viên của khóa học)
-            boolean isInstructor = courseService.isInstructorOfCourse(currentUser.getId(), course.getId());
+            boolean isInstructor = courseService.isInstructorOfCourse(course.getId(), currentUser.getId());
             if (!isInstructor) {
                 throw BadRequestException.message("Bạn không có quyền cập nhật khóa học này");
             }

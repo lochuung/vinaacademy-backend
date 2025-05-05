@@ -25,7 +25,6 @@ import com.vinaacademy.platform.feature.user.auth.helpers.SecurityHelper;
 import com.vinaacademy.platform.feature.user.constant.ResourceConstants;
 import com.vinaacademy.platform.feature.user.entity.User;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.LockModeType;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,7 +33,6 @@ import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
@@ -94,6 +92,27 @@ public class QuizServiceImpl implements QuizService {
         }
 
         Quiz quiz = findQuizById(id);
+        if (quiz.isRandomizeQuestions()) {
+            // Randomize questions for the quiz
+            List<Question> questions = questionRepository.findByQuizOrderByCreatedDate(quiz);
+            Collections.shuffle(questions);
+            quiz.setQuestions(questions);
+        }
+
+        List<UUID> questionIds = quiz.getQuestions().stream()
+                .map(Question::getId)
+                .collect(Collectors.toList());
+        List<Answer> allAnswers = answerRepository.findByQuestionIdIn(questionIds);
+
+        Map<UUID, List<Answer>> answersByQuestionId = allAnswers.stream()
+                .collect(Collectors.groupingBy(a -> a.getQuestion().getId()));
+        for (Question question : quiz.getQuestions()) {
+            List<Answer> answers = answersByQuestionId.getOrDefault(question.getId(),
+                    new ArrayList<>());
+            Collections.shuffle(answers);
+            question.setAnswers(answers);
+        }
+
         return quizMapper.quizToQuizDtoHideCorrectAnswers(quiz);
     }
 
@@ -275,7 +294,7 @@ public class QuizServiceImpl implements QuizService {
             // If the session has expired but is still marked active, deactivate it
             if (session.isExpired()) {
                 this.processSubmitQuiz(quizSessionService.getQuizSubmissionBySession(session),
-                        quiz, currentUser, session.getStartTime(), LocalDateTime.now());
+                        session, session.getStartTime(), LocalDateTime.now());
                 quizSessionService.deactivateSession(session);
             } else {
                 // Return the existing active session
@@ -288,7 +307,7 @@ public class QuizServiceImpl implements QuizService {
         ZoneOffset vnZoneOffset = ZoneOffset.ofHours(7);
         taskScheduler.schedule(() -> {
             this.processSubmitQuiz(quizSessionService.getQuizSubmissionBySession(session),
-                    quiz, currentUser, session.getStartTime(), LocalDateTime.now());
+                    session, session.getStartTime(), LocalDateTime.now());
             quizSessionService.deactivateSession(session);
         }, session.getExpiryTime().toInstant(vnZoneOffset));
         return quizSessionRepository.save(session);
@@ -317,21 +336,22 @@ public class QuizServiceImpl implements QuizService {
         validateTimeLimit(quiz, startTime, endTime);
 
         // Create new quiz submission
-        return processSubmitQuiz(request, quiz, currentUser, startTime, endTime);
+        return processSubmitQuiz(request, session, startTime, endTime);
     }
 
-    private QuizSubmissionResultDto processSubmitQuiz(QuizSubmissionRequest request, Quiz quiz,
-                                                      User currentUser, LocalDateTime startTime,
+    private QuizSubmissionResultDto processSubmitQuiz(QuizSubmissionRequest request, QuizSession quizSession, LocalDateTime startTime,
                                                       LocalDateTime endTime) {
         QuizSubmission submission = QuizSubmission.builder()
-                .quiz(quiz)
-                .user(currentUser)
+                .quizSession(quizSession)
                 .startTime(startTime)
                 .endTime(endTime)
                 .build();
 
         // Track points and scoring
-        double totalPoints = 0;
+        Quiz quiz = quizSession.getQuiz();
+        User currentUser = quizSession.getUser();
+
+        double totalPoints = quiz.getTotalPoints();
         double earnedPoints = 0;
 
         // Process each user answer
@@ -342,7 +362,6 @@ public class QuizServiceImpl implements QuizService {
             UserAnswer userAnswer = createUserAnswer(submission, question, userAnswerRequest);
             submission.addUserAnswer(userAnswer);
 
-            totalPoints += question.getPoint();
             if (userAnswer.isCorrect()) {
                 earnedPoints += userAnswer.getEarnedPoints();
             }
@@ -363,6 +382,10 @@ public class QuizServiceImpl implements QuizService {
 
         QuizSubmission savedSubmission = quizSubmissionRepository.save(submission);
 
+        quizSession.setQuizSubmission(submission);
+        quizSession.setActive(false);
+        quizSessionRepository.save(quizSession);
+
         // Convert to result DTO
         return buildSubmissionResultDto(savedSubmission);
     }
@@ -377,11 +400,8 @@ public class QuizServiceImpl implements QuizService {
         Optional<QuizSubmission> latestSubmission = quizSubmissionRepository
                 .findFirstByQuizIdAndUserIdOrderByCreatedDateDesc(quizId, currentUser.getId());
 
-        if (latestSubmission.isEmpty()) {
-            throw new NotFoundException("No submission found for quiz: " + quizId);
-        }
+        return latestSubmission.map(this::buildSubmissionResultDto).orElse(null);
 
-        return buildSubmissionResultDto(latestSubmission.get());
     }
 
     @Override
@@ -450,7 +470,7 @@ public class QuizServiceImpl implements QuizService {
                 .mapToDouble(Question::getPoint)
                 .sum();
 
-        quiz.setTotalPoint(totalPoints);
+        quiz.setTotalPoints(totalPoints);
         quizRepository.save(quiz);
     }
 
@@ -536,7 +556,7 @@ public class QuizServiceImpl implements QuizService {
      * Build a submission result DTO from a submission entity
      */
     private QuizSubmissionResultDto buildSubmissionResultDto(QuizSubmission submission) {
-        Quiz quiz = submission.getQuiz();
+        Quiz quiz = submission.getQuizSession().getQuiz();
 
         List<UserAnswerResultDto> userAnswerResults = submission.getUserAnswers().stream()
                 .map(userAnswer -> {
