@@ -182,16 +182,57 @@ public class QuizServiceImpl implements QuizService {
         }
 
         if (questionDto.getQuestionType() != null) {
-            question.setQuestionType(questionDto.getQuestionType());
+            updateQuestionType(question, questionDto.getQuestionType());
         }
 
         Question savedQuestion = questionRepository.save(question);
 
         // Update quiz total points
-        updateQuizTotalPoints(question.getQuiz());
+        updateQuizTotalPoints(savedQuestion.getQuiz());
 
         return quizMapper.questionToQuestionDto(savedQuestion);
     }
+
+    private void updateQuestionType(Question question, QuestionType questionType) {
+        QuestionType oldType = question.getQuestionType();
+        if (oldType == questionType) {
+            return;
+        }
+
+        question.setQuestionType(questionType);
+
+        // Xóa toàn bộ answer cũ bằng cách thao tác trực tiếp trên collection
+        List<Answer> existingAnswers = question.getAnswers();
+        boolean willClear = questionType == QuestionType.TRUE_FALSE ||
+                questionType == QuestionType.TEXT;
+        if (existingAnswers != null && willClear) {
+            existingAnswers.clear();
+        }
+
+        if (questionType == QuestionType.TRUE_FALSE) {
+            Answer trueAnswer = Answer.builder()
+                    .answerText("Đúng")
+                    .isCorrect(true)
+                    .build();
+
+            Answer falseAnswer = Answer.builder()
+                    .answerText("Sai")
+                    .isCorrect(false)
+                    .build();
+
+            question.addAnswer(trueAnswer); // sử dụng helper method đã có
+            question.addAnswer(falseAnswer);
+        }
+
+        if (questionType == QuestionType.SINGLE_CHOICE) {
+            assert question.getAnswers() != null;
+            long correctCount = question.getAnswers().stream().filter(Answer::getIsCorrect).count();
+            if (correctCount > 1) {
+                throw new ValidationException("Câu hỏi loại single choice chỉ được có một đáp án đúng");
+            }
+        }
+    }
+
 
     @Override
     @Transactional
