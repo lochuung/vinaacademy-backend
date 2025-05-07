@@ -2,6 +2,7 @@ package com.vinaacademy.platform.configuration.security;
 
 import com.vinaacademy.platform.feature.user.constant.AuthConstants;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -59,6 +60,8 @@ public class SecurityConfig {
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
 
     private final UrlBasedCorsConfigurationSource corsConfigurationSource;
+    @Value("${application.url.google-auth")
+    private String googleAuthUrl;
 
     // Admin API Security
     @Bean
@@ -127,6 +130,14 @@ public class SecurityConfig {
                                 oauth2.jwt(jwt ->
                                         jwt.jwtAuthenticationConverter(jwtAuthenticationConverter()))) // Enable JWT authentication
                         .cors(cors -> cors.configurationSource(corsConfigurationSource))
+                        .oauth2Login(oauth -> oauth
+                                .authorizationEndpoint(authorization -> authorization
+                                        .baseUri(googleAuthUrl) // Google Auth URL
+                                )
+                                .redirectionEndpoint(redirection -> redirection
+                                        .baseUri("/api/v1/auth/login/oauth2/code/*") // OAuth2 redirection endpoint
+                                )
+                        )
                         .exceptionHandling(exceptionHandling -> exceptionHandling
                                 .accessDeniedHandler(customAccessDeniedHandler) // Custom Access Denied Handler
                                 .authenticationEntryPoint(customAuthenticationEntryPoint) // Custom Authentication Entry Point

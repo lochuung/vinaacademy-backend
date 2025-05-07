@@ -29,6 +29,7 @@ import com.vinaacademy.platform.feature.user.role.entity.Role;
 import com.vinaacademy.platform.feature.user.role.repository.RoleRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -252,7 +253,7 @@ public class TestingDataService {
 
             try {
                 String name = courseNode.get("name").asText();
-                String description = courseNode.get("description").asText();
+                String description = generateDefaultDescription(name);
                 String slug = courseNode.get("slug").asText();
                 String image = courseNode.has("image") ? courseNode.get("image").asText() : "";
 
@@ -265,14 +266,9 @@ public class TestingDataService {
                 }
 
                 // Parse price - default to 0 if not present or invalid
-                BigDecimal price = BigDecimal.ZERO;
-                if (courseNode.has("price") && !courseNode.get("price").isNull()) {
-                    try {
-                        price = new BigDecimal(courseNode.get("price").asText());
-                    } catch (NumberFormatException e) {
-                        log.warn("Invalid price format for course {}: {}", name, e.getMessage());
-                    }
-                }
+                int randomInteger = (int) (Math.random() * 101);
+                randomInteger = randomInteger < 20 ? 0 : randomInteger * 1000;
+                BigDecimal price = BigDecimal.valueOf(randomInteger);
 
                 // Parse level - default to BEGINNER
                 CourseLevel level = CourseLevel.BEGINNER;
@@ -413,45 +409,80 @@ public class TestingDataService {
         }
     }
 
-    /**
-     * Generate realistic reading content for a lesson based on course details using Markdown
-     */
     private String generateReadingContent(String courseName, String courseDescription, String categoryName) {
         StringBuilder content = new StringBuilder();
 
-        content.append("# ").append(courseName).append("\n\n");
-        content.append(courseDescription).append("\n\n");
+        // Main heading
+        content.append("<h1>").append(courseName).append("</h1>");
 
-        content.append("## Tổng quan khóa học\n\n");
-        content.append("Khóa học toàn diện này trong lĩnh vực **").append(categoryName)
-                .append("** sẽ hướng dẫn bạn qua tất cả các khái niệm và kỹ năng thực tế cần thiết để thành thạo trong lĩnh vực này.\n\n");
+        // Course description
+        content.append("<p>").append(courseDescription).append("</p>");
 
-        content.append("## Bạn sẽ học được gì\n\n");
-        content.append("- Khái niệm và nguyên lý cơ bản của ").append(categoryName).append("\n");
-        content.append("- Kỹ năng và kỹ thuật thực hành thông qua các bài tập\n");
-        content.append("- Chiến lược nâng cao cho ứng dụng thực tế\n");
-        content.append("- Quy tắc thực hành tốt và tiêu chuẩn ngành\n");
-        content.append("- Giải quyết vấn đề và tư duy phản biện trong bối cảnh của ").append(categoryName).append("\n\n");
+        // Course overview
+        content.append("<h2>Tổng quan khóa học</h2>");
+        content.append("<p>Khóa học toàn diện này trong lĩnh vực <strong>").append(categoryName)
+                .append("</strong> sẽ hướng dẫn bạn qua tất cả các khái niệm và kỹ năng thực tế cần thiết để thành thạo trong lĩnh vực này.</p>");
 
-        content.append("## Cấu trúc khóa học\n\n");
-        content.append("Khóa học này được chia thành nhiều module, mỗi module tập trung vào các khía cạnh cụ thể của chủ đề. ");
-        content.append("Bạn sẽ được học lý thuyết sau đó là các bài tập thực hành để củng cố kiến thức.\n\n");
+        // What you'll learn
+        content.append("<h2>Bạn sẽ học được gì</h2>");
+        content.append("<ul>");
+        content.append("<li>Khái niệm và nguyên lý cơ bản của ").append(categoryName).append("</li>");
+        content.append("<li>Kỹ năng và kỹ thuật thực hành thông qua các bài tập</li>");
+        content.append("<li>Chiến lược nâng cao cho ứng dụng thực tế</li>");
+        content.append("<li>Quy tắc thực hành tốt và tiêu chuẩn ngành</li>");
+        content.append("<li>Giải quyết vấn đề và tư duy phản biện trong bối cảnh của ").append(categoryName).append("</li>");
+        content.append("</ul>");
 
-        content.append("## Điều kiện tiên quyết\n\n");
-        content.append("Mặc dù khóa học này được thiết kế để dễ tiếp cận với người mới bắt đầu, việc có một số kiến thức cơ bản trong các lĩnh vực sau sẽ có lợi:\n\n");
-        content.append("- Kỹ năng máy tính cơ bản\n");
-        content.append("- Hiểu biết nền tảng về các khái niệm ").append(categoryName).append("\n");
-        content.append("- Sự nhiệt tình và sẵn lòng học hỏi!\n\n");
+        // Course structure
+        content.append("<h2>Cấu trúc khóa học</h2>");
+        content.append("<p>Khóa học này được chia thành nhiều module, mỗi module tập trung vào các khía cạnh cụ thể của chủ đề. ");
+        content.append("Bạn sẽ được học lý thuyết sau đó là các bài tập thực hành để củng cố kiến thức.</p>");
 
-        content.append("## Phương pháp đánh giá\n\n");
-        content.append("Tiến độ của bạn sẽ được đánh giá thông qua:\n\n");
-        content.append("- Bài kiểm tra cuối mỗi phần\n");
-        content.append("- Bài tập thực hành\n");
-        content.append("- Một bài đánh giá toàn diện cuối cùng\n\n");
+        // Prerequisites
+        content.append("<h2>Điều kiện tiên quyết</h2>");
+        content.append("<p>Mặc dù khóa học này được thiết kế để dễ tiếp cận với người mới bắt đầu, việc có một số kiến thức cơ bản trong các lĩnh vực sau sẽ có lợi:</p>");
+        content.append("<ul>");
+        content.append("<li>Kỹ năng máy tính cơ bản</li>");
+        content.append("<li>Hiểu biết nền tảng về các khái niệm ").append(categoryName).append("</li>");
+        content.append("<li>Sự nhiệt tình và sẵn lòng học hỏi!</li>");
+        content.append("</ul>");
 
-        content.append("Chúng tôi rất vui mừng khi có bạn tham gia vào hành trình học tập này. Hãy bắt đầu!\n");
+        // Assessment methods
+        content.append("<h2>Phương pháp đánh giá</h2>");
+        content.append("<p>Tiến độ của bạn sẽ được đánh giá thông qua:</p>");
+        content.append("<ul>");
+        content.append("<li>Bài kiểm tra cuối mỗi phần</li>");
+        content.append("<li>Bài tập thực hành</li>");
+        content.append("<li>Một bài đánh giá toàn diện cuối cùng</li>");
+        content.append("</ul>");
+
+        // Closing
+        content.append("<p>Chúng tôi rất vui mừng khi có bạn tham gia vào hành trình học tập này. Hãy bắt đầu!</p>");
+
+        // Add current date info
+        content.append("<p><em>Khóa học được cập nhật vào: 2025-05-07</em></p>");
 
         return content.toString();
+    }
+
+    /**
+     * Generates a default course description based on the course name in HTML format
+     *
+     * @param courseName The name of the course
+     * @return A default description for the course in HTML
+     */
+    private String generateDefaultDescription(String courseName) {
+        StringBuilder description = new StringBuilder();
+
+        description.append("<p>Chào mừng bạn đến với khóa học \"<strong>").append(courseName).append("</strong>\"! ");
+        description.append("Khóa học này được thiết kế để cung cấp cho bạn những kiến thức và kỹ năng toàn diện ");
+        description.append("giúp bạn trở nên thành thạo trong lĩnh vực này. ");
+        description.append("Từ các nguyên lý cơ bản đến các kỹ thuật nâng cao, khóa học sẽ đồng hành cùng bạn ");
+        description.append("trong suốt hành trình học tập và phát triển chuyên môn. ");
+        description.append("Với sự kết hợp giữa lý thuyết và thực hành, bạn sẽ được trang bị đầy đủ công cụ ");
+        description.append("để ứng dụng hiệu quả trong môi trường thực tế sau khi hoàn thành khóa học.</p>");
+
+        return description.toString();
     }
 
     /**
@@ -632,20 +663,29 @@ public class TestingDataService {
     }
 
     /**
-     * Creates programming-specific reading content when relevant
+     * Creates programming-specific reading content formatted for Tiptap editor
+     *
+     * @param courseName   The name of the course
+     * @param categoryName The category name
+     * @return HTML content compatible with Tiptap editor
      */
     private String createProgrammingReadingContent(String courseName, String categoryName) {
         StringBuilder content = new StringBuilder();
 
-        content.append("# ").append(courseName).append("\n\n");
-        content.append("## Giới thiệu về lập trình trong ").append(categoryName).append("\n\n");
+        // Main heading
+        content.append("<h1>").append(courseName).append("</h1>");
 
-        content.append("Trong thế giới công nghệ ngày nay, việc thành thạo các kỹ năng lập trình là vô cùng quan trọng. ");
-        content.append("Khóa học này sẽ giúp bạn hiểu rõ và ứng dụng thành thạo những khái niệm lập trình quan trọng.\n\n");
+        // Introduction section
+        content.append("<div>");
+        content.append("<h2>Giới thiệu về lập trình trong ").append(categoryName).append("</h2>");
+        content.append("<p>Trong thế giới công nghệ ngày nay, việc thành thạo các kỹ năng lập trình là vô cùng quan trọng. ");
+        content.append("Khóa học này sẽ giúp bạn hiểu rõ và ứng dụng thành thạo những khái niệm lập trình quan trọng.</p>");
+        content.append("</div>");
 
-        content.append("## Cấu trúc dữ liệu và thuật toán\n\n");
-        content.append("```python\n");
-        content.append("# Ví dụ về thuật toán sắp xếp nhanh (Quick sort)\n");
+        // Data structures and algorithms section
+        content.append("<div>");
+        content.append("<h2>Cấu trúc dữ liệu và thuật toán</h2>");
+        content.append("<pre><code># Ví dụ về thuật toán sắp xếp nhanh (Quick sort)\n");
         content.append("def quick_sort(arr):\n");
         content.append("    if len(arr) <= 1:\n");
         content.append("        return arr\n");
@@ -658,122 +698,221 @@ public class TestingDataService {
         content.append("# Sử dụng ví dụ\n");
         content.append("mang_so = [3, 6, 8, 10, 1, 2, 1]\n");
         content.append("mang_da_sap_xep = quick_sort(mang_so)\n");
-        content.append("print(\"Kết quả: \", mang_da_sap_xep)\n");
-        content.append("```\n\n");
+        content.append("print(\"Kết quả: \", mang_da_sap_xep)</code></pre>");
+        content.append("</div>");
 
-        content.append("## Nguyên lý lập trình hướng đối tượng\n\n");
-        content.append("Lập trình hướng đối tượng (OOP) là một phương pháp lập trình dựa trên khái niệm về \"đối tượng\".\n\n");
-        content.append("**Các nguyên tắc cơ bản:**\n\n");
-        content.append("1. **Tính đóng gói (Encapsulation)** - Ẩn dữ liệu thực thi chi tiết\n");
-        content.append("2. **Tính kế thừa (Inheritance)** - Cho phép lớp con kế thừa từ lớp cha\n");
-        content.append("3. **Tính đa hình (Polymorphism)** - Cho phép các đối tượng khác nhau phản ứng khác nhau với cùng một thông điệp\n");
-        content.append("4. **Tính trừu tượng (Abstraction)** - Ẩn sự phức tạp thông qua các giao diện đơn giản\n\n");
+        // OOP principles section
+        content.append("<div>");
+        content.append("<h2>Nguyên lý lập trình hướng đối tượng</h2>");
+        content.append("<p>Lập trình hướng đối tượng (OOP) là một phương pháp lập trình dựa trên khái niệm về \"đối tượng\".</p>");
+        content.append("<p><strong>Các nguyên tắc cơ bản:</strong></p>");
+        content.append("<ol>");
+        content.append("<li><strong>Tính đóng gói (Encapsulation)</strong> - Ẩn dữ liệu thực thi chi tiết</li>");
+        content.append("<li><strong>Tính kế thừa (Inheritance)</strong> - Cho phép lớp con kế thừa từ lớp cha</li>");
+        content.append("<li><strong>Tính đa hình (Polymorphism)</strong> - Cho phép các đối tượng khác nhau phản ứng khác nhau với cùng một thông điệp</li>");
+        content.append("<li><strong>Tính trừu tượng (Abstraction)</strong> - Ẩn sự phức tạp thông qua các giao diện đơn giản</li>");
+        content.append("</ol>");
+        content.append("</div>");
 
-        content.append("## Ví dụ về lớp và đối tượng trong Java\n\n");
-
-        content.append("```java\n");
-        content.append("public class NhanVien {\n");
+        // Java example section
+        content.append("<div>");
+        content.append("<h2>Ví dụ về lớp và đối tượng trong Java</h2>");
+        content.append("<pre><code>public class NhanVien {\n");
         content.append("    // Thuộc tính\n");
         content.append("    private String hoTen;\n");
         content.append("    private int tuoi;\n");
         content.append("    private double luong;\n\n");
-
         content.append("    // Constructor\n");
         content.append("    public NhanVien(String hoTen, int tuoi, double luong) {\n");
         content.append("        this.hoTen = hoTen;\n");
         content.append("        this.tuoi = tuoi;\n");
         content.append("        this.luong = luong;\n");
         content.append("    }\n\n");
-
         content.append("    // Phương thức\n");
         content.append("    public void hienThiThongTin() {\n");
         content.append("        System.out.println(\"Họ tên: \" + hoTen);\n");
         content.append("        System.out.println(\"Tuổi: \" + tuoi);\n");
         content.append("        System.out.println(\"Lương: \" + luong);\n");
         content.append("    }\n");
-        content.append("}\n");
-        content.append("```\n\n");
+        content.append("}</code></pre>");
+        content.append("</div>");
 
-        content.append("## Tài liệu tham khảo\n\n");
-        content.append("- Clean Code - Robert C. Martin\n");
-        content.append("- Design Patterns - Gang of Four\n");
-        content.append("- Effective Java - Joshua Bloch\n");
-        content.append("- Head First Design Patterns\n\n");
+        // References section
+        content.append("<div>");
+        content.append("<h2>Tài liệu tham khảo</h2>");
+        content.append("<ul>");
+        content.append("<li>Clean Code - Robert C. Martin</li>");
+        content.append("<li>Design Patterns - Gang of Four</li>");
+        content.append("<li>Effective Java - Joshua Bloch</li>");
+        content.append("<li>Head First Design Patterns</li>");
+        content.append("</ul>");
+        content.append("</div>");
 
-        content.append("## Bài tập thực hành\n\n");
-        content.append("1. Tạo một ứng dụng quản lý sinh viên đơn giản\n");
-        content.append("2. Áp dụng các nguyên tắc OOP vào dự án của bạn\n");
-        content.append("3. Tối ưu hóa một thuật toán sắp xếp để cải thiện hiệu suất\n\n");
+        // Exercises section
+        content.append("<div>");
+        content.append("<h2>Bài tập thực hành</h2>");
+        content.append("<ol>");
+        content.append("<li>Tạo một ứng dụng quản lý sinh viên đơn giản</li>");
+        content.append("<li>Áp dụng các nguyên tắc OOP vào dự án của bạn</li>");
+        content.append("<li>Tối ưu hóa một thuật toán sắp xếp để cải thiện hiệu suất</li>");
+        content.append("</ol>");
+        content.append("<p style=\"text-align: center;\"><strong>Chúc bạn học tập hiệu quả!</strong></p>");
+        content.append("</div>");
 
-        content.append("Chúc bạn học tập hiệu quả!\n");
+        // Add author and date info - useful for course versioning
+        content.append("<div>");
+        content.append("<p><em>Tác giả: lochuung</em></p>");
+        content.append("<p><em>Cập nhật lần cuối: 2025-05-07</em></p>");
+        content.append("</div>");
 
         return content.toString();
     }
 
     /**
-     * Creates business or finance specific reading content when relevant
+     * Creates business or finance specific reading content formatted for Tiptap editor
+     *
+     * @param courseName   The name of the course
+     * @param categoryName The category name
+     * @return HTML content compatible with Tiptap editor
      */
     private String createBusinessReadingContent(String courseName, String categoryName) {
         StringBuilder content = new StringBuilder();
 
-        content.append("# ").append(courseName).append("\n\n");
-        content.append("## Tổng quan về ").append(categoryName).append("\n\n");
+        // Main heading
+        content.append("<h1>").append(courseName).append("</h1>");
 
-        content.append("Trong môi trường kinh doanh cạnh tranh ngày nay, việc hiểu rõ và áp dụng các nguyên tắc quản lý ");
+        // Overview section
+        content.append("<div>");
+        content.append("<h2>Tổng quan về ").append(categoryName).append("</h2>");
+        content.append("<p>Trong môi trường kinh doanh cạnh tranh ngày nay, việc hiểu rõ và áp dụng các nguyên tắc quản lý ");
         content.append("và chiến lược kinh doanh hiệu quả là chìa khóa để thành công. Khóa học này cung cấp những kiến thức ");
-        content.append("thiết yếu giúp bạn vững vàng trong lĩnh vực ").append(categoryName).append(".\n\n");
+        content.append("thiết yếu giúp bạn vững vàng trong lĩnh vực ").append(categoryName).append(".</p>");
+        content.append("</div>");
 
-        content.append("## Phân tích thị trường\n\n");
-        content.append("Phân tích thị trường là một quy trình thiết yếu giúp doanh nghiệp hiểu rõ về:");
-        content.append("\n\n- Xu hướng tiêu dùng hiện tại");
-        content.append("\n- Hành vi của khách hàng");
-        content.append("\n- Chiến lược của đối thủ cạnh tranh");
-        content.append("\n- Cơ hội và thách thức mới nổi");
-        content.append("\n\n");
+        // Market analysis section
+        content.append("<div>");
+        content.append("<h2>Phân tích thị trường</h2>");
+        content.append("<p>Phân tích thị trường là một quy trình thiết yếu giúp doanh nghiệp hiểu rõ về:</p>");
+        content.append("<ul>");
+        content.append("<li>Xu hướng tiêu dùng hiện tại</li>");
+        content.append("<li>Hành vi của khách hàng</li>");
+        content.append("<li>Chiến lược của đối thủ cạnh tranh</li>");
+        content.append("<li>Cơ hội và thách thức mới nổi</li>");
+        content.append("</ul>");
+        content.append("</div>");
 
-        content.append("## Ma trận SWOT\n\n");
-        content.append("| | Tích cực | Tiêu cực |\n");
-        content.append("|---|---|---|\n");
-        content.append("| **Nội bộ** | **Điểm mạnh** | **Điểm yếu** |\n");
-        content.append("| | - Nguồn lực độc đáo<br>- Công nghệ tiên tiến<br>- Đội ngũ chuyên nghiệp | - Thiếu nguồn vốn<br>- Quy trình chưa tối ưu<br>- Hạn chế về năng lực |\n");
-        content.append("| **Bên ngoài** | **Cơ hội** | **Thách thức** |\n");
-        content.append("| | - Thị trường mới<br>- Đối tác tiềm năng<br>- Xu hướng mới | - Đối thủ cạnh tranh<br>- Quy định pháp luật<br>- Biến động kinh tế |\n\n");
+        // SWOT matrix section
+        content.append("<div>");
+        content.append("<h2>Ma trận SWOT</h2>");
+        content.append("<table>");
+        content.append("<tr>");
+        content.append("<th></th>");
+        content.append("<th>Tích cực</th>");
+        content.append("<th>Tiêu cực</th>");
+        content.append("</tr>");
+        content.append("<tr>");
+        content.append("<th>Nội bộ</th>");
+        content.append("<td><strong>Điểm mạnh</strong><br>");
+        content.append("- Nguồn lực độc đáo<br>");
+        content.append("- Công nghệ tiên tiến<br>");
+        content.append("- Đội ngũ chuyên nghiệp");
+        content.append("</td>");
+        content.append("<td><strong>Điểm yếu</strong><br>");
+        content.append("- Thiếu nguồn vốn<br>");
+        content.append("- Quy trình chưa tối ưu<br>");
+        content.append("- Hạn chế về năng lực");
+        content.append("</td>");
+        content.append("</tr>");
+        content.append("<tr>");
+        content.append("<th>Bên ngoài</th>");
+        content.append("<td><strong>Cơ hội</strong><br>");
+        content.append("- Thị trường mới<br>");
+        content.append("- Đối tác tiềm năng<br>");
+        content.append("- Xu hướng mới");
+        content.append("</td>");
+        content.append("<td><strong>Thách thức</strong><br>");
+        content.append("- Đối thủ cạnh tranh<br>");
+        content.append("- Quy định pháp luật<br>");
+        content.append("- Biến động kinh tế");
+        content.append("</td>");
+        content.append("</tr>");
+        content.append("</table>");
+        content.append("</div>");
 
-        content.append("## Chiến lược định giá\n\n");
-        content.append("Việc xây dựng chiến lược định giá hiệu quả là yếu tố then chốt quyết định thành công của doanh nghiệp. ");
-        content.append("Dưới đây là một số phương pháp phổ biến:\n\n");
+        // Pricing strategy section
+        content.append("<div>");
+        content.append("<h2>Chiến lược định giá</h2>");
+        content.append("<p>Việc xây dựng chiến lược định giá hiệu quả là yếu tố then chốt quyết định thành công của doanh nghiệp. ");
+        content.append("Dưới đây là một số phương pháp phổ biến:</p>");
 
-        content.append("1. **Định giá dựa trên chi phí**: Tính toán chi phí sản xuất và thêm phần lợi nhuận mong muốn\n");
-        content.append("2. **Định giá dựa trên giá trị**: Xác định mức giá dựa trên giá trị mà khách hàng nhận được\n");
-        content.append("3. **Định giá cạnh tranh**: Đặt giá dựa trên mức giá của đối thủ cạnh tranh\n");
-        content.append("4. **Định giá theo phân khúc**: Áp dụng các mức giá khác nhau cho các phân khúc khách hàng khác nhau\n\n");
+        content.append("<div>");
+        content.append("<h3>1. Định giá dựa trên chi phí</h3>");
+        content.append("<p>Tính toán chi phí sản xuất và thêm phần lợi nhuận mong muốn</p>");
+        content.append("</div>");
 
-        content.append("## Kế hoạch kinh doanh mẫu\n\n");
-        content.append("```\n");
-        content.append("1. Tóm tắt điều hành\n");
-        content.append("2. Mô tả công ty\n");
-        content.append("3. Phân tích thị trường\n");
-        content.append("4. Tổ chức và quản lý\n");
-        content.append("5. Dòng sản phẩm hoặc dịch vụ\n");
-        content.append("6. Chiến lược marketing và bán hàng\n");
-        content.append("7. Dự báo tài chính\n");
-        content.append("```\n\n");
+        content.append("<div>");
+        content.append("<h3>2. Định giá dựa trên giá trị</h3>");
+        content.append("<p>Xác định mức giá dựa trên giá trị mà khách hàng nhận được</p>");
+        content.append("</div>");
 
-        content.append("## Tài liệu tham khảo\n\n");
-        content.append("- \"Khởi nghiệp tinh gọn\" - Eric Ries\n");
-        content.append("- \"Tư duy như những nhà kinh doanh vĩ đại\" - Nguyễn Phi Vân\n");
-        content.append("- \"Quản trị marketing\" - Philip Kotler\n");
-        content.append("- \"Chiến lược đại dương xanh\" - W. Chan Kim và Renée Mauborgne\n\n");
+        content.append("<div>");
+        content.append("<h3>3. Định giá cạnh tranh</h3>");
+        content.append("<p>Đặt giá dựa trên mức giá của đối thủ cạnh tranh</p>");
+        content.append("</div>");
 
-        content.append("## Bài tập thực hành\n\n");
-        content.append("1. Xây dựng kế hoạch kinh doanh cho một sản phẩm hoặc dịch vụ mới\n");
-        content.append("2. Thực hiện phân tích SWOT cho một doanh nghiệp thực tế\n");
-        content.append("3. Thiết kế chiến lược marketing cho một thương hiệu\n\n");
+        content.append("<div>");
+        content.append("<h3>4. Định giá theo phân khúc</h3>");
+        content.append("<p>Áp dụng các mức giá khác nhau cho các phân khúc khách hàng khác nhau</p>");
+        content.append("</div>");
+        content.append("</div>");
 
-        content.append("Chúc bạn thành công trong học tập và phát triển sự nghiệp!\n");
+        // Business plan section
+        content.append("<div>");
+        content.append("<h2>Kế hoạch kinh doanh mẫu</h2>");
+        content.append("<div>");
+        content.append("<ol>");
+        content.append("<li>Tóm tắt điều hành</li>");
+        content.append("<li>Mô tả công ty</li>");
+        content.append("<li>Phân tích thị trường</li>");
+        content.append("<li>Tổ chức và quản lý</li>");
+        content.append("<li>Dòng sản phẩm hoặc dịch vụ</li>");
+        content.append("<li>Chiến lược marketing và bán hàng</li>");
+        content.append("<li>Dự báo tài chính</li>");
+        content.append("</ol>");
+        content.append("</div>");
+        content.append("</div>");
+
+        // References section
+        content.append("<div>");
+        content.append("<h2>Tài liệu tham khảo</h2>");
+        content.append("<ul>");
+        content.append("<li>\"Khởi nghiệp tinh gọn\" - Eric Ries</li>");
+        content.append("<li>\"Tư duy như những nhà kinh doanh vĩ đại\" - Nguyễn Phi Vân</li>");
+        content.append("<li>\"Quản trị marketing\" - Philip Kotler</li>");
+        content.append("<li>\"Chiến lược đại dương xanh\" - W. Chan Kim và Renée Mauborgne</li>");
+        content.append("</ul>");
+        content.append("</div>");
+
+        // Exercises section
+        content.append("<div>");
+        content.append("<h2>Bài tập thực hành</h2>");
+        content.append("<ol>");
+        content.append("<li>Xây dựng kế hoạch kinh doanh cho một sản phẩm hoặc dịch vụ mới</li>");
+        content.append("<li>Thực hiện phân tích SWOT cho một doanh nghiệp thực tế</li>");
+        content.append("<li>Thiết kế chiến lược marketing cho một thương hiệu</li>");
+        content.append("</ol>");
+        content.append("<p style=\"text-align: center;\"><strong>Chúc bạn thành công trong học tập và phát triển sự nghiệp!</strong></p>");
+        content.append("</div>");
+
+        // Add author and date info - useful for course versioning
+        content.append("<div>");
+        content.append("<p><em>Tác giả: lochuung</em></p>");
+        content.append("<p><em>Cập nhật lần cuối: 2025-05-07</em></p>");
+        content.append("</div>");
 
         return content.toString();
     }
+
 
     /**
      * Select appropriate content based on the category name
