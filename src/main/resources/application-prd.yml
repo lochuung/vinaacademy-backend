@@ -28,6 +28,22 @@ spring:
       maxRequestSize: 1GB
       enabled: true
       maxFileSize: 1GB
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            redirect-uri: "{baseUrl}/oauth2/callback/{registrationId}"
+            scope:
+              - email
+              - profile
+        provider:
+          google:
+            authorization-uri: https://accounts.google.com/o/oauth2/v2/auth
+            token-uri: https://www.googleapis.com/oauth2/v4/token
+            user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
 application:
   jwt:
     refreshToken:
@@ -43,6 +59,7 @@ application:
     maxSize: 1073741824
   url:
     frontend: ${FRONTEND_URL:http://localhost:3000}
+    google-auth: ${application.url.frontend}/login/google
 
 server:
   port: 8080
