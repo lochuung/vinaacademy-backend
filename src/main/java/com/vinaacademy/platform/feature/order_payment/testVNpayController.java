@@ -23,10 +23,10 @@ public class testVNpayController {
 	private final PaymentService paymentService;
 	private final CartItemService cartItemService;
 	
-    @GetMapping
-    public ApiResponse<String> getPaymentUrl() {
-    	return ApiResponse.success(paymentService.testApi());
-    }
+//    @GetMapping
+//    public ApiResponse<String> getPaymentUrl() {
+//    	return ApiResponse.success(paymentService.testApi());
+//    }
     
 //    @GetMapping("/submitOrder")
 //    public String submidOrder(@RequestParam("amount") int orderTotal,
