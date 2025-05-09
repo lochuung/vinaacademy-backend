@@ -3,16 +3,19 @@ package com.vinaacademy.platform.feature.order_payment;
 import com.vinaacademy.platform.feature.common.response.ApiResponse;
 import com.vinaacademy.platform.feature.order_payment.dto.PaymentDto;
 import com.vinaacademy.platform.feature.order_payment.dto.PaymentRequest;
+import com.vinaacademy.platform.feature.order_payment.enums.PaymentStatus;
 import com.vinaacademy.platform.feature.order_payment.service.PaymentService;
 import com.vinaacademy.platform.feature.user.auth.annotation.HasAnyRole;
 import com.vinaacademy.platform.feature.user.constant.AuthConstants;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -25,32 +28,31 @@ public class PaymentController {
 	
 	
 	@HasAnyRole({AuthConstants.STUDENT_ROLE}) 
-    @PostMapping
-    public ApiResponse<PaymentDto> createPayment(@PathVariable UUID orderId, @PathVariable String urlChange) {
+    @PostMapping("/{orderId}")
+    public ApiResponse<PaymentDto> createPayment(@PathVariable UUID orderId, HttpServletRequest request) {
         log.debug("Create payment for order "+orderId);
-        return ApiResponse.success(paymentService.createPayment(orderId, urlChange));
+        return ApiResponse.success(paymentService.createPayment(orderId, request));
     }
     
-    @HasAnyRole({AuthConstants.STUDENT_ROLE})
-    @GetMapping("/list")
-    public ApiResponse<List<PaymentDto>> getPaymentList(@PathVariable UUID userId) {
-    	log.debug("Get payment list for user "+userId);
-    	return ApiResponse.success(paymentService.getPaymentList(userId));
-    }
+//    @HasAnyRole({AuthConstants.STUDENT_ROLE})
+//    @GetMapping("/list")
+//    public ApiResponse<List<PaymentDto>> getPaymentList() {
+//    	return ApiResponse.success(paymentService.getPaymentList());
+//    }
     
     @HasAnyRole({AuthConstants.STUDENT_ROLE})
-    @GetMapping("/crud/{paymentId}")
+    @GetMapping("/detail/{paymentId}")
     public ApiResponse<PaymentDto> getPayment(@PathVariable UUID paymentId) {
     	log.debug("Get payment "+paymentId);
     	return ApiResponse.success(paymentService.getPayment(paymentId));
     }
     
-    @HasAnyRole({AuthConstants.STUDENT_ROLE}) 
-    @PutMapping
-    public ApiResponse<PaymentDto> updateOrder(@RequestBody @Valid PaymentRequest request) {
-        log.debug("Payment updated");
-        return ApiResponse.success(paymentService.updatePayment(request));
+    
+    @HasAnyRole({AuthConstants.STUDENT_ROLE})
+    @GetMapping("/valid")
+    public ApiResponse<PaymentStatus> valiReturn(@RequestParam Map<String, String> requestParams) {
+    	return ApiResponse.success(paymentService.validUrlReturn(requestParams));
     }
     
-
+    
 }

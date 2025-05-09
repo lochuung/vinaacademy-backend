@@ -278,6 +278,15 @@ public class CourseServiceImpl implements CourseService {
         if (course.getTotalStudent() > 0) {
             throw BadRequestException.message("Khóa học đã có người đăng ký không thể xóa");
         }
+        User currentUser = securityHelper.getCurrentUser();
+        if (!securityHelper.hasAnyRole(AuthConstants.ADMIN_ROLE, AuthConstants.STAFF_ROLE, AuthConstants.INSTRUCTOR_ROLE)
+                ) {
+            throw BadRequestException.message("Người dùng không có quyền xóa khóa học này");
+        }
+        if (course.getInstructors().stream()
+                .noneMatch(courseInstructor -> courseInstructor.getInstructor().equals(currentUser))){
+        	throw BadRequestException.message("Người dùng không phải chủ sở hữu khóa học này");
+        }
 
         courseRepository.delete(course);
     }

@@ -35,7 +35,7 @@ public class CartItemServiceImpl implements CartItemService{
 		Course course = courseRepository.findById(request.getCourse_id()).orElseThrow(
 				() -> BadRequestException.message("Không tìm thấy Course ID này"));
 		
-		if (cartItemRepository.existsByCourseId(course.getId()))
+		if (cartItemRepository.existsByCourseIdAndCart(course.getId(), cart))
 			throw BadRequestException.message("Duplicate course: Course id này đã tồn tại trong giỏ hàng");
 		
 		CartItem cartItem = CartItem.builder()
