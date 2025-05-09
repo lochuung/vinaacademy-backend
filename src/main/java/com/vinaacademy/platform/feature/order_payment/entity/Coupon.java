@@ -49,7 +49,7 @@ public class Coupon extends BaseEntity {
     private LocalDateTime startedAt;
 
     @Column(name = "usage_limit")
-    private Long usageLimit;
+    private Long usageLimit ;
 
     @Column(name = "used_count")
     private Long usedCount = 0L;

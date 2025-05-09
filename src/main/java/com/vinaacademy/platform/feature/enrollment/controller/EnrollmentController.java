@@ -51,7 +51,7 @@ public class EnrollmentController {
             @Valid @RequestBody EnrollmentRequest request) {
 
         UUID userId = securityHelper.getCurrentUser().getId();
-
+        
         EnrollmentResponse enrollmentResponse = enrollmentService.enrollCourse(request, userId);
 
         return ResponseEntity.status(HttpStatus.CREATED)

@@ -2,6 +2,7 @@ package com.vinaacademy.platform.feature.order_payment.utils;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.stereotype.Component;
 
 import javax.crypto.Mac;
@@ -18,9 +19,10 @@ import java.util.*;
 @Component
 public class VNPayConfig {
     public static String vnp_PayUrl = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
-    public static String vnp_TmnCode = "GS1T4UFW";
-    public static String vnp_HashSecret = "8RL7O9YLLK8PAZHZHMUJ6NSTHFV3435Z";
+    public static String vnp_TmnCode = "2JVRHVF9";
+    public static String vnp_HashSecret = "4TD8VD92KMWZ6E1VCUDJ4HF78LX7D1FD";
     public static String vnp_apiUrl = "https://sandbox.vnpayment.vn/merchant_webapi/api/transaction";
+    public static String urlReturn = "https://vinaacademy.huuloc.id.vn/transaction";
 
     public static String md5(String message) {
         String digest = null;
@@ -60,10 +62,10 @@ public class VNPayConfig {
 
     //Util for VNPAY
     public static String hashAllFields(Map fields) {
-        List fieldNames = new ArrayList(fields.keySet());
+        List<String> fieldNames = new ArrayList<>(fields.keySet());
         Collections.sort(fieldNames);
         StringBuilder sb = new StringBuilder();
-        Iterator itr = fieldNames.iterator();
+        Iterator<String> itr = fieldNames.iterator();
         while (itr.hasNext()) {
             String fieldName = (String) itr.next();
             String fieldValue = (String) fields.get(fieldName);
@@ -78,7 +80,7 @@ public class VNPayConfig {
         }
         return hmacSHA512(vnp_HashSecret,sb.toString());
     }
-
+    
     public static String hmacSHA512(final String key, final String data) {
         try {
 
@@ -102,6 +104,8 @@ public class VNPayConfig {
         }
     }
 
+    
+
     public static String getIpAddress(HttpServletRequest request) {
         String ipAdress;
         try {
@@ -110,7 +114,7 @@ public class VNPayConfig {
                 ipAdress = request.getLocalAddr();
             }
         } catch (Exception e) {
-            ipAdress = "Invalid IP:" + e.getMessage();
+            ipAdress = "127.0.0.1";
         }
         return ipAdress;
     }
@@ -125,30 +129,31 @@ public class VNPayConfig {
         return sb.toString();
     }
     
-    public static String createPaymentRedirect(Long total, String orderInfor, String urlReturn) {
+    public static String createPaymentRedirect(Long total, String orderInfor, String idRef, HttpServletRequest request) {
 		String vnp_Version = "2.1.0";
 		String vnp_Command = "pay";
-		String vnp_TxnRef = VNPayConfig.getRandomNumber(8);
-		String vnp_IpAddr = "127.0.0.1";
+		String vnp_TxnRef = idRef;
+		String vnp_IpAddr = getIpAddress(request);
 		String vnp_TmnCode = VNPayConfig.vnp_TmnCode;
-		String orderType = "order-type";
-
+		String orderType = "other";
+		
 		Map<String, String> vnp_Params = new HashMap<>();
 		vnp_Params.put("vnp_Version", vnp_Version);
 		vnp_Params.put("vnp_Command", vnp_Command);
 		vnp_Params.put("vnp_TmnCode", vnp_TmnCode);
-		vnp_Params.put("vnp_Amount", String.valueOf(total * 100));
+		vnp_Params.put("vnp_Amount", String.valueOf(total*100));
 		vnp_Params.put("vnp_CurrCode", "VND");
 
-		vnp_Params.put("vnp_TxnRef", vnp_TxnRef);
+		vnp_Params.put("vnp_TxnRef", vnp_TxnRef); 
 		vnp_Params.put("vnp_OrderInfo", orderInfor);
-		System.out.println("OrderInfo: "+orderInfor);
+		log.debug("OrderInfo: "+orderInfor);
 		vnp_Params.put("vnp_OrderType", orderType);
 
 		String locate = "vn";
 		vnp_Params.put("vnp_Locale", locate);
 
 		vnp_Params.put("vnp_ReturnUrl", urlReturn);
+		//vnp_Params.put("vnp_IpnUrl", "http://localhost/api/v1/paymenttest/ipn");
 		vnp_Params.put("vnp_IpAddr", vnp_IpAddr);
 
 		Calendar cld = Calendar.getInstance(TimeZone.getTimeZone("Etc/GMT+7"));
@@ -161,11 +166,11 @@ public class VNPayConfig {
 		String vnp_ExpireDate = formatter.format(cld.getTime());
 		vnp_Params.put("vnp_ExpireDate", vnp_ExpireDate);
 
-		List fieldNames = new ArrayList(vnp_Params.keySet());
+		List<String> fieldNames = new ArrayList<String>(vnp_Params.keySet());
 		Collections.sort(fieldNames);
 		StringBuilder hashData = new StringBuilder();
 		StringBuilder query = new StringBuilder();
-		Iterator itr = fieldNames.iterator();
+		Iterator<String> itr = fieldNames.iterator();
 		while (itr.hasNext()) {
 			String fieldName = (String) itr.next();
 			String fieldValue = (String) vnp_Params.get(fieldName);
@@ -194,4 +199,6 @@ public class VNPayConfig {
 		String paymentUrl = VNPayConfig.vnp_PayUrl + "?" + queryUrl;
 		return paymentUrl;
 	}
+    
+    
 }

@@ -1,16 +1,24 @@
 package com.vinaacademy.platform.feature.order_payment.mapper;
 
 import com.vinaacademy.platform.feature.order_payment.dto.CouponDto;
-import com.vinaacademy.platform.feature.order_payment.dto.CouponRequest;
 import com.vinaacademy.platform.feature.order_payment.entity.Coupon;
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
+import org.mapstruct.ReportingPolicy;
 
-@Mapper(componentModel = "spring")
+import java.util.List;
+
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface CouponMapper {
-	
-	@Mapping(target = "carts", ignore = true)
-    Coupon toEntity(CouponRequest couponRequest);
-   
-    CouponDto toDTO(Coupon coupon);
-}  
+
+    CouponDto toDto(Coupon coupon);
+
+    Coupon toEntity(CouponDto couponDTO);
+
+    List<CouponDto> toDtoList(List<Coupon> coupons);
+
+//    @Mapping(target = "id", ignore = true)
+//    @Mapping(target = "carts", ignore = true)
+//    @Mapping(target = "createdDate", ignore = true)
+//    @Mapping(target = "updatedDate", ignore = true)
+//    void updateCouponFromDto(CouponDto couponDTO, @MappingTarget Coupon coupon);
+}

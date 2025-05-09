@@ -15,6 +15,8 @@ import java.util.UUID;
 public class OrderItemDto {
 	private Long id;
     private UUID order_id;
+    private String course_name;
+    private String url_image;
     private UUID course_id;
     private BigDecimal price;
 }

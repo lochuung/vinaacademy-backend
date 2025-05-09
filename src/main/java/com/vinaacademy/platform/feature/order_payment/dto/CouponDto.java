@@ -26,6 +26,7 @@ public class CouponDto {
     private LocalDateTime startedAt;
     private Long usageLimit;
     private Long usedCount;
+    private Boolean valid;
     
 }
 
