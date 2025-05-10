@@ -1,5 +1,6 @@
 package com.vinaacademy.platform.feature.video.service;
 
+import com.vinaacademy.platform.feature.user.entity.User;
 import com.vinaacademy.platform.feature.video.dto.VideoNoteDto;
 import com.vinaacademy.platform.feature.video.dto.VideoNoteRequestDto;
 
@@ -8,21 +9,21 @@ import java.util.UUID;
 
 public interface VideoNoteService {
     //Tạo ghi chú mới
-    VideoNoteDto createVideoNote(UUID userId, VideoNoteRequestDto requestDto);
+    VideoNoteDto createVideoNote(User user, VideoNoteRequestDto requestDto);
 
     //Cập nhật ghi chú
-    VideoNoteDto updateVideoNote(UUID userId, Long noteId, VideoNoteRequestDto requestDto);
+    VideoNoteDto updateVideoNote(User user, Long noteId, VideoNoteRequestDto requestDto);
 
     //Lấy tất cả ghi chú của một người dùng cho một video cụ thể
-    List<VideoNoteDto> getVideoNotesByVideoAndUser(UUID userId, UUID videoId);
+    List<VideoNoteDto> getVideoNotesByVideoAndUser(User user, UUID videoId);
 
     //Lấy tất cả ghi chú của một người dùng
-    List<VideoNoteDto> getAllVideoNotesByUser(UUID userId);
+    List<VideoNoteDto> getAllVideoNotesByUser(User user);
 
     //Lấy thông tin chi tiết của một ghi chú
-    VideoNoteDto getVideoNoteById(UUID userId, Long noteId);
+    VideoNoteDto getVideoNoteById(User user, Long noteId);
 
     //Xóa một ghi chú
-    void deleteVideoNote(UUID userId, Long noteId);
+    void deleteVideoNote(User user, Long noteId);
 
 }

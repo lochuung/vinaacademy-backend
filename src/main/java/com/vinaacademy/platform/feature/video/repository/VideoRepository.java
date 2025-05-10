@@ -18,8 +18,8 @@ public interface VideoRepository extends JpaRepository<Video, UUID> {
             "JOIN c.enrollments e WHERE e.user.id = :userId")
     List<Video> findByEnrolledUserId(@Param("userId") Long userId);
 
-    @Query("SELECT COUNT(e) > 0 FROM Video v " +
-            "JOIN v.section s JOIN s.course c " +
-            "JOIN c.enrollments e WHERE v.id = :videoId AND e.user.id = :userId")
-    boolean isUserEnrolledInCourse(@Param("videoId") Long videoId, @Param("userId") Long userId);
+    @Query("SELECT COUNT(e) > 0 FROM Lesson l " +
+            "JOIN l.section s JOIN s.course c " +
+            "JOIN c.enrollments e WHERE l.id = :lessonId AND e.user.id = :userId")
+    boolean isUserEnrolledInCourse(@Param("lessonId") UUID lessonId, @Param("userId") UUID userId);
 }

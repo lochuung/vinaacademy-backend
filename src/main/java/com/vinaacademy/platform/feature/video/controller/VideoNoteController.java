@@ -1,6 +1,8 @@
 package com.vinaacademy.platform.feature.video.controller;
 
 import com.vinaacademy.platform.feature.common.response.ApiResponse;
+import com.vinaacademy.platform.feature.user.auth.helpers.SecurityHelper;
+import com.vinaacademy.platform.feature.user.entity.User;
 import com.vinaacademy.platform.feature.video.dto.VideoNoteDto;
 import com.vinaacademy.platform.feature.video.dto.VideoNoteRequestDto;
 import com.vinaacademy.platform.feature.video.service.VideoNoteService;
@@ -8,6 +10,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -19,19 +22,23 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/video-notes")
-@RequiredArgsConstructor
 @Tag(name = "Video Note API", description = "API quản lý ghi chú trên video")
 public class VideoNoteController {
-    private final VideoNoteService videoNoteService;
+    @Autowired
+    private VideoNoteService videoNoteService;
+    @Autowired
+    private SecurityHelper securityHelper;
 
     @Operation(summary = "Tạo ghi chú mới cho video")
     @PostMapping
     public ResponseEntity<ApiResponse<VideoNoteDto>> createVideoNote(
-            @AuthenticationPrincipal UserDetails userDetails,
             @Valid @RequestBody VideoNoteRequestDto requestDto) {
 
-        UUID userId = extractUserId(userDetails);
-        VideoNoteDto createdNote = videoNoteService.createVideoNote(userId, requestDto);
+        // Lấy đối tượng User hiện tại
+        User currentUser = securityHelper.getCurrentUser();
+
+        // Gọi service với đối tượng User
+        VideoNoteDto createdNote = videoNoteService.createVideoNote(currentUser, requestDto);
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(new ApiResponse<>("success", "Tạo ghi chú thành công", createdNote));
@@ -40,12 +47,11 @@ public class VideoNoteController {
     @Operation(summary = "Cập nhật thông tin ghi chú")
     @PutMapping("/{noteId}")
     public ResponseEntity<ApiResponse<VideoNoteDto>> updateVideoNote(
-            @AuthenticationPrincipal UserDetails userDetails,
             @PathVariable Long noteId,
             @Valid @RequestBody VideoNoteRequestDto requestDto) {
 
-        UUID userId = extractUserId(userDetails);
-        VideoNoteDto updatedNote = videoNoteService.updateVideoNote(userId, noteId, requestDto);
+        User currentUser = securityHelper.getCurrentUser();
+        VideoNoteDto updatedNote = videoNoteService.updateVideoNote(currentUser, noteId, requestDto);
 
         return ResponseEntity.ok(new ApiResponse<>("success", "Cập nhật ghi chú thành công", updatedNote));
     }
@@ -56,8 +62,8 @@ public class VideoNoteController {
             @AuthenticationPrincipal UserDetails userDetails,
             @PathVariable UUID videoId) {
 
-        UUID userId = extractUserId(userDetails);
-        List<VideoNoteDto> videoNotes = videoNoteService.getVideoNotesByVideoAndUser(userId, videoId);
+        User currentUser = securityHelper.getCurrentUser();
+        List<VideoNoteDto> videoNotes = videoNoteService.getVideoNotesByVideoAndUser(currentUser, videoId);
 
         return ResponseEntity.ok(new ApiResponse<>("success", "Lấy danh sách ghi chú thành công", videoNotes));
     }
@@ -67,8 +73,8 @@ public class VideoNoteController {
     public ResponseEntity<ApiResponse<List<VideoNoteDto>>> getAllVideoNotes(
             @AuthenticationPrincipal UserDetails userDetails) {
 
-        UUID userId = extractUserId(userDetails);
-        List<VideoNoteDto> videoNotes = videoNoteService.getAllVideoNotesByUser(userId);
+        User currentUser = securityHelper.getCurrentUser();
+        List<VideoNoteDto> videoNotes = videoNoteService.getAllVideoNotesByUser(currentUser);
 
         return ResponseEntity.ok(new ApiResponse<>("success", "Lấy danh sách ghi chú thành công", videoNotes));
     }
@@ -79,8 +85,8 @@ public class VideoNoteController {
             @AuthenticationPrincipal UserDetails userDetails,
             @PathVariable Long noteId) {
 
-        UUID userId = extractUserId(userDetails);
-        VideoNoteDto videoNote = videoNoteService.getVideoNoteById(userId, noteId);
+        User currentUser = securityHelper.getCurrentUser();
+        VideoNoteDto videoNote = videoNoteService.getVideoNoteById(currentUser, noteId);
 
         return ResponseEntity.ok(new ApiResponse<>("success", "Lấy thông tin ghi chú thành công", videoNote));
     }
@@ -91,13 +97,10 @@ public class VideoNoteController {
             @AuthenticationPrincipal UserDetails userDetails,
             @PathVariable Long noteId) {
 
-        UUID userId = extractUserId(userDetails);
-        videoNoteService.deleteVideoNote(userId, noteId);
+        User currentUser = securityHelper.getCurrentUser();
+        videoNoteService.deleteVideoNote(currentUser, noteId);
 
         return ResponseEntity.ok(new ApiResponse<>("success", "Xóa ghi chú thành công", null));
     }
 
-    private UUID extractUserId(UserDetails userDetails) {
-        return UUID.fromString(userDetails.getUsername());
-    }
 }
