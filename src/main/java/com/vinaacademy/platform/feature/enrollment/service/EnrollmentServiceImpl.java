@@ -65,15 +65,13 @@ public class EnrollmentServiceImpl implements EnrollmentService {
 		if (course.getStatus() != CourseStatus.PUBLISHED)
 			throw BadRequestException.message("Khóa học này chưa được xuất bản");
 
-		if (course.getPrice().longValue() != 0) {
-			// because price > 0 so check if user has order complete for this course (anti bypass course)
-			Optional<Order> order = orderRepository.findFirstByUser_IdAndOrderItems_Course_IdAndStatusOrderByCreatedDateAsc(userId, course.getId(),
-					OrderStatus.PAID);
-
-			if (!order.isPresent()) {
-				// if no order == PAID 
-				throw BadRequestException.message("Bạn chưa thanh toán cho khóa học này");
-			} 
+		// Kiểm tra thanh toán nếu cần
+		if (course.getPrice() != null && course.getPrice().longValue() > 0) {
+			Optional<Order> order = orderRepository.findFirstByUser_IdAndOrderItems_Course_IdAndStatusOrderByCreatedDateAsc(
+					userId, course.getId(), OrderStatus.PAID);
+			if (order.isEmpty() || order.get().getStatus() != OrderStatus.PAID) {
+				throw BadRequestException.message("Bạn chưa hoàn tất thanh toán cho khóa học này");
+			}
 		}
 
 		// Tạo đăng ký mới

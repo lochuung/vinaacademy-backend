@@ -56,23 +56,22 @@ public class VideoNoteServiceImpl implements VideoNoteService {
     @Override
     @Transactional
     public VideoNoteDto updateVideoNote(User user, Long noteId, VideoNoteRequestDto requestDto) {
+        // Tìm ghi chú của người dùng theo ID
         VideoNote videoNote = videoNoteRepository.findByIdAndUserId(noteId, user.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy ghi chú với ID: " + noteId));
 
+        // Kiểm tra nếu ID video trong request khác với ID video hiện tại của ghi chú
         if (!videoNote.getVideo().getId().equals(requestDto.getVideoId())) {
-            Video newVideo = videoRepository.findById(requestDto.getVideoId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy video với ID: " + requestDto.getVideoId()));
-
-            if (!videoRepository.isUserEnrolledInCourse(requestDto.getVideoId(), user.getId())) {
-                throw new UnauthorizedException("Người dùng không có quyền truy cập video này");
-            }
-
-            videoNote.setVideo(newVideo);
+            throw new IllegalArgumentException("Không thể thay đổi video liên kết với ghi chú.");
         }
 
+        // Cập nhật nội dung của ghi chú từ DTO
         VideoNoteMapper.INSTANCE.updateEntityFromDto(requestDto, videoNote);
+
+        // Lưu ghi chú đã cập nhật vào cơ sở dữ liệu
         VideoNote updatedNote = videoNoteRepository.save(videoNote);
 
+        // Chuyển đổi và trả về DTO
         return VideoNoteMapper.INSTANCE.toDto(updatedNote);
     }
 
@@ -83,6 +82,10 @@ public class VideoNoteServiceImpl implements VideoNoteService {
         if (!videoRepository.isUserEnrolledInCourse(videoId, user.getId())) {
             throw new ResourceNotFoundException("Người dùng không có quyền truy cập video với ID: " + videoId);
         }
+
+        // Kiểm tra xem video có tồn tại không
+        Video video = videoRepository.findById(videoId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy video với ID: " + videoId));
 
         // Lấy danh sách ghi chú
         List<VideoNote> videoNotes = videoNoteRepository.findByVideoIdAndUserId(videoId, user.getId());
@@ -95,6 +98,14 @@ public class VideoNoteServiceImpl implements VideoNoteService {
     @Transactional(readOnly = true)
     public List<VideoNoteDto> getAllVideoNotesByUser(User user) {
         List<VideoNote> videoNotes = videoNoteRepository.findByUserId(user.getId());
+
+        // Kiểm tra quyền truy cập video liên kết
+        for (VideoNote videoNote : videoNotes) {
+            if (!videoRepository.isUserEnrolledInCourse(videoNote.getVideo().getId(), user.getId())) {
+                throw new UnauthorizedException("Người dùng không có quyền truy cập video liên kết với ghi chú này");
+            }
+        }
+
         return videoNotes.stream()
                 .map(VideoNoteMapper.INSTANCE::toDto)
                 .collect(Collectors.toList());
@@ -106,15 +117,27 @@ public class VideoNoteServiceImpl implements VideoNoteService {
         VideoNote videoNote = videoNoteRepository.findByIdAndUserId(noteId, user.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy ghi chú với ID: " + noteId));
 
+        // Kiểm tra quyền truy cập video liên kết
+        if (!videoRepository.isUserEnrolledInCourse(videoNote.getVideo().getId(), user.getId())) {
+            throw new UnauthorizedException("Người dùng không có quyền đọc ghi chú liên kết với video này");
+        }
+
         return VideoNoteMapper.INSTANCE.toDto(videoNote);
     }
 
     @Override
     @Transactional
     public void deleteVideoNote(User user, Long noteId) {
+        // Tìm ghi chú của người dùng theo ID
         VideoNote videoNote = videoNoteRepository.findByIdAndUserId(noteId, user.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy ghi chú với ID: " + noteId));
 
+        // Kiểm tra quyền truy cập video liên kết
+        if (!videoRepository.isUserEnrolledInCourse(videoNote.getVideo().getId(), user.getId())) {
+            throw new UnauthorizedException("Người dùng không có quyền xóa ghi chú liên kết với video này");
+        }
+
+        // Xóa ghi chú
         videoNoteRepository.delete(videoNote);
     }
 }
