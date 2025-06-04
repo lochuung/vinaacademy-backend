@@ -4,6 +4,7 @@ import com.vinaacademy.platform.feature.storage.enums.FileType;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -19,8 +20,11 @@ public class InitiateUploadRequest {
     @NotNull(message = "Kích thước tệp không được để trống")
     @Min(value = 1, message = "Kích thước tệp phải lớn hơn 0")
     private Long fileSize;
-    @NotNull(message = "Loại tệp không được để trống")
-    private FileType fileType;
+    @Pattern(
+            regexp = "^[a-zA-Z0-9!#$&^_.+-]+/[a-zA-Z0-9!#$&^_.+-]+$",
+            message = "Mime type không hợp lệ"
+    )
+    private String mimeType; // e.g., "image/jpeg", "video/mp4"
     private String fileHash; // Optional: for resume detection
     @NotNull(message = "Kích thước phân đoạn không được để trống")
     @Min(value = 1, message = "Kích thước phân đoạn phải lớn hơn 0")

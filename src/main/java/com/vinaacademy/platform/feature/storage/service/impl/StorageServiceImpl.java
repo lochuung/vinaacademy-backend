@@ -2,7 +2,6 @@ package com.vinaacademy.platform.feature.storage.service.impl;
 
 import com.vinaacademy.platform.feature.storage.dto.MediaFileDto;
 import com.vinaacademy.platform.feature.storage.entity.MediaFile;
-import com.vinaacademy.platform.feature.storage.enums.FileType;
 import com.vinaacademy.platform.feature.storage.mapper.MediaFileMapper;
 import com.vinaacademy.platform.feature.storage.repository.MediaFileRepository;
 import com.vinaacademy.platform.feature.storage.service.StorageService;
@@ -29,12 +28,13 @@ public class StorageServiceImpl implements StorageService {
     private final MediaFileRepository mediaFileRepository;
 
     @Override
-    public MediaFileDto uploadFile(MultipartFile file, FileType fileType, String userId) throws IOException {
+    public MediaFileDto uploadFile(MultipartFile file, String userId) throws IOException {
         if (file.isEmpty() || file.getSize() == 0 || file.getOriginalFilename() == null) {
             throw new IllegalArgumentException("File is empty");
         }
         String dateFolder = LocalDate.now().toString();
-        String uploadDir = storageUtils.getUploadDirByType(fileType);
+        String mimeType = file.getContentType();
+        String uploadDir = storageUtils.getUploadDirByType(MediaFile.getTypeFromMimeType(mimeType));
         String fileName = String.format("%s_%s", UUID.randomUUID(),
                 StringUtils.cleanPath(file.getOriginalFilename()));
 
@@ -48,7 +48,6 @@ public class StorageServiceImpl implements StorageService {
                 .fileName(file.getOriginalFilename())
                 .filePath(filePath.toString())
                 .fileSize(file.getSize())
-                .fileType(fileType)
                 .mimeType(file.getContentType())
                 .userId(UUID.fromString(userId))
                 .build();

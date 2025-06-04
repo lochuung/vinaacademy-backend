@@ -4,7 +4,6 @@ import com.vinaacademy.platform.exception.BadRequestException;
 import com.vinaacademy.platform.feature.lesson.repository.LessonRepository;
 import com.vinaacademy.platform.feature.lesson.repository.projection.LessonAccessInfoDto;
 import com.vinaacademy.platform.feature.storage.dto.MediaFileDto;
-import com.vinaacademy.platform.feature.storage.enums.FileType;
 import com.vinaacademy.platform.feature.storage.service.StorageService;
 import com.vinaacademy.platform.feature.user.auth.helpers.SecurityHelper;
 import com.vinaacademy.platform.feature.user.constant.AuthConstants;
@@ -80,7 +79,7 @@ public class VideoServiceImpl implements VideoService {
 
         // Tạo thư mục lưu video
         MediaFileDto mediaFile =
-                storageService.uploadFile(file, FileType.VIDEO, currentUser.getId().toString());
+                storageService.uploadFile(file, currentUser.getId().toString());
         String destinationFile = mediaFile.getFilePath();
         video = videoRepository.save(video);
 

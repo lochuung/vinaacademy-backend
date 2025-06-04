@@ -4,6 +4,7 @@ import com.vinaacademy.platform.exception.BadRequestException;
 import com.vinaacademy.platform.feature.storage.dto.UploadResult;
 import com.vinaacademy.platform.feature.storage.dto.UploadSessionDto;
 import com.vinaacademy.platform.feature.storage.entity.MediaFile;
+import com.vinaacademy.platform.feature.storage.enums.FileType;
 import com.vinaacademy.platform.feature.storage.mapper.UploadSessionMapper;
 import com.vinaacademy.platform.feature.storage.properties.StorageProperties;
 import com.vinaacademy.platform.feature.storage.repository.MediaFileRepository;
@@ -28,6 +29,7 @@ import java.io.RandomAccessFile;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -69,18 +71,21 @@ public class ChunkUploadServiceImpl implements ChunkUploadService {
                 .fileName(request.getFilename())
                 .fileSize(request.getFileSize())
                 .fileHash(request.getFileHash())
-                .fileType(request.getFileType())
+                .mimeType(request.getMimeType())
                 .status(MediaFile.UploadStatus.INITIATED)
                 .uploadedChunks(0)
                 .chunkSize(request.getChunkSize())
                 .totalChunks((int) Math.ceil((double) request.getFileSize() / request.getChunkSize()))
                 .userId(currentUser.getId())
                 .build();
-        // 3. create temporary filepath
-        Path tempDir = Paths.get(storageProperties.getTempDir(), currentUser.getId().toString());
+        // 3. create filepath
+        String dateFolder = LocalDate.now().toString();
+        FileType fileType = MediaFile.getTypeFromMimeType(request.getMimeType());
+        Path directory = Paths.get(storageProperties.getDirByType(fileType), currentUser.getId().toString(),
+                dateFolder);
         try {
-            Files.createDirectories(tempDir);
-            Path tempFilePath = tempDir.resolve(String.format("%s-%s", UUID.randomUUID()
+            Files.createDirectories(directory);
+            Path tempFilePath = directory.resolve(String.format("%s-%s", UUID.randomUUID()
                     , request.getFilename()));
             uploadSession.setFilePath(tempFilePath.toString());
 

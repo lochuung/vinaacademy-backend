@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -34,13 +35,13 @@ public class MediaFile {
     @Enumerated(EnumType.STRING)
     private FileType fileType;
 
-    @Column(name = "mime_type")
+    @Column(name = "mime_type", nullable = false)
     private String mimeType;
 
-    @Column(name = "size")
+    @Column(name = "size", nullable = false)
     private long fileSize;
 
-    @Column(name = "file_path")
+    @Column(name = "file_path", nullable = false)
     private String filePath;
 
     @ManyToMany(mappedBy = "mediaFiles")
@@ -76,7 +77,37 @@ public class MediaFile {
         if (this.status == null) {
             this.status = UploadStatus.INITIATED;
         }
+        if (StringUtils.isNotBlank(mimeType)) {
+            this.mimeType = mimeType.toLowerCase();
+            this.fileType = getFileTypeFromMimeType();
+        }
     }
+
+    public static FileType getTypeFromMimeType(String mimeType) {
+        if (StringUtils.isBlank(mimeType)) {
+            return FileType.OTHER; // Default type if mimeType is blank
+        }
+        mimeType = mimeType.toLowerCase();
+        if (mimeType.startsWith("video/")) {
+            return FileType.VIDEO;
+        } else if (mimeType.startsWith("image/")) {
+            return FileType.IMAGE;
+        } else if (mimeType.startsWith("application/")
+                && (mimeType.endsWith("pdf") || mimeType.endsWith("msword")
+                || mimeType.endsWith("vnd.openxmlformats-officedocument.wordprocessingml.document"))) {
+            return FileType.DOCUMENT;
+        }
+        return FileType.OTHER;
+    }
+
+    public FileType getFileTypeFromMimeType() {
+        if (StringUtils.isNotBlank(mimeType)) {
+            return getTypeFromMimeType(mimeType);
+        } else {
+            return FileType.OTHER; // Default type if mimeType is not set
+        }
+    }
+
 
     public enum UploadStatus {
         INITIATED,
